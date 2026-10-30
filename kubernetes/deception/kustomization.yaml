@@ -1,0 +1,15 @@
+# Apply kubernetes/namespaces/ids-deception.yaml first.
+# Decoy Deployments/Services are created at runtime by the MAPE-K controller from
+# decoy-template.yaml; this kustomization only installs the shared pieces.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ids-deception
+resources:
+  - networkpolicy.yaml
+configMapGenerator:
+  - name: decoy-server
+    files:
+      - decoy_server.py
+      - profiles.json
+generatorOptions:
+  disableNameSuffixHash: true

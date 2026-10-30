@@ -1,0 +1,247 @@
+"""SQLite storage for captures and detections (the knowledge base grows from here)."""
+from __future__ import annotations
+
+import sqlite3
+from contextlib import contextmanager
+from pathlib import Path
+from typing import Any, Iterator
+
+import pandas as pd
+
+from src.utils.config import load_config, project_path
+
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS captures (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    pcap_file       TEXT UNIQUE NOT NULL,
+    interface       TEXT,
+    started_at      TEXT,
+    ended_at        TEXT,
+    duration_s      REAL,
+    packets         INTEGER,
+    bytes           INTEGER,
+    status          TEXT NOT NULL,      -- captured | converted | empty | classified | failed
+    csv_file        TEXT,
+    flows           INTEGER,
+    conversion_s    REAL,
+    prediction_ms   REAL,
+    pipeline_s      REAL,               -- window end -> detections stored
+    next_window_s   REAL,
+    error           TEXT,
+    updated_at      TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+CREATE TABLE IF NOT EXISTS detections (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    capture_id          INTEGER REFERENCES captures(id),
+    flow_id             TEXT,
+    timestamp           TEXT,
+    src_ip              TEXT,
+    src_port            INTEGER,
+    dst_ip              TEXT,
+    dst_port            INTEGER,
+    protocol            INTEGER,
+    predicted_label     INTEGER NOT NULL,
+    predicted_class     TEXT NOT NULL,
+    confidence          REAL NOT NULL,
+    is_malicious        INTEGER NOT NULL,
+    capture_file        TEXT,
+    source              TEXT NOT NULL,  -- dataset | pcap | live
+    processing_time_ms  REAL,
+    detected_at         TEXT NOT NULL,
+    true_label          INTEGER,
+    model               TEXT,
+    simulated           INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_det_detected_at ON detections(detected_at);
+CREATE INDEX IF NOT EXISTS idx_det_malicious ON detections(is_malicious);
+CREATE INDEX IF NOT EXISTS idx_det_capture ON detections(capture_id);
+
+-- Per-source flow bursts (src/detection/behavior.py)
+CREATE TABLE IF NOT EXISTS behavior_alerts (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    capture_id          INTEGER REFERENCES captures(id),
+    capture_file        TEXT,
+    alert_type          TEXT NOT NULL DEFAULT 'flow_burst',
+    src_ip              TEXT NOT NULL,
+    dst_ip              TEXT,
+    dst_port            INTEGER,
+    protocol            INTEGER,
+    flows               INTEGER,
+    rate_per_s          REAL,
+    window_s            REAL,
+    ml_malicious_flows  INTEGER,
+    ml_classes          TEXT,
+    detected_at         TEXT NOT NULL
+);
+
+-- Clearly labelled simulated inputs for testing the deception controller.
+-- Kept apart from detections so they can never enter ML statistics.
+CREATE TABLE IF NOT EXISTS simulated_events (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at      TEXT NOT NULL,
+    src_ip          TEXT,
+    attack_class    TEXT NOT NULL,
+    confidence      REAL NOT NULL,
+    count           INTEGER NOT NULL DEFAULT 1,
+    note            TEXT
+);
+
+-- MAPE-K knowledge
+CREATE TABLE IF NOT EXISTS decisions (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    cycle_id        INTEGER,
+    created_at      TEXT NOT NULL,
+    trigger         TEXT NOT NULL,      -- ml | behavior | simulated | manual | ttl | engagement
+    src_ip          TEXT,
+    attack_class    TEXT,
+    assessment      TEXT,               -- low | medium | high | benign | n/a
+    max_confidence  REAL,
+    evidence_count  INTEGER,
+    action          TEXT NOT NULL,      -- monitor | await_evidence | deploy | scale | refresh | remove | suppress_*
+    decoy_profile   TEXT,
+    decoy_name      TEXT,
+    result          TEXT,               -- planned | ok | failed | skipped
+    reason          TEXT NOT NULL,
+    evidence        TEXT,               -- JSON: detection / alert / event ids
+    simulated       INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_dec_created ON decisions(created_at);
+
+CREATE TABLE IF NOT EXISTS decoys (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    name            TEXT NOT NULL,      -- one row per lifecycle; a profile can be redeployed
+    profile         TEXT NOT NULL,
+    namespace       TEXT NOT NULL,
+    status          TEXT NOT NULL,      -- deploying | active | failed | removed | expired
+    replicas        INTEGER NOT NULL DEFAULT 1,
+    port            INTEGER,
+    service_ip      TEXT,
+    created_at      TEXT NOT NULL,
+    ready_at        TEXT,
+    deploy_seconds  REAL,
+    expires_at      TEXT,
+    removed_at      TEXT,
+    decision_id     INTEGER REFERENCES decisions(id),
+    detection_id    INTEGER,
+    simulated       INTEGER NOT NULL DEFAULT 0,
+    error           TEXT
+);
+
+CREATE TABLE IF NOT EXISTS interactions (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts                  TEXT NOT NULL,
+    decoy_name          TEXT NOT NULL,
+    decoy_profile       TEXT,
+    pod                 TEXT,
+    src_ip              TEXT,
+    src_port            INTEGER,
+    method              TEXT,
+    path                TEXT,
+    query               TEXT,
+    user_agent          TEXT,
+    status              INTEGER,
+    interaction_type    TEXT,
+    body_bytes          INTEGER,
+    decoy_id            INTEGER REFERENCES decoys(id),
+    decision_id         INTEGER,
+    detection_id        INTEGER,
+    collected_at        TEXT NOT NULL,
+    UNIQUE (pod, ts, src_ip, src_port, path)
+);
+CREATE INDEX IF NOT EXISTS idx_int_ts ON interactions(ts);
+
+CREATE TABLE IF NOT EXISTS kv (
+    key     TEXT PRIMARY KEY,
+    value   TEXT
+);
+"""
+
+DETECTION_COLUMNS = [
+    "flow_id", "timestamp", "src_ip", "src_port", "dst_ip", "dst_port", "protocol",
+    "predicted_label", "predicted_class", "confidence", "is_malicious", "capture_file",
+    "source", "processing_time_ms", "detected_at", "true_label", "model",
+]
+
+
+def db_path(cfg: dict[str, Any] | None = None) -> Path:
+    return project_path((cfg or load_config())["database"]["path"])
+
+
+@contextmanager
+def connect(path: Path | None = None) -> Iterator[sqlite3.Connection]:
+    path = path or db_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(path, timeout=30)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA foreign_keys=ON")
+    conn.executescript(SCHEMA)
+    try:
+        yield conn
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def _clean(v):
+    if v is None or v is pd.NA or (isinstance(v, float) and v != v):
+        return None
+    if hasattr(v, "item"):
+        return v.item()
+    return v
+
+
+def upsert_capture(conn: sqlite3.Connection, pcap_file: str, **fields) -> int:
+    fields = {k: _clean(v) for k, v in fields.items()}
+    row = conn.execute("SELECT id FROM captures WHERE pcap_file = ?", (pcap_file,)).fetchone()
+    if row is None:
+        fields.setdefault("status", "captured")
+        cols = ["pcap_file", *fields]
+        conn.execute(f"INSERT INTO captures ({', '.join(cols)}) VALUES ({', '.join('?' * len(cols))})",
+                     [pcap_file, *fields.values()])
+        return int(conn.execute("SELECT last_insert_rowid()").fetchone()[0])
+    if fields:
+        sets = ", ".join(f"{k} = ?" for k in fields)
+        conn.execute(f"UPDATE captures SET {sets}, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?",
+                     [*fields.values(), row["id"]])
+    return int(row["id"])
+
+
+def insert_detections(conn: sqlite3.Connection, pred: pd.DataFrame, capture_id: int | None = None,
+                      simulated: bool = False) -> int:
+    if pred.empty:
+        return 0
+    rows = [
+        (capture_id, *(_clean(r[c]) for c in DETECTION_COLUMNS), int(simulated))
+        for r in pred[DETECTION_COLUMNS].to_dict(orient="records")
+    ]
+    cols =["capture_id", *DETECTION_COLUMNS, "simulated"]
+    conn.executemany(f"INSERT INTO detections ({', '.join(cols)}) VALUES ({', '.join('?' * len(cols))})", rows)
+    return len(rows)
+
+
+def query_df(conn: sqlite3.Connection, sql: str, params: tuple = ()) -> pd.DataFrame:
+    return pd.read_sql_query(sql, conn, params=params)
+
+
+def insert_row(conn: sqlite3.Connection, table: str, **fields) -> int:
+    fields = {k: _clean(v) for k, v in fields.items()}
+    conn.execute(f"INSERT INTO {table} ({', '.join(fields)}) VALUES ({', '.join('?' * len(fields))})",
+                 list(fields.values()))
+    return int(conn.execute("SELECT last_insert_rowid()").fetchone()[0])
+
+
+def update_row(conn: sqlite3.Connection, table: str, row_id: int, **fields) -> None:
+    fields = {k: _clean(v) for k, v in fields.items()}
+    conn.execute(f"UPDATE {table} SET {', '.join(f'{k} = ?' for k in fields)} WHERE id = ?",
+                 [*fields.values(), row_id])
+
+
+def kv_get(conn: sqlite3.Connection, key: str, default: str | None = None) -> str | None:
+    row = conn.execute("SELECT value FROM kv WHERE key = ?", (key,)).fetchone()
+    return row["value"] if row else default
+
+
+def kv_set(conn: sqlite3.Connection, key: str, value: str) -> None:
+    conn.execute("INSERT INTO kv (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+                 (key, value))

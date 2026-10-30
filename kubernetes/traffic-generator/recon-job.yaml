@@ -1,0 +1,44 @@
+# On-demand, bounded reconnaissance-like scan of Node-RED (no exploitation).
+#   kubectl create -f kubernetes/traffic-generator/recon-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: traffic-recon-
+  namespace: ids-traffic
+  labels: {app: traffic-generator, mode: recon}
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 300
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels: {app: traffic-generator, mode: recon}
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: generator
+          image: python:3.13-alpine
+          command: ["python", "/app/traffic_generator.py"]
+          env:
+            - {name: MODE, value: recon}
+            - {name: PYTHONDONTWRITEBYTECODE, value: "1"}
+            - {name: RECON_REQUESTS, value: "300"}
+            - {name: RECON_DELAY, value: "0.2"}
+          resources:
+            requests: {cpu: 10m, memory: 32Mi}
+            limits: {cpu: 100m, memory: 64Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          volumeMounts:
+            - {name: script, mountPath: /app, readOnly: true}
+      volumes:
+        - name: script
+          configMap: {name: traffic-generator-script}

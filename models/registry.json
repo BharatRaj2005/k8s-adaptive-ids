@@ -1,0 +1,290 @@
+{
+  "lightgbm_dataset": {
+    "model": "lightgbm",
+    "label_policy": "dataset",
+    "split": "temporal",
+    "trained_at": "2026-10-30T17:15:38.796720+00:00",
+    "classes": 11,
+    "accuracy": 0.9243343653250774,
+    "f1_macro": 0.29207183009554427,
+    "f1_weighted": 0.9394224052152055,
+    "benign_holdout_fpr": 0.023094819270271804
+  },
+  "lightgbm_dataset_random": {
+    "model": "lightgbm",
+    "label_policy": "dataset",
+    "split": "random",
+    "trained_at": "2026-10-30T17:16:28.461866+00:00",
+    "classes": 11,
+    "accuracy": 0.9409907120743034,
+    "f1_macro": 0.28698768929191415,
+    "f1_weighted": 0.9490332735379315,
+    "benign_holdout_fpr": 0.022186914827214434
+  },
+  "extratrees_dataset": {
+    "model": "extratrees",
+    "label_policy": "dataset",
+    "split": "temporal",
+    "trained_at": "2026-10-30T17:11:28.548979+00:00",
+    "classes": 11,
+    "accuracy": 0.9661300309597524,
+    "f1_macro": 0.3136556012506326,
+    "f1_weighted": 0.9611168571933003,
+    "benign_holdout_fpr": 0.003404641661465131
+  },
+  "lightgbm_attack_focused": {
+    "model": "lightgbm",
+    "label_policy": "attack_focused",
+    "split": "temporal",
+    "trained_at": "2026-10-30T17:16:51.483363+00:00",
+    "classes": 3,
+    "accuracy": 0.9983434214718063,
+    "f1_macro": 0.9920977417260142,
+    "f1_weighted": 0.9983378177953414,
+    "benign_holdout_fpr": 0.0
+  },
+  "extratrees_attack_focused": {
+    "model": "extratrees",
+    "label_policy": "attack_focused",
+    "split": "temporal",
+    "trained_at": "2026-10-30T17:17:07.128981+00:00",
+    "classes": 3,
+    "accuracy": 0.9958585536795158,
+    "f1_macro": 0.869134384118227,
+    "f1_weighted": 0.9957621503519044,
+    "benign_holdout_fpr": 0.0
+  },
+  "pca_ae_nb_dataset": {
+    "model": "pca_ae_nb",
+    "label_policy": "dataset",
+    "split": "temporal",
+    "trained_at": "2026-10-30T17:17:53.635282+00:00",
+    "classes": 11,
+    "accuracy": 0.8728173374613003,
+    "f1_macro": 0.09678305018096628,
+    "f1_weighted": 0.8774068639624755,
+    "benign_holdout_fpr": 0.044544061737502125
+  },
+  "lightgbm_dataset_unweighted": {
+    "model": "lightgbm",
+    "label_policy": "dataset",
+    "split": "temporal",
+    "trained_at": "2026-10-30T17:11:09.998447+00:00",
+    "classes": 11,
+    "accuracy": 0.9100928792569659,
+    "f1_macro": 0.13936711696452847,
+    "f1_weighted": 0.9163716585118244,
+    "benign_holdout_fpr": 0.01100834137207059
+  },
+  "extratrees_dataset_random": {
+    "model": "extratrees",
+    "label_policy": "dataset",
+    "split": "random",
+    "trained_at": "2026-10-30T17:17:25.715805+00:00",
+    "classes": 11,
+    "accuracy": 0.9693498452012383,
+    "f1_macro": 0.3081964035348869,
+    "f1_weighted": 0.9637790895312339,
+    "benign_holdout_fpr": 0.003404641661465131
+  },
+  "extratrees_dataset_lab": {
+    "model": "extratrees",
+    "label_policy": "dataset",
+    "split": "temporal",
+    "trained_at": "2026-10-30T17:47:31.789906+00:00",
+    "classes": 11,
+    "accuracy": 0.9655108359133127,
+    "f1_macro": 0.2790563033789827,
+    "f1_weighted": 0.9601624653741561,
+    "benign_holdout_fpr": 0.0032911536060829596,
+    "lab_train_sets": [
+      "benign_train"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run1": {
+        "flows": 1006,
+        "benign_flows": 703,
+        "attack_flows": 303,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.0,
+        "attack_detected_correct_class": 0.0,
+        "attack_correct_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.0,
+        "attack_detected_correct_class": 0.0,
+        "attack_correct_conf_ge_0.9": 0.0
+      }
+    }
+  },
+  "lightgbm_dataset_lab": {
+    "model": "lightgbm",
+    "label_policy": "dataset",
+    "split": "temporal",
+    "trained_at": "2026-10-30T17:48:37.487210+00:00",
+    "classes": 11,
+    "accuracy": 0.9231578947368421,
+    "f1_macro": 0.29741124505422983,
+    "f1_weighted": 0.9386902722287414,
+    "benign_holdout_fpr": 0.0242864438517846,
+    "lab_train_sets": [
+      "benign_train"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.000689655172413793,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run1": {
+        "flows": 1006,
+        "benign_flows": 703,
+        "attack_flows": 303,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.0,
+        "attack_detected_correct_class": 0.0,
+        "attack_correct_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.0017667844522968198,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.0,
+        "attack_detected_correct_class": 0.0,
+        "attack_correct_conf_ge_0.9": 0.0
+      }
+    }
+  },
+  "extratrees_attack_focused_lab": {
+    "model": "extratrees",
+    "label_policy": "attack_focused",
+    "split": "temporal",
+    "trained_at": "2026-10-30T17:48:59.985801+00:00",
+    "classes": 3,
+    "accuracy": 0.9962408410321758,
+    "f1_macro": 0.8711067361595619,
+    "f1_weighted": 0.9961614406938899,
+    "benign_holdout_fpr": 0.0,
+    "lab_train_sets": [
+      "benign_train"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run1": {
+        "flows": 1006,
+        "benign_flows": 703,
+        "attack_flows": 303,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.0,
+        "attack_detected_correct_class": 0.0,
+        "attack_correct_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.0,
+        "attack_detected_correct_class": 0.0,
+        "attack_correct_conf_ge_0.9": 0.0
+      }
+    }
+  },
+  "lightgbm_attack_focused_lab": {
+    "model": "lightgbm",
+    "label_policy": "attack_focused",
+    "split": "temporal",
+    "trained_at": "2026-10-30T17:49:31.524751+00:00",
+    "classes": 3,
+    "accuracy": 0.9976425613252629,
+    "f1_macro": 0.8781476141899258,
+    "f1_weighted": 0.9976052741033624,
+    "benign_holdout_fpr": 0.0,
+    "lab_train_sets": [
+      "benign_train"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run1": {
+        "flows": 1006,
+        "benign_flows": 703,
+        "attack_flows": 303,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.0,
+        "attack_detected_correct_class": 0.0,
+        "attack_correct_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.0,
+        "attack_detected_correct_class": 0.0,
+        "attack_correct_conf_ge_0.9": 0.0
+      }
+    }
+  }
+}

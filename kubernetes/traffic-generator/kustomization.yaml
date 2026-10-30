@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# Apply kubernetes/namespaces/ids-traffic.yaml first (kustomize cannot load files outside this directory).
+namespace: ids-traffic
+resources:
+  - networkpolicy.yaml
+  - benign-deployment.yaml
+configMapGenerator:
+  - name: traffic-generator-script
+    files:
+      - traffic_generator.py
+generatorOptions:
+  # Stable name so the on-demand recon Job (recon-job.yaml) can reference it.
+  disableNameSuffixHash: true

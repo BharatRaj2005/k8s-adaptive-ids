@@ -1,0 +1,16 @@
+{
+  "name": "benign_eval_a",
+  "created_at": "2026-10-30T17:37:53.192538+00:00",
+  "from": "2026-10-30T17:30:00Z",
+  "to": "2026-10-30T17:30:40Z",
+  "kind": "benign",
+  "attacker_ips": [],
+  "target_port": null,
+  "attack_label": null,
+  "note": "benign generator + cluster background only",
+  "files": [
+    "win_cni0_20261030T173004_533278.pcap_Flow.csv",
+    "win_cni0_20261030T173014_637968.pcap_Flow.csv",
+    "win_cni0_20261030T173024_709646.pcap_Flow.csv"
+  ]
+}

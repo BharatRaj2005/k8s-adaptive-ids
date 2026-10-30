@@ -1,0 +1,45 @@
+{
+  "status": "stopped",
+  "pid": 39836,
+  "interface": "cni0",
+  "started_at": "2026-10-30T18:37:19.602219+00:00",
+  "processing": true,
+  "window_limit": 6,
+  "stopped_at": "2026-10-30T18:37:53.569358+00:00",
+  "windows": 4,
+  "processed": 4,
+  "failed": 0,
+  "last_window": {
+    "pcap": "/home/bharat_raj/k8s-adaptive-ids/captures/pcap/win_cni0_20261030T183749_891037.pcap",
+    "interface": "cni0",
+    "started_at": "2026-10-30T18:37:49.891037+00:00",
+    "ended_at": "2026-10-30T18:37:52.637650+00:00",
+    "duration_s": 2.7454793180004344,
+    "packets": 113,
+    "dropped": 0,
+    "bytes": 20564,
+    "error": null
+  },
+  "last_result": {
+    "pcap": "win_cni0_20261030T183749_891037.pcap",
+    "conversion": {
+      "pcap": "/home/bharat_raj/k8s-adaptive-ids/captures/pcap/win_cni0_20261030T183749_891037.pcap",
+      "csv": "/home/bharat_raj/k8s-adaptive-ids/captures/flows/win_cni0_20261030T183749_891037.pcap_Flow.csv",
+      "status": "converted",
+      "flows": 20,
+      "seconds": 0.8035724429992115,
+      "error": null
+    },
+    "capture_id": 121,
+    "flow_bursts": 0,
+    "status": "classified",
+    "detections": 20,
+    "malicious": 0,
+    "classes": {
+      "Benign": 20
+    },
+    "prediction_ms": 34.65553899968654,
+    "pipeline_s": 0.9134704469997814
+  },
+  "updated_at": "2026-10-30T18:37:53.569646+00:00"
+}

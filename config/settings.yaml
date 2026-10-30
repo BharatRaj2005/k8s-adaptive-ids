@@ -1,0 +1,216 @@
+# Central configuration for the Adaptive IDS prototype.
+# Relative paths are resolved against the project root.
+
+paths:
+  dataset_dir: data/raw/kubernetes-dataset
+  processed_dir: data/processed
+  models_dir: models
+  reports_dir: reports
+  logs_dir: logs
+  pcap_dir: captures/pcap
+  flows_dir: captures/flows
+
+dataset:
+  # Per-capture flow files. benign.csv / malicious.csv in the repository root are
+  # exact concatenations of these files, so they are not loaded (avoids double counting).
+  capture_globs:
+    - benign/*.pcap_Flow.csv
+    - malicious/*.pcap_Flow.csv
+  label_column: Label
+  # Filename prefix -> expected label. Validated against the Label column on load.
+  expected_capture_labels:
+    background_traffic: 0
+    grafana: 0
+    nodered: 0
+    cve202013379: 1
+    reconnaissance: 2
+    rce-reverse-shell: 3
+    attack-pods: 4
+    cve202143798: 5
+    cve201920933: 6
+    cve202130465: 7
+    cve202125741: 8
+    cve202223648: 9
+    cve20195736: 10
+  # Pure cluster-background capture, used to learn infrastructure service signatures.
+  background_capture_prefix: background_traffic
+
+classes:
+  0: Benign
+  1: CVE-2020-13379
+  2: Node-RED Reconnaissance
+  3: Node-RED RCE
+  4: Node-RED Container Escape
+  5: CVE-2021-43798
+  6: CVE-2019-20933
+  7: CVE-2021-30465
+  8: CVE-2021-25741
+  9: CVE-2022-23648
+  10: CVE-2019-5736
+
+benign_label: 0
+
+features:
+  # Removed before training: identifiers, addresses and timestamps would let the
+  # model memorise capture-specific hosts/times (leakage). Src Port is mostly an
+  # ephemeral client port. Dst Port and Protocol are kept as service indicators.
+  drop_columns:
+    - Flow ID
+    - Src IP
+    - Dst IP
+    - Timestamp
+    - Src Port
+  # Columns whose meaning differs between CICFlowMeter versions. The dataset's
+  # "Total TCP Flow Time" was renamed to "Total Connection Flow Time" and extended
+  # to UDP in the local CICFlowMeter build (commit 60a7573), so it is not comparable.
+  exclude_columns:
+    - Total TCP Flow Time
+  # Optional renames applied when reading CSVs: {name in file: canonical name}.
+  column_aliases: {}
+  # Drop one of any pair of training features with |Pearson r| above this value.
+  correlation_threshold: 0.99
+  # Refuse to predict when more than this fraction of model features is missing.
+  max_missing_feature_fraction: 0.2
+
+training:
+  default_model: lightgbm
+  # dataset        : labels exactly as published (comparable to prior work)
+  # attack_focused : drop flows in attack captures that match benign infrastructure
+  #                  service signatures, then drop classes with too few samples left
+  label_policy: dataset
+  # temporal : per capture, earliest (1 - test_fraction) of flows -> train, rest -> test
+  # random   : stratified random split (optimistic; reported for comparison only)
+  split: temporal
+  test_fraction: 0.25
+  random_state: 42
+  attack_focused:
+    min_service_port_count: 20
+    min_class_samples: 10
+  # A whole benign capture removed from training to measure false positives on
+  # previously unseen benign traffic. Set to null to skip.
+  benign_holdout_capture: grafana_20230320T1710
+  latency_samples: 200
+
+models:
+  lightgbm:
+    n_estimators: 400
+    learning_rate: 0.05
+    num_leaves: 31
+    min_child_samples: 5
+    subsample: 0.8
+    subsample_freq: 1
+    colsample_bytree: 0.8
+    class_weight: balanced
+    n_jobs: -1
+    verbose: -1
+  extratrees:
+    n_estimators: 300
+    min_samples_leaf: 1
+    class_weight: balanced
+    n_jobs: -1
+  pca_ae_nb:
+    pca_components: 20
+    hidden_units: 32
+    bottleneck_units: 8
+    max_iter: 80
+
+detection:
+  # Directory name under models/ used for predictions. extratrees_dataset_lab =
+  # ExtraTrees on the dataset plus verified benign traffic from this lab
+  # (benign_train); same dataset test metrics as extratrees_dataset, ~0 % false
+  # positives on held-out lab traffic (reports/model_evaluation.md).
+  active_model: extratrees_dataset_lab
+
+# Per-source flow-burst detector (src/detection/behavior.py). Lab measurement:
+# recon pod 28-57 flows / 10 s window to Node-RED; benign generator 0-3; kubelet 1.
+behavior:
+  min_flows: 15
+  min_rate_per_s: 1.0
+  protocols: [6]
+  ignore_sources: []
+
+database:
+  path: data/ids.sqlite
+
+capture:
+  # cni0 is the K3s pod bridge: validated to carry all pod-to-pod traffic with
+  # Ethernet framing. "any" duplicates packets and uses Linux cooked framing,
+  # which CICFlowMeter misparses.
+  interface: cni0
+  tcpdump: /usr/bin/tcpdump
+  # Optional BPF filter, passed to tcpdump as a single argument (no shell).
+  bpf_filter: ""
+  snaplen: 0
+  # Adaptive observation window (seconds). The packet rate of the previous
+  # window selects the next one: busy -> shorter, quiet -> longer.
+  window:
+    default_seconds: 10
+    min_seconds: 5
+    max_seconds: 30
+    high_rate_pps: 200
+    low_rate_pps: 20
+  # Keep at most this many PCAP files (oldest processed ones are deleted first).
+  retain_pcaps: 500
+  state_file: captures/capture_state.json
+  pid_file: captures/capture.pid
+
+deception:
+  namespace: ids-deception
+  # Least-privilege identity (kubernetes/rbac/); built by kubernetes/rbac/create-kubeconfig.sh
+  kubeconfig: config/ids-controller.kubeconfig
+  template: kubernetes/deception/decoy-template.yaml
+  enabled_on_start: false
+  loop_interval_seconds: 5
+  max_active_decoys: 4
+  max_replicas: 3
+  decoy_ttl_seconds: 600          # extended on every interaction ...
+  max_lifetime_seconds: 3600      # ... but never beyond this
+  cooldown_seconds: 15            # minimum gap between any two new deployments
+  redeploy_cooldown_seconds: 60   # before the same profile is deployed again after removal
+  deploy_timeout_seconds: 120
+  # Detection sources the controller acts on (dataset = replayed historical flows).
+  act_on_sources: [pcap, live, dataset]
+  thresholds:
+    high_confidence: 0.9          # act after policy validation
+    medium_confidence: 0.6        # act only with repeated or corroborating evidence
+    repeat_count: 3
+    repeat_window_seconds: 300
+  engagement:
+    window_seconds: 300
+    scale_up_interactions: 20     # interactions in the window -> one more replica
+  # Profiles whose density (replica count) grows with repeated evidence.
+  scale_on_repeat: [http-recon]
+  profiles:
+    nodered: {port: 1880, description: Simulated flow-editor service}
+    grafana: {port: 3000, description: Simulated metrics dashboard}
+    influxdb: {port: 8086, description: Simulated time-series database API}
+    http-recon: {port: 80, description: Generic web portal for reconnaissance}
+    k8s-inventory: {port: 8080, description: Simulated Kubernetes resource inventory}
+    container-env: {port: 2375, description: Simulated container runtime inventory}
+  # ML attack class -> decoy profiles (first = preferred; reordered by past engagement)
+  attack_policy:
+    Node-RED Reconnaissance: [http-recon, nodered]
+    Node-RED RCE: [nodered]
+    Node-RED Container Escape: [container-env]
+    CVE-2020-13379: [grafana]
+    CVE-2021-43798: [grafana]
+    CVE-2019-20933: [influxdb]
+    CVE-2021-30465: [container-env]
+    CVE-2021-25741: [k8s-inventory]
+    CVE-2022-23648: [container-env, k8s-inventory]
+    CVE-2019-5736: [container-env]
+  # Behavioural flow bursts -> profiles by targeted service port
+  behavior_policy:
+    "1880": [http-recon, nodered]
+    "3000": [grafana]
+    "8086": [influxdb]
+    default: [http-recon]
+
+cicflowmeter:
+  # Existing local build of the GintsEngelen CICFlowMeter fork (same tool the dataset used).
+  home: ~/CICFlowMeter
+  jar: target/CICFlowMeterV3-0.0.4-SNAPSHOT.jar
+  jnetpcap_dir: jnetpcap/linux/jnetpcap-1.4.r1425
+  jnetpcap_maven_jar: ~/.m2/repository/org/jnetpcap/jnetpcap/1.4.1/jnetpcap-1.4.1.jar
+  java: java
+  timeout_seconds: 300

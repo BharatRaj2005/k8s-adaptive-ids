@@ -1,0 +1,16 @@
+.venv/
+.cache/
+vendor/
+__pycache__/
+*.pyc
+.pytest_cache/
+data/raw/kubernetes-dataset/
+data/processed/
+captures/pcap/
+captures/flows/
+models/*/
+logs/
+.env
+config/*.kubeconfig
+data/ids.sqlite*
+backups/

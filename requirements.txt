@@ -1,0 +1,23 @@
+# Core data / ML (Priority 1)
+numpy>=2.1
+pandas>=2.2
+scikit-learn>=1.6
+lightgbm>=4.5
+joblib>=1.4
+pyyaml>=6.0
+
+# Backend / Kubernetes integration (Priority 2-4)
+fastapi>=0.115
+uvicorn[standard]>=0.32
+pydantic>=2.9
+kubernetes>=31.0
+requests>=2.32
+psutil>=6.0
+
+# Frontend (Priority 4)
+streamlit>=1.40
+plotly>=5.24
+
+# Testing
+pytest>=8.3
+httpx>=0.27

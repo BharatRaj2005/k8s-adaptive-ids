@@ -1,0 +1,45 @@
+# On-demand visit of deployed decoys (demonstrates interaction logging).
+#   kubectl create -f kubernetes/traffic-generator/decoy-probe-job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: traffic-decoy-probe-
+  namespace: ids-traffic
+  labels: {app: traffic-generator, mode: decoy}
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 300
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels: {app: traffic-generator, mode: decoy}
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: generator
+          image: python:3.13-alpine
+          command: ["python", "/app/traffic_generator.py"]
+          env:
+            - {name: MODE, value: decoy}
+            - {name: PYTHONDONTWRITEBYTECODE, value: "1"}
+            - {name: RECON_DELAY, value: "0.2"}
+            - name: DECOY_URLS
+              value: "http://decoy-http-recon.ids-deception.svc.cluster.local,http://decoy-nodered.ids-deception.svc.cluster.local:1880"
+          resources:
+            requests: {cpu: 10m, memory: 32Mi}
+            limits: {cpu: 100m, memory: 64Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          volumeMounts:
+            - {name: script, mountPath: /app, readOnly: true}
+      volumes:
+        - name: script
+          configMap: {name: traffic-generator-script}

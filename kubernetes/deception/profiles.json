@@ -1,0 +1,63 @@
+{
+  "nodered": {
+    "server_header": "Express",
+    "routes": {
+      "/": {"status": 200, "type": "text/html", "body": "<!doctype html><html><head><title>Flow Editor</title></head><body><div id=\"editor\">Loading flow editor...</div></body></html>"},
+      "/settings": {"status": 200, "type": "application/json", "body": "{\"editorTheme\":{\"projects\":{\"enabled\":false}},\"flowFilePretty\":true}"},
+      "/flows": {"status": 200, "type": "application/json", "body": "[{\"id\":\"tab-01\",\"type\":\"tab\",\"label\":\"Sensor ingest\"},{\"id\":\"node-01\",\"type\":\"inject\",\"z\":\"tab-01\",\"name\":\"poll\"}]"},
+      "/nodes": {"status": 200, "type": "application/json", "body": "[{\"id\":\"core/inject\",\"enabled\":true},{\"id\":\"core/debug\",\"enabled\":true}]"},
+      "/auth/login": {"status": 200, "type": "application/json", "body": "{\"type\":\"credentials\",\"prompts\":[{\"id\":\"username\",\"type\":\"text\"},{\"id\":\"password\",\"type\":\"password\"}]}"}
+    }
+  },
+  "grafana": {
+    "server_header": "nginx",
+    "routes": {
+      "/": {"status": 200, "type": "text/html", "body": "<!doctype html><html><head><title>Metrics Dashboard</title></head><body><form action=\"/login\" method=\"post\">Sign in</form></body></html>"},
+      "/login": {"status": 200, "type": "text/html", "body": "<!doctype html><html><head><title>Metrics Dashboard - Sign in</title></head><body><form method=\"post\">Sign in</form></body></html>"},
+      "/api/health": {"status": 200, "type": "application/json", "body": "{\"database\":\"ok\"}"},
+      "/api/dashboards/home": {"status": 401, "type": "application/json", "body": "{\"message\":\"Unauthorized\"}"}
+    }
+  },
+  "influxdb": {
+    "server_header": "nginx",
+    "routes": {
+      "/ping": {"status": 204, "type": "text/plain", "body": ""},
+      "/health": {"status": 200, "type": "application/json", "body": "{\"status\":\"pass\",\"message\":\"ready for queries and writes\"}"},
+      "/query": {"status": 401, "type": "application/json", "body": "{\"error\":\"authorization required\"}"},
+      "/write": {"status": 401, "type": "application/json", "body": "{\"error\":\"authorization required\"}"}
+    }
+  },
+  "http-recon": {
+    "server_header": "nginx",
+    "routes": {
+      "/": {"status": 200, "type": "text/html", "body": "<!doctype html><html><head><title>Operations Portal</title></head><body><a href=\"/login\">Staff login</a></body></html>"},
+      "/login": {"status": 200, "type": "text/html", "body": "<!doctype html><html><head><title>Operations Portal - Login</title></head><body><form method=\"post\">Login</form></body></html>"},
+      "/admin": {"status": 302, "type": "text/html", "body": "<a href=\"/login\">Moved</a>"},
+      "/api": {"status": 200, "type": "application/json", "body": "{\"service\":\"ops-portal\",\"endpoints\":[\"/api/status\",\"/api/reports\"]}"},
+      "/api/status": {"status": 200, "type": "application/json", "body": "{\"status\":\"ok\",\"uptime_s\":86400}"},
+      "/api/reports": {"status": 401, "type": "application/json", "body": "{\"error\":\"login required\"}"},
+      "/robots.txt": {"status": 200, "type": "text/plain", "body": "User-agent: *\nDisallow: /admin\nDisallow: /backup\n"},
+      "/backup": {"status": 403, "type": "text/html", "body": "<h1>403 Forbidden</h1>"}
+    }
+  },
+  "k8s-inventory": {
+    "server_header": "nginx",
+    "not_found": "{\"kind\":\"Status\",\"apiVersion\":\"v1\",\"status\":\"Failure\",\"reason\":\"NotFound\",\"code\":404}",
+    "routes": {
+      "/version": {"status": 200, "type": "application/json", "body": "{\"major\":\"1\",\"minor\":\"30\",\"platform\":\"linux/amd64\"}"},
+      "/api": {"status": 200, "type": "application/json", "body": "{\"kind\":\"APIVersions\",\"versions\":[\"v1\"]}"},
+      "/api/v1/namespaces": {"status": 200, "type": "application/json", "body": "{\"kind\":\"NamespaceList\",\"items\":[{\"metadata\":{\"name\":\"default\"}},{\"metadata\":{\"name\":\"payments\"}},{\"metadata\":{\"name\":\"reporting\"}}]}"},
+      "/api/v1/pods": {"status": 200, "type": "application/json", "body": "{\"kind\":\"PodList\",\"items\":[{\"metadata\":{\"name\":\"reporting-worker-7c9f\",\"namespace\":\"reporting\"},\"status\":{\"phase\":\"Running\"}}]}"},
+      "/api/v1/secrets": {"status": 403, "type": "application/json", "body": "{\"kind\":\"Status\",\"apiVersion\":\"v1\",\"status\":\"Failure\",\"reason\":\"Forbidden\",\"code\":403}"}
+    }
+  },
+  "container-env": {
+    "server_header": "nginx",
+    "routes": {
+      "/version": {"status": 200, "type": "application/json", "body": "{\"ApiVersion\":\"1.43\",\"Os\":\"linux\",\"Arch\":\"amd64\"}"},
+      "/info": {"status": 200, "type": "application/json", "body": "{\"Containers\":3,\"ContainersRunning\":2,\"Images\":5,\"OperatingSystem\":\"Linux\"}"},
+      "/containers/json": {"status": 200, "type": "application/json", "body": "[{\"Id\":\"a1b2c3d4e5f6\",\"Names\":[\"/report-builder\"],\"State\":\"running\"},{\"Id\":\"0f9e8d7c6b5a\",\"Names\":[\"/cache\"],\"State\":\"running\"}]"},
+      "/images/json": {"status": 200, "type": "application/json", "body": "[{\"Id\":\"sha256:4c1a\",\"RepoTags\":[\"report-builder:2.3\"]}]"}
+    }
+  }
+}
