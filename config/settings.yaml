@@ -50,6 +50,55 @@ classes:
 
 benign_label: 0
 
+labeling:
+  # Evidence-based per-flow labels (src/preprocessing/labeling.py). The published
+  # dataset labels every flow of an attack capture with the attack class, although
+  # each capture is a whole-node capture dominated by cluster background. Each flow
+  # of an attack capture is instead labelled
+  #   attack     - matches the scenario's documented attack vector (below)
+  #   background - an infrastructure service seen in the pure background capture,
+  #                or an endpoint/service tuple seen in a benign capture, and not
+  #                involving any endpoint of the attack
+  #   ambiguous  - neither; kept for analysis, never used for supervised training
+  # Application service ports of the target apps. A port only counts as attack
+  # evidence for a scenario that targets that application (target_ports).
+  application_ports: [1880, 3000, 8086]
+  # Infrastructure (protocol:port) signatures must occur at least this often in the
+  # training part of the background capture.
+  background_min_service_count: 20
+  # What to do with confirmed background flows of attack captures: benign | exclude
+  background_action: benign
+  # Classes with fewer attack-evidence flows than this are not trained (reported as
+  # insufficient evidence); the 11-class mapping itself is unchanged.
+  min_class_flows: 10
+  # observability: network        - the attack itself produces network flows
+  #                kubernetes_api - needs API-server telemetry (not captured here)
+  #                host_runtime   - happens inside a node/container runtime
+  # target_ports:   the attacked application's service port(s), from the scenario
+  # post_compromise: outbound connections opened by the attacked pod count as attack
+  #                  evidence when that pod never opens such a connection in benign data
+  scenarios:
+    cve202013379:      {observability: network, target_app: grafana, target_ports: [3000], post_compromise: false,
+                        description: "Grafana avatar SSRF"}
+    reconnaissance:    {observability: network, target_app: nodered, target_ports: [1880], post_compromise: false,
+                        description: "Scanning/enumeration of Node-RED"}
+    rce-reverse-shell: {observability: network, target_app: nodered, target_ports: [1880], post_compromise: true,
+                        description: "Node-RED code execution with a reverse shell"}
+    attack-pods:       {observability: host_runtime, target_app: nodered, target_ports: [1880], post_compromise: true,
+                        description: "Container escape after Node-RED compromise; only the initial-access chain is on the network"}
+    cve202143798:      {observability: network, target_app: grafana, target_ports: [3000], post_compromise: false,
+                        description: "Grafana plugin path traversal"}
+    cve201920933:      {observability: network, target_app: influxdb, target_ports: [8086], post_compromise: false,
+                        description: "InfluxDB authentication bypass"}
+    cve202130465:      {observability: host_runtime, target_app: null, target_ports: [], post_compromise: false,
+                        description: "runc mount-destination symlink race"}
+    cve202125741:      {observability: kubernetes_api, target_app: null, target_ports: [], post_compromise: false,
+                        description: "kubelet subPath symlink exchange (pod spec via the API server, effect on the host)"}
+    cve202223648:      {observability: host_runtime, target_app: null, target_ports: [], post_compromise: false,
+                        description: "containerd image-volume path traversal"}
+    cve20195736:       {observability: host_runtime, target_app: null, target_ports: [], post_compromise: false,
+                        description: "runc /proc/self/exe overwrite"}
+
 features:
   # Removed before training: identifiers, addresses and timestamps would let the
   # model memorise capture-specific hosts/times (leakage). Src Port is mostly an

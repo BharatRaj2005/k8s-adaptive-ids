@@ -1,0 +1,552 @@
+{
+  "generated_at": "2026-10-30T19:10:19.488755+00:00",
+  "flows": 64599,
+  "features": 80,
+  "captures": [
+    {
+      "capture": "attack-pods_20230319T1712",
+      "label": 4,
+      "flows": 163,
+      "start": "2023-03-19 14:12:11.002690",
+      "seconds": 100.7,
+      "attack": 11,
+      "background": 152,
+      "ambiguous": 0,
+      "observability": "host_runtime"
+    },
+    {
+      "capture": "background_traffic_20230319T1802",
+      "label": 0,
+      "flows": 5297,
+      "start": "2023-03-19 15:02:18.745393",
+      "seconds": 3597.6,
+      "attack": 0,
+      "background": 0,
+      "ambiguous": 0,
+      "observability": "benign"
+    },
+    {
+      "capture": "cve201920933_20230309T0438",
+      "label": 6,
+      "flows": 193,
+      "start": "2023-03-09 01:38:31.052690",
+      "seconds": 134.2,
+      "attack": 17,
+      "background": 176,
+      "ambiguous": 0,
+      "observability": "network"
+    },
+    {
+      "capture": "cve20195736_20230319T1518",
+      "label": 10,
+      "flows": 48,
+      "start": "2023-03-19 12:18:51.002620",
+      "seconds": 27.2,
+      "attack": 0,
+      "background": 48,
+      "ambiguous": 0,
+      "observability": "host_runtime"
+    },
+    {
+      "capture": "cve202013379_20230318T2159",
+      "label": 1,
+      "flows": 56,
+      "start": "2023-03-18 18:59:38.745441",
+      "seconds": 30.2,
+      "attack": 2,
+      "background": 52,
+      "ambiguous": 2,
+      "observability": "network"
+    },
+    {
+      "capture": "cve202125741_20230319T1549",
+      "label": 8,
+      "flows": 824,
+      "start": "2023-03-19 12:49:06.943934",
+      "seconds": 554.1,
+      "attack": 0,
+      "background": 824,
+      "ambiguous": 0,
+      "observability": "kubernetes_api"
+    },
+    {
+      "capture": "cve202130465_20230319T1601",
+      "label": 7,
+      "flows": 131,
+      "start": "2023-03-19 13:01:13.871568",
+      "seconds": 85.6,
+      "attack": 0,
+      "background": 131,
+      "ambiguous": 0,
+      "observability": "host_runtime"
+    },
+    {
+      "capture": "cve202143798_20230309T0401",
+      "label": 5,
+      "flows": 36,
+      "start": "2023-03-09 01:01:19.073584",
+      "seconds": 20.0,
+      "attack": 1,
+      "background": 35,
+      "ambiguous": 0,
+      "observability": "network"
+    },
+    {
+      "capture": "cve202223648_20230319T1524",
+      "label": 9,
+      "flows": 34,
+      "start": "2023-03-19 12:25:01.002416",
+      "seconds": 17.7,
+      "attack": 0,
+      "background": 34,
+      "ambiguous": 0,
+      "observability": "host_runtime"
+    },
+    {
+      "capture": "grafana_20230320T1603",
+      "label": 0,
+      "flows": 10956,
+      "start": "2023-03-20 13:03:27.557760",
+      "seconds": 3221.2,
+      "attack": 0,
+      "background": 0,
+      "ambiguous": 0,
+      "observability": "benign"
+    },
+    {
+      "capture": "grafana_20230320T1710",
+      "label": 0,
+      "flows": 17623,
+      "start": "2023-03-20 14:10:48.745205",
+      "seconds": 2477.1,
+      "attack": 0,
+      "background": 0,
+      "ambiguous": 0,
+      "observability": "benign"
+    },
+    {
+      "capture": "nodered_20230320T1759",
+      "label": 0,
+      "flows": 26595,
+      "start": "2023-03-20 14:59:51.621136",
+      "seconds": 4300.6,
+      "attack": 0,
+      "background": 0,
+      "ambiguous": 0,
+      "observability": "benign"
+    },
+    {
+      "capture": "rce-reverse-shell_20230319T1710",
+      "label": 3,
+      "flows": 168,
+      "start": "2023-03-19 14:10:03.388388",
+      "seconds": 103.1,
+      "attack": 10,
+      "background": 158,
+      "ambiguous": 0,
+      "observability": "network"
+    },
+    {
+      "capture": "reconnaissance_20230319T1704",
+      "label": 2,
+      "flows": 2475,
+      "start": "2023-03-19 14:04:06.200734",
+      "seconds": 175.9,
+      "attack": 2206,
+      "background": 269,
+      "ambiguous": 0,
+      "observability": "network"
+    }
+  ],
+  "per_class": [
+    {
+      "label": 0,
+      "name": "Benign",
+      "original_flows": 60471,
+      "attack_flows": 0,
+      "direct": 0,
+      "post_compromise": 0,
+      "background_flows": 0,
+      "ambiguous_flows": 0,
+      "label_quality": 1.0,
+      "observability": "benign",
+      "trainable": "True"
+    },
+    {
+      "label": 1,
+      "name": "CVE-2020-13379",
+      "original_flows": 56,
+      "attack_flows": 2,
+      "direct": 2,
+      "post_compromise": 0,
+      "background_flows": 52,
+      "ambiguous_flows": 2,
+      "label_quality": 0.03571428571428571,
+      "observability": "network",
+      "trainable": false
+    },
+    {
+      "label": 2,
+      "name": "Node-RED Reconnaissance",
+      "original_flows": 2475,
+      "attack_flows": 2206,
+      "direct": 2206,
+      "post_compromise": 0,
+      "background_flows": 269,
+      "ambiguous_flows": 0,
+      "label_quality": 0.8913131313131313,
+      "observability": "network",
+      "trainable": true
+    },
+    {
+      "label": 3,
+      "name": "Node-RED RCE",
+      "original_flows": 168,
+      "attack_flows": 10,
+      "direct": 1,
+      "post_compromise": 9,
+      "background_flows": 158,
+      "ambiguous_flows": 0,
+      "label_quality": 0.05952380952380952,
+      "observability": "network",
+      "trainable": true
+    },
+    {
+      "label": 4,
+      "name": "Node-RED Container Escape",
+      "original_flows": 163,
+      "attack_flows": 11,
+      "direct": 3,
+      "post_compromise": 8,
+      "background_flows": 152,
+      "ambiguous_flows": 0,
+      "label_quality": 0.06748466257668712,
+      "observability": "host_runtime",
+      "trainable": true
+    },
+    {
+      "label": 5,
+      "name": "CVE-2021-43798",
+      "original_flows": 36,
+      "attack_flows": 1,
+      "direct": 1,
+      "post_compromise": 0,
+      "background_flows": 35,
+      "ambiguous_flows": 0,
+      "label_quality": 0.027777777777777776,
+      "observability": "network",
+      "trainable": false
+    },
+    {
+      "label": 6,
+      "name": "CVE-2019-20933",
+      "original_flows": 193,
+      "attack_flows": 17,
+      "direct": 17,
+      "post_compromise": 0,
+      "background_flows": 176,
+      "ambiguous_flows": 0,
+      "label_quality": 0.08808290155440414,
+      "observability": "network",
+      "trainable": true
+    },
+    {
+      "label": 7,
+      "name": "CVE-2021-30465",
+      "original_flows": 131,
+      "attack_flows": 0,
+      "direct": 0,
+      "post_compromise": 0,
+      "background_flows": 131,
+      "ambiguous_flows": 0,
+      "label_quality": 0.0,
+      "observability": "host_runtime",
+      "trainable": false
+    },
+    {
+      "label": 8,
+      "name": "CVE-2021-25741",
+      "original_flows": 824,
+      "attack_flows": 0,
+      "direct": 0,
+      "post_compromise": 0,
+      "background_flows": 824,
+      "ambiguous_flows": 0,
+      "label_quality": 0.0,
+      "observability": "kubernetes_api",
+      "trainable": false
+    },
+    {
+      "label": 9,
+      "name": "CVE-2022-23648",
+      "original_flows": 34,
+      "attack_flows": 0,
+      "direct": 0,
+      "post_compromise": 0,
+      "background_flows": 34,
+      "ambiguous_flows": 0,
+      "label_quality": 0.0,
+      "observability": "host_runtime",
+      "trainable": false
+    },
+    {
+      "label": 10,
+      "name": "CVE-2019-5736",
+      "original_flows": 48,
+      "attack_flows": 0,
+      "direct": 0,
+      "post_compromise": 0,
+      "background_flows": 48,
+      "ambiguous_flows": 0,
+      "label_quality": 0.0,
+      "observability": "host_runtime",
+      "trainable": false
+    }
+  ],
+  "supported_attack_classes": [
+    2,
+    3,
+    4,
+    6
+  ],
+  "attack_evidence_counts": {
+    "1": 2,
+    "2": 2206,
+    "3": 10,
+    "4": 11,
+    "5": 1,
+    "6": 17,
+    "7": 0,
+    "8": 0,
+    "9": 0,
+    "10": 0
+  },
+  "min_class_flows": 10,
+  "background_action": "benign",
+  "application_port_idle_check": {
+    "attack-pods_20230319T1712": {
+      "3000": 0,
+      "8086": 0
+    },
+    "cve201920933_20230309T0438": {
+      "1880": 0,
+      "3000": 0
+    },
+    "cve20195736_20230319T1518": {
+      "1880": 0,
+      "3000": 0,
+      "8086": 0
+    },
+    "cve202013379_20230318T2159": {
+      "1880": 0,
+      "8086": 0
+    },
+    "cve202125741_20230319T1549": {
+      "1880": 0,
+      "3000": 0,
+      "8086": 0
+    },
+    "cve202130465_20230319T1601": {
+      "1880": 0,
+      "3000": 0,
+      "8086": 0
+    },
+    "cve202143798_20230309T0401": {
+      "1880": 0,
+      "8086": 0
+    },
+    "cve202223648_20230319T1524": {
+      "1880": 0,
+      "3000": 0,
+      "8086": 0
+    },
+    "rce-reverse-shell_20230319T1710": {
+      "3000": 0,
+      "8086": 0
+    },
+    "reconnaissance_20230319T1704": {
+      "3000": 0,
+      "8086": 0
+    }
+  },
+  "attack_intervals": {
+    "attack-pods_20230319T1712": {
+      "first": "2023-03-19 14:12:16.386306",
+      "last": "2023-03-19 14:13:27.362006",
+      "seconds": 70.9757,
+      "flows": 11
+    },
+    "cve201920933_20230309T0438": {
+      "first": "2023-03-09 01:38:37.412432",
+      "last": "2023-03-09 01:40:41.143071",
+      "seconds": 123.730639,
+      "flows": 17
+    },
+    "cve202013379_20230318T2159": {
+      "first": "2023-03-18 18:59:39.991179",
+      "last": "2023-03-18 18:59:41.783662",
+      "seconds": 1.792483,
+      "flows": 2
+    },
+    "cve202143798_20230309T0401": {
+      "first": "2023-03-09 01:01:35.665870",
+      "last": "2023-03-09 01:01:35.665870",
+      "seconds": 0.0,
+      "flows": 1
+    },
+    "rce-reverse-shell_20230319T1710": {
+      "first": "2023-03-19 14:10:09.809277",
+      "last": "2023-03-19 14:11:42.588272",
+      "seconds": 92.778995,
+      "flows": 10
+    },
+    "reconnaissance_20230319T1704": {
+      "first": "2023-03-19 14:04:06.200734",
+      "last": "2023-03-19 14:07:00.964144",
+      "seconds": 174.76341,
+      "flows": 2206
+    }
+  },
+  "missing": {
+    "nan_by_column": {
+      "Flow IAT Mean": 26,
+      "Flow IAT Std": 26,
+      "Flow IAT Max": 26,
+      "Flow IAT Min": 26
+    },
+    "inf_by_column": {
+      "Flow Bytes/s": 26,
+      "Flow Packets/s": 26
+    },
+    "negative_by_column": {
+      "Flow IAT Min": 68
+    },
+    "constant_columns": [
+      "Fwd URG Flags",
+      "Bwd URG Flags",
+      "URG Flag Count",
+      "CWR Flag Count",
+      "ECE Flag Count",
+      "Subflow Bwd Packets"
+    ],
+    "rows_with_any_nan_or_inf": 26
+  },
+  "schema": {
+    "dataset_columns": 87,
+    "local_columns": 94,
+    "only_in_local_build": [
+      "Bwd Act Data Pkts",
+      "Bwd Seg Size Min",
+      "Bwd TCP Retrans. Count",
+      "Fwd TCP Retrans. Count",
+      "ICMP Code",
+      "ICMP Type",
+      "Total Connection Flow Time",
+      "Total TCP Retrans. Count"
+    ],
+    "only_in_dataset": [
+      "Total TCP Flow Time"
+    ],
+    "excluded_columns": [
+      "Total TCP Flow Time"
+    ]
+  },
+  "duplicates_original": {
+    "rows": 64599,
+    "duplicate_feature_vectors": 441,
+    "duplicate_fraction": 0.006826731063948359,
+    "vectors_with_conflicting_labels": 51,
+    "duplicate_fraction_by_label": {
+      "0": 0.006383225016950274,
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 0.0012135922330097086,
+      "9": 0.0,
+      "10": 0.0
+    }
+  },
+  "duplicates_evidence": {
+    "rows": 64594,
+    "duplicate_feature_vectors": 441,
+    "duplicate_fraction": 0.006827259497786172,
+    "vectors_with_conflicting_labels": 0,
+    "duplicate_fraction_by_label": {
+      "0": 0.007072975140336809,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "6": 0.0
+    }
+  },
+  "imbalance": {
+    "original": {
+      "benign": 60471,
+      "attack": 4128,
+      "max_min_ratio": 1778.5588235294117
+    },
+    "evidence": {
+      "benign": 62350,
+      "attack": 2244,
+      "max_min_ratio": 6235.0,
+      "class_counts": {
+        "0": 62350,
+        "2": 2206,
+        "3": 10,
+        "4": 11,
+        "6": 17
+      }
+    }
+  },
+  "lab_sets": [
+    {
+      "name": "benign_eval_a",
+      "kind": "benign",
+      "files": 3,
+      "note": "benign generator + cluster background only",
+      "benign": 191,
+      "attack": 0,
+      "ambiguous": 0
+    },
+    {
+      "name": "benign_eval_b",
+      "kind": "benign",
+      "files": 24,
+      "note": "benign generator + cluster background; held out",
+      "benign": 1450,
+      "attack": 0,
+      "ambiguous": 0
+    },
+    {
+      "name": "benign_train",
+      "kind": "benign",
+      "files": 35,
+      "note": "benign generator + cluster background; training only",
+      "benign": 2103,
+      "attack": 0,
+      "ambiguous": 0
+    },
+    {
+      "name": "recon_run1",
+      "kind": "attack",
+      "files": 12,
+      "note": "recon Job traffic-recon-9lbp6, 300 HTTP requests to Node-RED",
+      "benign": 703,
+      "attack": 303,
+      "ambiguous": 1208
+    },
+    {
+      "name": "recon_run2",
+      "kind": "attack",
+      "files": 10,
+      "note": "recon Job traffic-recon-d8kg6, 200 requests, 0.1 s spacing",
+      "benign": 566,
+      "attack": 202,
+      "ambiguous": 802
+    }
+  ]
+}
