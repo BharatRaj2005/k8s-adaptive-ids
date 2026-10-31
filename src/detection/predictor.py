@@ -11,7 +11,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from src.detection.models import predict_proba
+from src.detection.models import decide, predict_proba
 from src.preprocessing.schema import (
     DST_IP,
     DST_PORT,
@@ -60,6 +60,11 @@ class FlowPredictor:
         self.benign_label: int = class_map["benign_label"]
         self.class_names = {int(k): v for k, v in class_map["all_classes"].items()}
         self.classes = np.asarray(self.model.classes_)
+        # Validation-tuned attack threshold (models trained with --tune-threshold);
+        # older models have no decision.json and use plain argmax.
+        decision_file = self.model_dir / "decision.json"
+        decision = json.loads(decision_file.read_text()) if decision_file.is_file() else {}
+        self.attack_threshold: float | None = decision.get("attack_threshold")
         self.name = self.model_dir.name
         self.last_report: dict[str, Any] = {}
 
@@ -81,7 +86,7 @@ class FlowPredictor:
         t0 = time.perf_counter()
         proba = predict_proba(self.model, self.preprocessor.transform(X))
         batch_ms = (time.perf_counter() - t0) * 1000
-        labels = self.classes[proba.argmax(axis=1)].astype(int)
+        labels, confidence = decide(proba, self.classes, self.benign_label, self.attack_threshold)
 
         ts = parse_timestamps(df[TIMESTAMP]) if TIMESTAMP in df.columns else pd.Series(pd.NaT, index=df.index)
         out = pd.DataFrame({
@@ -94,7 +99,7 @@ class FlowPredictor:
             "protocol": _column(df, PROTOCOL, "Int64"),
             "predicted_label": labels,
             "predicted_class": [self.class_names.get(int(c), str(c)) for c in labels],
-            "confidence": proba.max(axis=1).round(6),
+            "confidence": confidence.round(6),
             "is_malicious": labels != self.benign_label,
             "capture_file": capture_file,
             "source": source,

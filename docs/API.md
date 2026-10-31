@@ -146,6 +146,13 @@ Parameters:
   - `limit` (query, integer, default `200`, minimum 1, maximum 5000)
   - `decoy` (query, string)
 
+### `GET /api/deception/interaction-summary`
+
+Decoy interactions summarised per (source, decoy): requests, distinct paths, unknown-path share, status codes and a category (enumerating, repeated_access, exploring, single_probe).
+
+Parameters:
+  - `src_ip` (query, string)
+
 ### `POST /api/deception/enable`
 
 Enable automatic deception. Only evidence arriving after this call is acted on.

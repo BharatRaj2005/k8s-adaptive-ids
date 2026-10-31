@@ -109,6 +109,17 @@ def interactions(limit: int = 200, decoy_name: str | None = None, cfg=None) -> l
     return _q("SELECT * FROM interactions ORDER BY ts DESC LIMIT ?", (int(limit),), cfg)
 
 
+def interaction_summary(src_ip: str | None = None, cfg=None) -> list[dict[str, Any]]:
+    """Per (source, decoy) interaction summaries with a behaviour category."""
+    from src.deception.profiling import summarize
+
+    cfg = cfg or load_config()
+    with db.connect(db.db_path(cfg)) as c:
+        df = db.query_df(c, "SELECT * FROM interactions" + (" WHERE src_ip = ?" if src_ip else ""),
+                         (src_ip,) if src_ip else ())
+    return summarize(df, cfg["deception"]["profiling"])
+
+
 def simulated_events(limit: int = 100, cfg=None) -> list[dict[str, Any]]:
     return _q("SELECT * FROM simulated_events ORDER BY id DESC LIMIT ?", (int(limit),), cfg)
 

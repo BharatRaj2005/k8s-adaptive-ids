@@ -14,10 +14,13 @@ class FlowFeatureCleaner(BaseEstimator, TransformerMixin):
     During fit, drops columns that are constant in the training data and one of
     every pair of columns whose absolute Pearson correlation exceeds
     `correlation_threshold`. Selection is learned from training data only.
+    `keep_features`, when given, further restricts the result to that list (a
+    feature subset chosen on validation data, see src/detection/features.py).
     """
 
-    def __init__(self, correlation_threshold: float | None = 0.99):
+    def __init__(self, correlation_threshold: float | None = 0.99, keep_features: list[str] | None = None):
         self.correlation_threshold = correlation_threshold
+        self.keep_features = keep_features
 
     @staticmethod
     def _coerce(X: pd.DataFrame) -> pd.DataFrame:
@@ -43,6 +46,12 @@ class FlowFeatureCleaner(BaseEstimator, TransformerMixin):
                         dropped.add(j)
             self.dropped_correlated_ = [keep[j] for j in sorted(dropped)]
             keep = [c for k, c in enumerate(keep) if k not in dropped]
+        subset = getattr(self, "keep_features", None)
+        if subset is not None:
+            wanted = set(subset)
+            keep = [c for c in keep if c in wanted]
+            if not keep:
+                raise ValueError("keep_features leaves no feature")
         self.selected_features_ = keep
         return self
 
@@ -54,10 +63,10 @@ class FlowFeatureCleaner(BaseEstimator, TransformerMixin):
         return np.asarray(self.selected_features_, dtype=object)
 
 
-def build_preprocessor(correlation_threshold: float | None = 0.99) -> Pipeline:
+def build_preprocessor(correlation_threshold: float | None = 0.99, keep_features: list[str] | None = None) -> Pipeline:
     return Pipeline(
         [
-            ("clean", FlowFeatureCleaner(correlation_threshold=correlation_threshold)),
+            ("clean", FlowFeatureCleaner(correlation_threshold=correlation_threshold, keep_features=keep_features)),
             ("impute", SimpleImputer(strategy="median", keep_empty_features=True)),
         ]
     ).set_output(transform="pandas")

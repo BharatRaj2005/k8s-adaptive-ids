@@ -1,0 +1,188 @@
+{
+  "generated_at": "2026-10-31T05:00:43.260651+00:00",
+  "config": {
+    "min_flows": 15,
+    "min_rate_per_s": 1.0,
+    "protocols": [
+      6
+    ],
+    "ignore_sources": [],
+    "adaptive": {
+      "enabled": true,
+      "k": 4,
+      "warmup": 30,
+      "history_size": 1000,
+      "min_flows": 5,
+      "rate_min_scale": 0.1,
+      "rate_floor_per_s": 0.5,
+      "horizon_s": 120,
+      "horizon_min_scale": 3,
+      "horizon_floor_flows": 30,
+      "horizon_max_flows": 120,
+      "recent_max": 5000
+    }
+  },
+  "sessions": [
+    {
+      "name": "session1",
+      "windows": 121,
+      "from": "2026-10-30T17:30:00",
+      "to": "2026-10-30T18:40:00",
+      "results": {
+        "fixed": {
+          "tp": 26,
+          "fp": 0,
+          "fn": 1,
+          "tn": 1168,
+          "tpr": 0.9629629629629629,
+          "fpr": 0.0,
+          "precision": 1.0,
+          "alerts_per_window_mean": 0.21487603305785125,
+          "alerts_per_window_max": 1,
+          "false_alert_sources": {},
+          "alert_types": {},
+          "scenarios": {
+            "recon_run1": {
+              "ip": "10.42.0.181",
+              "kind": "recon",
+              "rate_per_s": 5,
+              "active_windows": 7,
+              "detected_windows": 7,
+              "window_recall": 1.0,
+              "detected": true,
+              "delay_s": 10.1
+            },
+            "recon_run2": {
+              "ip": "10.42.0.182",
+              "kind": "recon",
+              "rate_per_s": 10,
+              "active_windows": 4,
+              "detected_windows": 4,
+              "window_recall": 1.0,
+              "detected": true,
+              "delay_s": 10.1
+            },
+            "demo1_recon": {
+              "ip": "10.42.0.186",
+              "kind": "recon",
+              "rate_per_s": 5,
+              "active_windows": 9,
+              "detected_windows": 8,
+              "window_recall": 0.8888888888888888,
+              "detected": true,
+              "delay_s": 20.1
+            },
+            "demo1_decoy_probe": {
+              "ip": "10.42.0.191",
+              "kind": "decoy_probe",
+              "rate_per_s": 5,
+              "active_windows": 0,
+              "detected_windows": 0,
+              "window_recall": null,
+              "detected": false,
+              "delay_s": null
+            },
+            "demo2_recon": {
+              "ip": "10.42.0.194",
+              "kind": "recon",
+              "rate_per_s": 5,
+              "active_windows": 7,
+              "detected_windows": 7,
+              "window_recall": 1.0,
+              "detected": true,
+              "delay_s": 10.1
+            },
+            "demo2_decoy_probe": {
+              "ip": "10.42.0.199",
+              "kind": "decoy_probe",
+              "rate_per_s": 5,
+              "active_windows": 0,
+              "detected_windows": 0,
+              "window_recall": null,
+              "detected": false,
+              "delay_s": null
+            }
+          }
+        },
+        "adaptive": {
+          "tp": 27,
+          "fp": 0,
+          "fn": 0,
+          "tn": 1168,
+          "tpr": 1.0,
+          "fpr": 0.0,
+          "precision": 1.0,
+          "alerts_per_window_mean": 0.2231404958677686,
+          "alerts_per_window_max": 1,
+          "false_alert_sources": {},
+          "alert_types": {
+            "flow_burst": 26,
+            "adaptive_rate": 1
+          },
+          "scenarios": {
+            "recon_run1": {
+              "ip": "10.42.0.181",
+              "kind": "recon",
+              "rate_per_s": 5,
+              "active_windows": 7,
+              "detected_windows": 7,
+              "window_recall": 1.0,
+              "detected": true,
+              "delay_s": 10.1
+            },
+            "recon_run2": {
+              "ip": "10.42.0.182",
+              "kind": "recon",
+              "rate_per_s": 10,
+              "active_windows": 4,
+              "detected_windows": 4,
+              "window_recall": 1.0,
+              "detected": true,
+              "delay_s": 10.1
+            },
+            "demo1_recon": {
+              "ip": "10.42.0.186",
+              "kind": "recon",
+              "rate_per_s": 5,
+              "active_windows": 9,
+              "detected_windows": 9,
+              "window_recall": 1.0,
+              "detected": true,
+              "delay_s": 10.1
+            },
+            "demo1_decoy_probe": {
+              "ip": "10.42.0.191",
+              "kind": "decoy_probe",
+              "rate_per_s": 5,
+              "active_windows": 0,
+              "detected_windows": 0,
+              "window_recall": null,
+              "detected": false,
+              "delay_s": null
+            },
+            "demo2_recon": {
+              "ip": "10.42.0.194",
+              "kind": "recon",
+              "rate_per_s": 5,
+              "active_windows": 7,
+              "detected_windows": 7,
+              "window_recall": 1.0,
+              "detected": true,
+              "delay_s": 10.1
+            },
+            "demo2_decoy_probe": {
+              "ip": "10.42.0.199",
+              "kind": "decoy_probe",
+              "rate_per_s": 5,
+              "active_windows": 0,
+              "detected_windows": 0,
+              "window_recall": null,
+              "detected": false,
+              "delay_s": null
+            }
+          }
+        }
+      }
+    }
+  ]
+}

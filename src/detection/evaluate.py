@@ -13,6 +13,17 @@ from sklearn.metrics import (
 )
 
 
+def wilson_interval(successes: int, n: int, z: float = 1.96) -> list[float] | None:
+    """95 % Wilson score interval for a proportion; None when n == 0."""
+    if n == 0:
+        return None
+    p = successes / n
+    denom = 1 + z * z / n
+    centre = (p + z * z / (2 * n)) / denom
+    half = z * np.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / denom
+    return [float(max(0.0, centre - half)), float(min(1.0, centre + half))]
+
+
 def classification_metrics(y_true, y_pred, labels: list[int], names: dict[int, str], benign_label: int) -> dict[str, Any]:
     y_true = np.asarray(y_true)
     y_pred = np.asarray(y_pred)
@@ -26,7 +37,8 @@ def classification_metrics(y_true, y_pred, labels: list[int], names: dict[int, s
     p, r, f, s = precision_recall_fscore_support(y_true, y_pred, labels=labels, average=None, zero_division=0)
     out["per_class"] = [
         {"label": int(lab), "name": names.get(int(lab), str(lab)), "precision": float(p[i]),
-         "recall": float(r[i]), "f1": float(f[i]), "support": int(s[i])}
+         "recall": float(r[i]), "f1": float(f[i]), "support": int(s[i]),
+         "recall_ci95": wilson_interval(int(round(r[i] * s[i])), int(s[i]))}
         for i, lab in enumerate(labels)
     ]
     out["labels"] = [int(x) for x in labels]

@@ -7,12 +7,13 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import json
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from src.detection.behavior import flow_bursts
+from src.detection.adaptive_behavior import STATE_KEY, AdaptiveBehavior
 from src.detection.predictor import FlowPredictor
 from src.feature_extraction.cicflowmeter import convert_pcap
 from src.preprocessing.schema import SchemaError
@@ -62,11 +63,18 @@ def process_pcap(pcap: Path, predictor: FlowPredictor, cfg: dict[str, Any] | Non
         stored = db.insert_detections(conn, pred, capture_id=cap_id)
         window_s = (capture_fields or {}).get("duration_s") or conn.execute(
             "SELECT duration_s FROM captures WHERE id = ?", (cap_id,)).fetchone()["duration_s"]
-        bursts = flow_bursts(pred, window_s, cfg)
-        now = datetime.now(timezone.utc).isoformat()
-        for b in bursts.to_dict(orient="records"):
+        now_dt = datetime.now(timezone.utc)
+        ended = conn.execute("SELECT ended_at FROM captures WHERE id = ?", (cap_id,)).fetchone()["ended_at"]
+        window_end = datetime.fromisoformat(ended).timestamp() if ended else now_dt.timestamp()
+        state = db.kv_get(conn, STATE_KEY)
+        detector = AdaptiveBehavior(cfg, json.loads(state) if state else None)
+        alerts = detector.analyze(pred, window_s, window_end)
+        db.kv_set(conn, STATE_KEY, json.dumps(detector.state))
+        now = now_dt.isoformat()
+        for b in alerts.to_dict(orient="records"):
             db.insert_row(conn, "behavior_alerts", capture_id=cap_id, capture_file=pcap.name, detected_at=now, **b)
-        summary["flow_bursts"] = len(bursts)
+        summary["flow_bursts"] = int((alerts["alert_type"] == "flow_burst").sum())
+        summary["behavior_alerts"] = len(alerts)
         ref = window_end_monotonic if window_end_monotonic is not None else t_start
         fields.update(status="classified", prediction_ms=predictor.last_report["batch_ms"],
                       pipeline_s=time.monotonic() - ref, error=None)

@@ -71,7 +71,11 @@ CREATE TABLE IF NOT EXISTS behavior_alerts (
     window_s            REAL,
     ml_malicious_flows  INTEGER,
     ml_classes          TEXT,
-    detected_at         TEXT NOT NULL
+    detected_at         TEXT NOT NULL,
+    severity            TEXT,           -- high (fixed rule) | medium (learned threshold)
+    threshold           REAL,
+    baseline            REAL,
+    details             TEXT            -- JSON
 );
 
 -- Clearly labelled simulated inputs for testing the deception controller.
@@ -176,11 +180,24 @@ def connect(path: Path | None = None) -> Iterator[sqlite3.Connection]:
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
     conn.executescript(SCHEMA)
+    _migrate(conn)
     try:
         yield conn
         conn.commit()
     finally:
         conn.close()
+
+
+# Columns added after the first release; added in place to existing databases.
+MIGRATIONS = {"behavior_alerts": {"severity": "TEXT", "threshold": "REAL", "baseline": "REAL", "details": "TEXT"}}
+
+
+def _migrate(conn: sqlite3.Connection) -> None:
+    for table, cols in MIGRATIONS.items():
+        have = {r[1] for r in conn.execute(f"PRAGMA table_info({table})")}
+        for col, typ in cols.items():
+            if col not in have:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {col} {typ}")
 
 
 def _clean(v):

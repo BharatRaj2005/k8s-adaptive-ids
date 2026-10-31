@@ -139,6 +139,40 @@ training:
   # previously unseen benign traffic. Set to null to skip.
   benign_holdout_capture: grafana_20230320T1710
   latency_samples: 200
+  # Attack-probability threshold tuned on the latest val_fraction of each training
+  # capture (never on the test set); see train.tune_threshold.
+  threshold_tuning:
+    val_fraction: 0.2
+    grid: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    max_val_benign_fpr: 0.005
+
+# Model comparison (python -m src.detection.experiments -> reports/model_comparison.md).
+# Every candidate is trained on evidence labels and evaluated with the same protocol.
+experiments:
+  baseline_model: extratrees_dataset_lab
+  # chosen from reports/model_comparison.md (macro F1/recall, benign FPR, lab results, size)
+  selected_model: v2_et_none
+  baseline_lab_train_sets: [benign_train]
+  lab_train_sets: [benign_train, recon_run1]
+  lab_eval_sets: [benign_eval_a, benign_eval_b, recon_run2]
+  # Independent recon executions for leave-one-run-out ("dataset:<capture prefix>" or a lab set).
+  recon_runs: ["dataset:reconnaissance", recon_run1, recon_run2]
+  recon_label: 2
+  feature_analysis_imbalance: sqrt
+  feature_k_sweep: [8, 12, 16, 24, 32, 48, 100]
+  # Smallest feature count whose validation macro F1 is within this of the best.
+  feature_selection_tolerance: 0.01
+  candidates:
+    - {name: v2_et_balanced, model: extratrees, imbalance: balanced}
+    - {name: v2_et_sqrt, model: extratrees, imbalance: sqrt}
+    - {name: v2_et_none, model: extratrees, imbalance: none}
+    - {name: v2_et_smote, model: extratrees, imbalance: {strategy: smote, smote_target: 300, smote_k: 5}}
+    - {name: v2_et_under, model: extratrees, imbalance: {strategy: undersample, benign_ratio: 10}}
+    - {name: v2_rf_balanced, model: random_forest, imbalance: balanced}
+    - {name: v2_lgbm_balanced, model: lightgbm, imbalance: balanced}
+    - {name: v2_xgb_sqrt, model: xgboost, imbalance: sqrt}
+    - {name: v2_et_sqrt_selected, model: extratrees, imbalance: sqrt, features: selected}
+    - {name: v2_et_sqrt_small, model: extratrees, imbalance: sqrt, params: {n_estimators: 100, max_depth: 24}}
 
 models:
   lightgbm:
@@ -157,6 +191,19 @@ models:
     min_samples_leaf: 1
     class_weight: balanced
     n_jobs: -1
+  random_forest:
+    n_estimators: 200
+    min_samples_leaf: 1
+    class_weight: balanced_subsample
+    n_jobs: -1
+  xgboost:
+    n_estimators: 300
+    learning_rate: 0.1
+    max_depth: 6
+    subsample: 0.8
+    colsample_bytree: 0.8
+    tree_method: hist
+    n_jobs: -1
   pca_ae_nb:
     pca_components: 20
     hidden_units: 32
@@ -168,7 +215,9 @@ detection:
   # ExtraTrees on the dataset plus verified benign traffic from this lab
   # (benign_train); same dataset test metrics as extratrees_dataset, ~0 % false
   # positives on held-out lab traffic (reports/model_evaluation.md).
-  active_model: extratrees_dataset_lab
+  # v2_et_none (2026-10-31): ExtraTrees on evidence labels + lab benign/recon_run1, validation-tuned
+  # threshold; selected in reports/model_comparison.md. Previous: extratrees_dataset_lab (kept).
+  active_model: v2_et_none
 
 # Per-source flow-burst detector (src/detection/behavior.py). Lab measurement:
 # recon pod 28-57 flows / 10 s window to Node-RED; benign generator 0-3; kubelet 1.
@@ -177,6 +226,37 @@ behavior:
   min_rate_per_s: 1.0
   protocols: [6]
   ignore_sources: []
+  # Learned thresholds on top of the fixed rule (src/detection/adaptive_behavior.py).
+  # threshold = median + k * max(1.4826 * MAD, min_scale) of past non-alerting values
+  # per service, kept between the floor and the fixed rule's level.
+  adaptive:
+    enabled: true
+    k: 4
+    warmup: 30               # values per service before learned thresholds are used
+    history_size: 1000
+    min_flows: 5             # adaptive_rate needs at least this many flows in the window
+    rate_min_scale: 0.1      # flows/s
+    rate_floor_per_s: 0.5
+    horizon_s: 120           # slow_scan sums flows of (source, service) over this span
+    horizon_min_scale: 3     # flows
+    horizon_floor_flows: 30
+    horizon_max_flows: 120
+    recent_max: 5000
+
+# Replay evaluation of behavioural detection (python -m src.detection.behavior_eval).
+# Attackers are the lab traffic-generator Job pods of each session (ground truth).
+behavior_eval:
+  sessions:
+    - name: session1
+      from: "2026-10-30T17:30:00"
+      to: "2026-10-30T18:40:00"
+      scenarios:
+        - {name: recon_run1, ip: 10.42.0.181, kind: recon, rate_per_s: 5}
+        - {name: recon_run2, ip: 10.42.0.182, kind: recon, rate_per_s: 10}
+        - {name: demo1_recon, ip: 10.42.0.186, kind: recon, rate_per_s: 5}
+        - {name: demo1_decoy_probe, ip: 10.42.0.191, kind: decoy_probe, rate_per_s: 5}
+        - {name: demo2_recon, ip: 10.42.0.194, kind: recon, rate_per_s: 5}
+        - {name: demo2_decoy_probe, ip: 10.42.0.199, kind: decoy_probe, rate_per_s: 5}
 
 database:
   path: data/ids.sqlite
@@ -220,10 +300,18 @@ deception:
   # Detection sources the controller acts on (dataset = replayed historical flows).
   act_on_sources: [pcap, live, dataset]
   thresholds:
+    behavior_repeat_count: 2        # learned-threshold (medium) behaviour alerts needed before acting
     high_confidence: 0.9          # act after policy validation
     medium_confidence: 0.6        # act only with repeated or corroborating evidence
     repeat_count: 3
     repeat_window_seconds: 300
+  # Interaction categories per (source, decoy) (src/deception/profiling.py)
+  profiling:
+    min_requests: 3
+    enumerate_min_paths: 10
+    enumerate_min_unknown_share: 0.5
+    repeat_max_paths: 3
+    repeat_min_count: 5
   engagement:
     window_seconds: 300
     scale_up_interactions: 20     # interactions in the window -> one more replica

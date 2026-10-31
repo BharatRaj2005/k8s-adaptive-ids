@@ -1,0 +1,3824 @@
+{
+  "generated_at": "2026-10-31T04:50:59.276837+00:00",
+  "protocol": {
+    "labels": "evidence",
+    "split": "temporal",
+    "test_fraction": 0.25,
+    "test_rows": 16149,
+    "test_class_counts": {
+      "0": 15566,
+      "2": 573,
+      "3": 4,
+      "4": 2,
+      "6": 4
+    },
+    "lab_train_sets": [
+      "benign_train",
+      "recon_run1"
+    ],
+    "lab_eval_sets": [
+      "benign_eval_a",
+      "benign_eval_b",
+      "recon_run2"
+    ],
+    "recon_runs": [
+      "dataset:reconnaissance",
+      "recon_run1",
+      "recon_run2"
+    ],
+    "threshold_tuning": {
+      "val_fraction": 0.2,
+      "grid": [
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9
+      ],
+      "max_val_benign_fpr": 0.005
+    },
+    "label_policy_report": {
+      "policy": "evidence",
+      "status_counts": {
+        "benign": 60471,
+        "attack": 2247,
+        "background": 1879,
+        "ambiguous": 2
+      },
+      "attack_evidence_counts": {
+        "1": 2,
+        "2": 2206,
+        "3": 10,
+        "4": 11,
+        "5": 1,
+        "6": 17,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0
+      },
+      "trained_attack_classes": [
+        2,
+        3,
+        4,
+        6
+      ],
+      "untrained_classes": {
+        "1": "CVE-2020-13379",
+        "5": "CVE-2021-43798",
+        "7": "CVE-2021-30465",
+        "8": "CVE-2021-25741",
+        "9": "CVE-2022-23648",
+        "10": "CVE-2019-5736"
+      },
+      "background_action": "benign",
+      "dropped_rows": 5
+    }
+  },
+  "feature_analysis": {
+    "validation_rows": 10214,
+    "validation_attack_rows": 435,
+    "features_after_cleaning": 58,
+    "dropped_constant": [
+      "Fwd URG Flags",
+      "Bwd URG Flags",
+      "URG Flag Count",
+      "CWR Flag Count",
+      "ECE Flag Count"
+    ],
+    "dropped_correlated": [
+      "Total Bwd packets",
+      "Fwd IAT Total",
+      "Fwd IAT Max",
+      "Bwd IAT Total",
+      "Fwd Header Length",
+      "Bwd Header Length",
+      "Packet Length Min",
+      "Packet Length Max",
+      "Packet Length Mean",
+      "RST Flag Count",
+      "ACK Flag Count",
+      "Average Packet Size",
+      "Fwd Segment Size Avg",
+      "Bwd Segment Size Avg",
+      "FWD Init Win Bytes",
+      "Fwd Act Data Pkts",
+      "Idle Max"
+    ],
+    "ranking": [
+      {
+        "feature": "Dst Port",
+        "permutation_mean": 0.1019221520427523,
+        "permutation_std": 0.06163521223776927,
+        "mutual_information": 0.07300778724127777
+      },
+      {
+        "feature": "Bwd Init Win Bytes",
+        "permutation_mean": 0.022295651550842878,
+        "permutation_std": 0.016320566632148634,
+        "mutual_information": 0.03983046635782883
+      },
+      {
+        "feature": "FIN Flag Count",
+        "permutation_mean": 0.009079969417330292,
+        "permutation_std": 0.015784404289838853,
+        "mutual_information": 0.014763409861542565
+      },
+      {
+        "feature": "Fwd Packet Length Max",
+        "permutation_mean": 0.007212341202225536,
+        "permutation_std": 0.0003019645015280816,
+        "mutual_information": 0.1681338554403824
+      },
+      {
+        "feature": "Fwd Packet Length Std",
+        "permutation_mean": 0.006406630323495,
+        "permutation_std": 0.00041948443154297916,
+        "mutual_information": 0.181932625934349
+      },
+      {
+        "feature": "Total Length of Fwd Packet",
+        "permutation_mean": 0.006279923249503017,
+        "permutation_std": 0.0005473701378625237,
+        "mutual_information": 0.16163589287591007
+      },
+      {
+        "feature": "Fwd Packet Length Mean",
+        "permutation_mean": 0.005139483462797578,
+        "permutation_std": 0.00043185280398988973,
+        "mutual_information": 0.1589960230176155
+      },
+      {
+        "feature": "Subflow Fwd Bytes",
+        "permutation_mean": 0.004391672414575743,
+        "permutation_std": 0.0008990803313660948,
+        "mutual_information": 0.1006424787651592
+      },
+      {
+        "feature": "Fwd Packets/s",
+        "permutation_mean": 0.003531151279526723,
+        "permutation_std": 0.000679726975890458,
+        "mutual_information": 0.024948947993556736
+      },
+      {
+        "feature": "Down/Up Ratio",
+        "permutation_mean": 0.0030099075133772192,
+        "permutation_std": 0.000590488277962293,
+        "mutual_information": 0.03742511405563409
+      },
+      {
+        "feature": "Bwd Packets/s",
+        "permutation_mean": 0.0019508639900789326,
+        "permutation_std": 0.0001823094699859973,
+        "mutual_information": 0.03492751440114694
+      },
+      {
+        "feature": "Flow Packets/s",
+        "permutation_mean": 0.001775884500820424,
+        "permutation_std": 0.0008556998676444271,
+        "mutual_information": 0.023063455513206987
+      },
+      {
+        "feature": "Total Fwd Packet",
+        "permutation_mean": 0.0012054739214127474,
+        "permutation_std": 0.0003959148715176796,
+        "mutual_information": 0.03446402763649914
+      },
+      {
+        "feature": "Bwd PSH Flags",
+        "permutation_mean": 0.0011118319018851518,
+        "permutation_std": 0.0007259031267864345,
+        "mutual_information": 0.033992421044636734
+      },
+      {
+        "feature": "Fwd IAT Std",
+        "permutation_mean": 0.0009987461812682064,
+        "permutation_std": 0.0003781738561645304,
+        "mutual_information": 0.03837150173572623
+      },
+      {
+        "feature": "Fwd PSH Flags",
+        "permutation_mean": 0.0008885859346887015,
+        "permutation_std": 0.0006436216460634085,
+        "mutual_information": 0.013549124699445914
+      },
+      {
+        "feature": "PSH Flag Count",
+        "permutation_mean": 0.0008407023618846709,
+        "permutation_std": 0.0006128077396980498,
+        "mutual_information": 0.0318725097183552
+      },
+      {
+        "feature": "Flow Duration",
+        "permutation_mean": 0.0007756366094231026,
+        "permutation_std": 0.00011108861732465058,
+        "mutual_information": 0.03860674188500335
+      },
+      {
+        "feature": "Flow IAT Mean",
+        "permutation_mean": 0.0006091360950355673,
+        "permutation_std": 0.00020761550218899454,
+        "mutual_information": 0.025770192816066073
+      },
+      {
+        "feature": "Fwd IAT Min",
+        "permutation_mean": 0.0006001647507438479,
+        "permutation_std": 0.00036482421271656656,
+        "mutual_information": 0.022798858505858277
+      },
+      {
+        "feature": "SYN Flag Count",
+        "permutation_mean": 0.00045829807703920975,
+        "permutation_std": 0.0005250825111994573,
+        "mutual_information": 0.010148825514474602
+      },
+      {
+        "feature": "Flow Bytes/s",
+        "permutation_mean": 0.0004431652294954791,
+        "permutation_std": 0.0003763702665830924,
+        "mutual_information": 0.04160074330983643
+      },
+      {
+        "feature": "Bwd Packet Length Std",
+        "permutation_mean": 0.00040460123370447134,
+        "permutation_std": 0.0006155890145791208,
+        "mutual_information": 0.21307996067344448
+      },
+      {
+        "feature": "Fwd Seg Size Min",
+        "permutation_mean": 0.0004022406626797981,
+        "permutation_std": 0.00026322084193683366,
+        "mutual_information": 0.009555159866896368
+      },
+      {
+        "feature": "Flow IAT Std",
+        "permutation_mean": 0.0003393016940957283,
+        "permutation_std": 0.00019552680562441468,
+        "mutual_information": 0.03429316934069515
+      },
+      {
+        "feature": "Fwd RST Flags",
+        "permutation_mean": 0.0003320756248642809,
+        "permutation_std": 0.0002711386123111235,
+        "mutual_information": 0.006251792724365268
+      },
+      {
+        "feature": "Bwd IAT Min",
+        "permutation_mean": 0.0002516095643764427,
+        "permutation_std": 0.0004952843858209399,
+        "mutual_information": 0.029499611929255654
+      },
+      {
+        "feature": "Bwd Bulk Rate Avg",
+        "permutation_mean": 0.00016597185284663584,
+        "permutation_std": 0.0002213508069700387,
+        "mutual_information": 0.023025071806953346
+      },
+      {
+        "feature": "Bwd IAT Mean",
+        "permutation_mean": 0.00011148143485963934,
+        "permutation_std": 0.0004818637925092397,
+        "mutual_information": 0.035093996706902164
+      },
+      {
+        "feature": "Bwd Bytes/Bulk Avg",
+        "permutation_mean": 0.0001105599557837511,
+        "permutation_std": 0.00013540773882743002,
+        "mutual_information": 0.03243414860117344
+      },
+      {
+        "feature": "Protocol",
+        "permutation_mean": 6.986403552573517e-05,
+        "permutation_std": 0.00029498139094584296,
+        "mutual_information": 0.008616419376396234
+      },
+      {
+        "feature": "Fwd IAT Mean",
+        "permutation_mean": 5.554332624004843e-05,
+        "permutation_std": 0.00027089704122025353,
+        "mutual_information": 0.029306690016013937
+      },
+      {
+        "feature": "Idle Mean",
+        "permutation_mean": 5.527997789187555e-05,
+        "permutation_std": 0.0001105599557837511,
+        "mutual_information": 0.002554993731766375
+      },
+      {
+        "feature": "Fwd Packet Length Min",
+        "permutation_mean": 5.527997789187555e-05,
+        "permutation_std": 0.0001105599557837511,
+        "mutual_information": 0.0022977833215809262
+      },
+      {
+        "feature": "Bwd Packet Length Min",
+        "permutation_mean": 5.527997789187555e-05,
+        "permutation_std": 0.0001105599557837511,
+        "mutual_information": 0.0015141614388376468
+      },
+      {
+        "feature": "Idle Min",
+        "permutation_mean": 0.0,
+        "permutation_std": 0.0,
+        "mutual_information": 0.0029549346912509655
+      },
+      {
+        "feature": "Active Mean",
+        "permutation_mean": 0.0,
+        "permutation_std": 0.0,
+        "mutual_information": 0.0027851141170598392
+      },
+      {
+        "feature": "Active Min",
+        "permutation_mean": 0.0,
+        "permutation_std": 0.0,
+        "mutual_information": 0.0017987463085793465
+      },
+      {
+        "feature": "Active Std",
+        "permutation_mean": 0.0,
+        "permutation_std": 0.0,
+        "mutual_information": 0.001495076743214696
+      },
+      {
+        "feature": "Bwd RST Flags",
+        "permutation_mean": 0.0,
+        "permutation_std": 0.0,
+        "mutual_information": 0.0012930229576342267
+      },
+      {
+        "feature": "Fwd Bytes/Bulk Avg",
+        "permutation_mean": 0.0,
+        "permutation_std": 0.0,
+        "mutual_information": 0.0007189636361835117
+      },
+      {
+        "feature": "Subflow Fwd Packets",
+        "permutation_mean": 0.0,
+        "permutation_std": 0.0,
+        "mutual_information": 0.0005263120532774668
+      },
+      {
+        "feature": "Idle Std",
+        "permutation_mean": 0.0,
+        "permutation_std": 0.0,
+        "mutual_information": 0.00043764740665852564
+      },
+      {
+        "feature": "Active Max",
+        "permutation_mean": 0.0,
+        "permutation_std": 0.0,
+        "mutual_information": 4.8051823600792076e-05
+      },
+      {
+        "feature": "Fwd Packet/Bulk Avg",
+        "permutation_mean": 0.0,
+        "permutation_std": 0.0,
+        "mutual_information": 0.0
+      },
+      {
+        "feature": "Fwd Bulk Rate Avg",
+        "permutation_mean": 0.0,
+        "permutation_std": 0.0,
+        "mutual_information": 0.0
+      },
+      {
+        "feature": "Subflow Bwd Packets",
+        "permutation_mean": 0.0,
+        "permutation_std": 0.0,
+        "mutual_information": 0.0
+      },
+      {
+        "feature": "Flow IAT Max",
+        "permutation_mean": -4.780864238036475e-05,
+        "permutation_std": 0.00025715760078315477,
+        "mutual_information": 0.031090381616467155
+      },
+      {
+        "feature": "Bwd Packet/Bulk Avg",
+        "permutation_mean": -4.793112329037896e-05,
+        "permutation_std": 9.586224658075793e-05,
+        "mutual_information": 0.01991775413615615
+      },
+      {
+        "feature": "Flow IAT Min",
+        "permutation_mean": -0.00015112444686460336,
+        "permutation_std": 0.0001960231588740324,
+        "mutual_information": 0.02351504111557956
+      },
+      {
+        "feature": "Bwd IAT Std",
+        "permutation_mean": -0.00027508803315430265,
+        "permutation_std": 0.00038949794005833514,
+        "mutual_information": 0.03817169492056505
+      },
+      {
+        "feature": "Subflow Bwd Bytes",
+        "permutation_mean": -0.00034698545822668957,
+        "permutation_std": 0.0009648651458653029,
+        "mutual_information": 0.1747279179849648
+      },
+      {
+        "feature": "Bwd IAT Max",
+        "permutation_mean": -0.0006604746240561399,
+        "permutation_std": 0.00021977693777084555,
+        "mutual_information": 0.03412131014012676
+      },
+      {
+        "feature": "Bwd Packet Length Mean",
+        "permutation_mean": -0.0008019829524490874,
+        "permutation_std": 0.000840585650272905,
+        "mutual_information": 0.20715138107923148
+      },
+      {
+        "feature": "Total Length of Bwd Packet",
+        "permutation_mean": -0.0014605332500090106,
+        "permutation_std": 0.000444959046166782,
+        "mutual_information": 0.2176337952962688
+      },
+      {
+        "feature": "Bwd Packet Length Max",
+        "permutation_mean": -0.00163027444194368,
+        "permutation_std": 0.0005221410828062289,
+        "mutual_information": 0.20752050840861225
+      },
+      {
+        "feature": "Packet Length Std",
+        "permutation_mean": -0.0018194992533194787,
+        "permutation_std": 0.0005554134176621815,
+        "mutual_information": 0.1996156487525862
+      },
+      {
+        "feature": "Packet Length Variance",
+        "permutation_mean": -0.0020913600696703893,
+        "permutation_std": 0.00048821772985879964,
+        "mutual_information": 0.19945039830609912
+      }
+    ],
+    "per_class_mutual_information": {
+      "Node-RED Reconnaissance": [
+        [
+          "Total Length of Bwd Packet",
+          0.2154
+        ],
+        [
+          "Bwd Packet Length Std",
+          0.2114
+        ],
+        [
+          "Bwd Packet Length Mean",
+          0.2058
+        ],
+        [
+          "Bwd Packet Length Max",
+          0.2047
+        ],
+        [
+          "Packet Length Std",
+          0.1981
+        ],
+        [
+          "Packet Length Variance",
+          0.1979
+        ],
+        [
+          "Fwd Packet Length Std",
+          0.179
+        ],
+        [
+          "Subflow Bwd Bytes",
+          0.1733
+        ]
+      ],
+      "Node-RED RCE": [
+        [
+          "Fwd Seg Size Min",
+          0.0072
+        ],
+        [
+          "Protocol",
+          0.007
+        ],
+        [
+          "SYN Flag Count",
+          0.0053
+        ],
+        [
+          "FIN Flag Count",
+          0.0046
+        ],
+        [
+          "Fwd Packet Length Max",
+          0.0019
+        ],
+        [
+          "Dst Port",
+          0.0017
+        ],
+        [
+          "Bwd Init Win Bytes",
+          0.0017
+        ],
+        [
+          "Down/Up Ratio",
+          0.0015
+        ]
+      ],
+      "Node-RED Container Escape": [
+        [
+          "Fwd Seg Size Min",
+          0.005
+        ],
+        [
+          "Protocol",
+          0.0047
+        ],
+        [
+          "FIN Flag Count",
+          0.0045
+        ],
+        [
+          "SYN Flag Count",
+          0.0028
+        ],
+        [
+          "Down/Up Ratio",
+          0.0013
+        ],
+        [
+          "Fwd Packet Length Std",
+          0.0012
+        ],
+        [
+          "Fwd PSH Flags",
+          0.0008
+        ],
+        [
+          "Flow Packets/s",
+          0.0006
+        ]
+      ],
+      "CVE-2019-20933": [
+        [
+          "Fwd Seg Size Min",
+          0.0051
+        ],
+        [
+          "Protocol",
+          0.0047
+        ],
+        [
+          "FIN Flag Count",
+          0.0042
+        ],
+        [
+          "Dst Port",
+          0.0037
+        ],
+        [
+          "SYN Flag Count",
+          0.0031
+        ],
+        [
+          "Bwd Packet Length Max",
+          0.0023
+        ],
+        [
+          "Down/Up Ratio",
+          0.0015
+        ],
+        [
+          "Subflow Bwd Bytes",
+          0.0011
+        ]
+      ]
+    },
+    "sweep": [
+      {
+        "k": 8,
+        "f1_macro": 0.594280546112569,
+        "recall_macro": 0.5959690644730016,
+        "benign_fpr": 0.001636159116474077,
+        "attack_recall": 0.9885057471264368
+      },
+      {
+        "k": 12,
+        "f1_macro": 0.5923832399202966,
+        "recall_macro": 0.595362937587347,
+        "benign_fpr": 0.0023519787299314857,
+        "attack_recall": 0.9793103448275862
+      },
+      {
+        "k": 16,
+        "f1_macro": 0.5929827197230805,
+        "recall_macro": 0.5927692277101726,
+        "benign_fpr": 0.0014316392269148174,
+        "attack_recall": 0.9655172413793104
+      },
+      {
+        "k": 24,
+        "f1_macro": 0.5973323629034781,
+        "recall_macro": 0.5966774513034355,
+        "benign_fpr": 0.00040903977911851925,
+        "attack_recall": 0.9839080459770115
+      },
+      {
+        "k": 32,
+        "f1_macro": 0.5963460815323722,
+        "recall_macro": 0.5948255994515838,
+        "benign_fpr": 0.00040903977911851925,
+        "attack_recall": 0.9747126436781609
+      },
+      {
+        "k": 48,
+        "f1_macro": 0.5940943993861707,
+        "recall_macro": 0.590658932784917,
+        "benign_fpr": 0.00040903977911851925,
+        "attack_recall": 0.9540229885057471
+      },
+      {
+        "k": 58,
+        "f1_macro": 0.5845367069591634,
+        "recall_macro": 0.5731072441702363,
+        "benign_fpr": 0.00020451988955925963,
+        "attack_recall": 0.8666666666666667
+      }
+    ],
+    "selected_k": 8,
+    "tolerance": 0.01,
+    "selected_features": [
+      "Dst Port",
+      "Bwd Init Win Bytes",
+      "FIN Flag Count",
+      "Fwd Packet Length Max",
+      "Fwd Packet Length Std",
+      "Total Length of Fwd Packet",
+      "Fwd Packet Length Mean",
+      "Subflow Fwd Bytes"
+    ]
+  },
+  "baseline": {
+    "name": "extratrees_dataset_lab",
+    "existing_model": true,
+    "test": {
+      "accuracy": 0.9811753049724441,
+      "test_rows": 16149,
+      "precision_macro": 0.39153241428066454,
+      "recall_macro": 0.4797234497077019,
+      "f1_macro": 0.39880164909075166,
+      "precision_weighted": 0.9927352601713789,
+      "recall_weighted": 0.9811753049724441,
+      "f1_weighted": 0.9868732137573596,
+      "per_class": [
+        {
+          "label": 0,
+          "name": "Benign",
+          "precision": 0.9963577235772357,
+          "recall": 0.984132082744443,
+          "f1": 0.9902071684819496,
+          "support": 15566,
+          "recall_ci95": [
+            0.9820460888686573,
+            0.9859791735078076
+          ]
+        },
+        {
+          "label": 2,
+          "name": "Node-RED Reconnaissance",
+          "precision": 0.9113043478260869,
+          "recall": 0.9144851657940664,
+          "f1": 0.9128919860627178,
+          "support": 573,
+          "recall_ci95": [
+            0.8887373643266713,
+            0.9347122620525635
+          ]
+        },
+        {
+          "label": 3,
+          "name": "Node-RED RCE",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 4,
+          "recall_ci95": [
+            0.0,
+            0.48990002040399916
+          ]
+        },
+        {
+          "label": 4,
+          "name": "Node-RED Container Escape",
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 2,
+          "recall_ci95": [
+            0.0,
+            0.6576280471103807
+          ]
+        },
+        {
+          "label": 6,
+          "name": "CVE-2019-20933",
+          "precision": 0.05,
+          "recall": 0.5,
+          "f1": 0.09090909090909091,
+          "support": 4,
+          "recall_ci95": [
+            0.15003570882017148,
+            0.8499642911798285
+          ]
+        }
+      ],
+      "labels": [
+        0,
+        2,
+        3,
+        4,
+        6
+      ],
+      "confusion_matrix": [
+        [
+          15319,
+          51,
+          6,
+          12,
+          38
+        ],
+        [
+          49,
+          524,
+          0,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          2
+        ]
+      ],
+      "binary": {
+        "tp": 527,
+        "fp": 247,
+        "fn": 56,
+        "tn": 15319,
+        "detection_rate": 0.9039451114922813,
+        "false_positive_rate": 0.015867917255556984,
+        "precision": 0.6808785529715762
+      },
+      "predicted_outside_evidence_classes": {
+        "CVE-2020-13379": 13,
+        "CVE-2021-43798": 6,
+        "CVE-2021-30465": 8,
+        "CVE-2021-25741": 89,
+        "CVE-2022-23648": 15,
+        "CVE-2019-5736": 9
+      }
+    },
+    "lab": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.0,
+        "attack_recall": 0.0,
+        "class_recall": 0.0
+      }
+    },
+    "published_label_test": {
+      "accuracy": 0.9655108359133127,
+      "f1_macro": 0.2790563033789827,
+      "f1_weighted": 0.9601624653741561,
+      "recall_macro": 0.2561761696483607,
+      "binary": {
+        "tp": 652,
+        "fp": 122,
+        "fn": 380,
+        "tn": 14996,
+        "detection_rate": 0.6317829457364341,
+        "false_positive_rate": 0.008069850509326631,
+        "precision": 0.8423772609819121
+      }
+    },
+    "grouped": {
+      "benign_loco": [
+        {
+          "capture": "background_traffic_20230319T1802",
+          "flows": 5297,
+          "threshold": null,
+          "false_positives": 128,
+          "fpr": 0.024164621483858787,
+          "seconds": 6.734341766999933
+        },
+        {
+          "capture": "grafana_20230320T1603",
+          "flows": 10956,
+          "threshold": null,
+          "false_positives": 77,
+          "fpr": 0.007028112449799197,
+          "seconds": 6.127764567000213
+        },
+        {
+          "capture": "grafana_20230320T1710",
+          "flows": 17623,
+          "threshold": null,
+          "false_positives": 64,
+          "fpr": 0.003631617772229473,
+          "seconds": 5.046899125999971
+        },
+        {
+          "capture": "nodered_20230320T1759",
+          "flows": 26595,
+          "threshold": null,
+          "false_positives": 20396,
+          "fpr": 0.7669110735100583,
+          "seconds": 4.249206888999879
+        }
+      ],
+      "recon_loro": [
+        {
+          "run": "dataset:reconnaissance",
+          "skipped": "no other recon run left for training"
+        },
+        {
+          "run": "recon_run1",
+          "attack_flows": 303,
+          "benign_flows": 703,
+          "threshold": null,
+          "attack_recall": 0.0,
+          "class_recall": 0.0,
+          "benign_fpr": 0.0
+        },
+        {
+          "run": "recon_run2",
+          "attack_flows": 202,
+          "benign_flows": 566,
+          "threshold": null,
+          "attack_recall": 0.0,
+          "class_recall": 0.0,
+          "benign_fpr": 0.0
+        }
+      ],
+      "benign_loco_mean_fpr": 0.20043385630398644,
+      "benign_loco_max_fpr": 0.7669110735100583,
+      "recon_loro_mean_recall": 0.0,
+      "recon_loro_min_recall": 0.0
+    },
+    "profile": {
+      "model": "extratrees_dataset_lab",
+      "model_bytes": 465577953,
+      "rss_imports_mb": 236.0,
+      "rss_loaded_mb": 1124.9,
+      "model_rss_mb": 888.9,
+      "peak_rss_mb": 1183.2,
+      "load_seconds": 1.576,
+      "batch_rows": 16149,
+      "batch_ms": 508.17,
+      "batch_cpu_ms": 2091.91,
+      "batch_per_flow_us": 31.47,
+      "single_flow_median_ms": 53.397,
+      "single_flow_p95_ms": 68.234,
+      "pid": 86560
+    }
+  },
+  "candidates": {
+    "v2_et_balanced": {
+      "name": "v2_et_balanced",
+      "model": "extratrees",
+      "imbalance": "balanced",
+      "params": null,
+      "features": "all",
+      "n_features": null,
+      "decision": {
+        "attack_threshold": 0.3,
+        "validation_rows": 10214,
+        "validation_attack_rows": 435,
+        "chosen": {
+          "threshold": 0.3,
+          "f1_macro": 0.5966310003398364,
+          "benign_fpr": 0.0009203395030166684,
+          "attack_recall": 0.9885057471264368
+        },
+        "max_val_benign_fpr": 0.005,
+        "tuned": true
+      },
+      "test": {
+        "accuracy": 0.9977088364604619,
+        "test_rows": 16149,
+        "precision_macro": 0.642678483198871,
+        "recall_macro": 0.5969250115311506,
+        "f1_macro": 0.5947771909808148,
+        "precision_weighted": 0.9976443220163388,
+        "recall_weighted": 0.9977088364604619,
+        "f1_weighted": 0.9976463255413044,
+        "per_class": [
+          {
+            "label": 0,
+            "name": "Benign",
+            "precision": 0.999228593468758,
+            "recall": 0.9985866632403957,
+            "f1": 0.9989075252233147,
+            "support": 15566,
+            "recall_ci95": [
+              0.9978608534536687,
+              0.9990664370590362
+            ]
+          },
+          {
+            "label": 2,
+            "name": "Node-RED Reconnaissance",
+            "precision": 0.9641638225255973,
+            "recall": 0.9860383944153578,
+            "f1": 0.9749784296807593,
+            "support": 573,
+            "recall_ci95": [
+              0.9726941187924507,
+              0.992908916772252
+            ]
+          },
+          {
+            "label": 3,
+            "name": "Node-RED RCE",
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 4,
+            "recall_ci95": [
+              0.0,
+              0.48990002040399916
+            ]
+          },
+          {
+            "label": 4,
+            "name": "Node-RED Container Escape",
+            "precision": 0.25,
+            "recall": 0.5,
+            "f1": 0.3333333333333333,
+            "support": 2,
+            "recall_ci95": [
+              0.09452865480086614,
+              0.9054713451991339
+            ]
+          },
+          {
+            "label": 6,
+            "name": "CVE-2019-20933",
+            "precision": 1.0,
+            "recall": 0.5,
+            "f1": 0.6666666666666666,
+            "support": 4,
+            "recall_ci95": [
+              0.15003570882017148,
+              0.8499642911798285
+            ]
+          }
+        ],
+        "labels": [
+          0,
+          2,
+          3,
+          4,
+          6
+        ],
+        "confusion_matrix": [
+          [
+            15544,
+            21,
+            0,
+            1,
+            0
+          ],
+          [
+            8,
+            565,
+            0,
+            0,
+            0
+          ],
+          [
+            3,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            1,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            1,
+            1,
+            2
+          ]
+        ],
+        "binary": {
+          "tp": 571,
+          "fp": 22,
+          "fn": 12,
+          "tn": 15544,
+          "detection_rate": 0.9794168096054888,
+          "false_positive_rate": 0.0014133367596042656,
+          "precision": 0.9629005059021922
+        }
+      },
+      "lab": {
+        "benign_eval_a": {
+          "flows": 191,
+          "benign_flows": 191,
+          "attack_flows": 0,
+          "benign_fpr": 0.0
+        },
+        "benign_eval_b": {
+          "flows": 1450,
+          "benign_flows": 1450,
+          "attack_flows": 0,
+          "benign_fpr": 0.002758620689655172
+        },
+        "recon_run2": {
+          "flows": 768,
+          "benign_flows": 566,
+          "attack_flows": 202,
+          "benign_fpr": 0.0,
+          "attack_recall": 0.9900990099009901,
+          "class_recall": 0.9900990099009901
+        }
+      },
+      "imbalance_report": {
+        "strategy": "balanced",
+        "rows_before": {
+          "0": 49113,
+          "2": 1936,
+          "3": 6,
+          "4": 9,
+          "6": 13
+        },
+        "rows_after": {
+          "0": 49113,
+          "2": 1936,
+          "3": 6,
+          "4": 9,
+          "6": 13
+        },
+        "class_weights": {
+          "0": 0.207997882434386,
+          "2": 5.276549586776859,
+          "3": 1702.5666666666666,
+          "4": 1135.0444444444445,
+          "6": 785.8
+        }
+      },
+      "fit_seconds": 4.976126256000043,
+      "leakage_checks": {
+        "train_rows_before_dedup": 51554,
+        "train_rows_after_dedup": 51077,
+        "test_rows": 16149,
+        "test_rows_with_identical_train_feature_vector": 192,
+        "dropped_identifier_columns": [
+          "Flow ID",
+          "Src IP",
+          "Dst IP",
+          "Timestamp",
+          "Src Port"
+        ]
+      },
+      "grouped": {
+        "benign_loco": [
+          {
+            "capture": "background_traffic_20230319T1802",
+            "flows": 5297,
+            "threshold": 0.3,
+            "false_positives": 0,
+            "fpr": 0.0,
+            "seconds": 9.612721392999902
+          },
+          {
+            "capture": "grafana_20230320T1603",
+            "flows": 10956,
+            "threshold": 0.3,
+            "false_positives": 24,
+            "fpr": 0.002190580503833516,
+            "seconds": 8.811672499999986
+          },
+          {
+            "capture": "grafana_20230320T1710",
+            "flows": 17623,
+            "threshold": 0.3,
+            "false_positives": 3,
+            "fpr": 0.00017023208307325653,
+            "seconds": 8.980062769000142
+          },
+          {
+            "capture": "nodered_20230320T1759",
+            "flows": 26595,
+            "threshold": 0.5,
+            "false_positives": 20272,
+            "fpr": 0.7622485429592029,
+            "seconds": 7.086920216999943
+          }
+        ],
+        "recon_loro": [
+          {
+            "run": "dataset:reconnaissance",
+            "attack_flows": 2206,
+            "benign_flows": 269,
+            "threshold": 0.7,
+            "attack_recall": 0.0,
+            "class_recall": 0.0,
+            "benign_fpr": 0.0
+          },
+          {
+            "run": "recon_run1",
+            "attack_flows": 303,
+            "benign_flows": 703,
+            "threshold": 0.3,
+            "attack_recall": 0.9834983498349835,
+            "class_recall": 0.9834983498349835,
+            "benign_fpr": 0.0
+          },
+          {
+            "run": "recon_run2",
+            "attack_flows": 202,
+            "benign_flows": 566,
+            "threshold": 0.3,
+            "attack_recall": 0.9900990099009901,
+            "class_recall": 0.9900990099009901,
+            "benign_fpr": 0.0
+          }
+        ],
+        "benign_loco_mean_fpr": 0.1911523388865274,
+        "benign_loco_max_fpr": 0.7622485429592029,
+        "recon_loro_mean_recall": 0.6578657865786579,
+        "recon_loro_min_recall": 0.0
+      },
+      "profile": {
+        "model": "v2_et_balanced",
+        "model_bytes": 53235769,
+        "rss_imports_mb": 236.3,
+        "rss_loaded_mb": 338.5,
+        "model_rss_mb": 102.2,
+        "peak_rss_mb": 388.6,
+        "load_seconds": 0.255,
+        "batch_rows": 16149,
+        "batch_ms": 447.9,
+        "batch_cpu_ms": 1077.61,
+        "batch_per_flow_us": 27.74,
+        "single_flow_median_ms": 51.846,
+        "single_flow_p95_ms": 66.635,
+        "pid": 86618
+      }
+    },
+    "v2_et_sqrt": {
+      "name": "v2_et_sqrt",
+      "model": "extratrees",
+      "imbalance": "sqrt",
+      "params": null,
+      "features": "all",
+      "n_features": null,
+      "decision": {
+        "attack_threshold": 0.3,
+        "validation_rows": 10214,
+        "validation_attack_rows": 435,
+        "chosen": {
+          "threshold": 0.3,
+          "f1_macro": 0.5966384013394285,
+          "benign_fpr": 0.0010225994477962982,
+          "attack_recall": 0.9908045977011494
+        },
+        "max_val_benign_fpr": 0.005,
+        "tuned": true
+      },
+      "test": {
+        "accuracy": 0.9980803764939006,
+        "test_rows": 16149,
+        "precision_macro": 0.6440495309641167,
+        "recall_macro": 0.5976744858743684,
+        "f1_macro": 0.59584427505913,
+        "precision_weighted": 0.9980070012651153,
+        "recall_weighted": 0.9980803764939006,
+        "f1_weighted": 0.9980146801232201,
+        "per_class": [
+          {
+            "label": 0,
+            "name": "Benign",
+            "precision": 0.9993572438616789,
+            "recall": 0.9988436335603238,
+            "f1": 0.9991003727027374,
+            "support": 15566,
+            "recall_ci95": [
+              0.9981727079190676,
+              0.9992683964271707
+            ]
+          },
+          {
+            "label": 2,
+            "name": "Node-RED Reconnaissance",
+            "precision": 0.9708904109589042,
+            "recall": 0.9895287958115183,
+            "f1": 0.9801210025929127,
+            "support": 573,
+            "recall_ci95": [
+              0.9773449189821897,
+              0.9951924292257066
+            ]
+          },
+          {
+            "label": 3,
+            "name": "Node-RED RCE",
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 4,
+            "recall_ci95": [
+              0.0,
+              0.48990002040399916
+            ]
+          },
+          {
+            "label": 4,
+            "name": "Node-RED Container Escape",
+            "precision": 0.25,
+            "recall": 0.5,
+            "f1": 0.3333333333333333,
+            "support": 2,
+            "recall_ci95": [
+              0.09452865480086614,
+              0.9054713451991339
+            ]
+          },
+          {
+            "label": 6,
+            "name": "CVE-2019-20933",
+            "precision": 1.0,
+            "recall": 0.5,
+            "f1": 0.6666666666666666,
+            "support": 4,
+            "recall_ci95": [
+              0.15003570882017148,
+              0.8499642911798285
+            ]
+          }
+        ],
+        "labels": [
+          0,
+          2,
+          3,
+          4,
+          6
+        ],
+        "confusion_matrix": [
+          [
+            15548,
+            17,
+            0,
+            1,
+            0
+          ],
+          [
+            6,
+            567,
+            0,
+            0,
+            0
+          ],
+          [
+            3,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            1,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            1,
+            1,
+            2
+          ]
+        ],
+        "binary": {
+          "tp": 573,
+          "fp": 18,
+          "fn": 10,
+          "tn": 15548,
+          "detection_rate": 0.9828473413379074,
+          "false_positive_rate": 0.0011563664396762173,
+          "precision": 0.9695431472081218
+        }
+      },
+      "lab": {
+        "benign_eval_a": {
+          "flows": 191,
+          "benign_flows": 191,
+          "attack_flows": 0,
+          "benign_fpr": 0.0
+        },
+        "benign_eval_b": {
+          "flows": 1450,
+          "benign_flows": 1450,
+          "attack_flows": 0,
+          "benign_fpr": 0.001379310344827586
+        },
+        "recon_run2": {
+          "flows": 768,
+          "benign_flows": 566,
+          "attack_flows": 202,
+          "benign_fpr": 0.0,
+          "attack_recall": 0.9900990099009901,
+          "class_recall": 0.9900990099009901
+        }
+      },
+      "imbalance_report": {
+        "strategy": "sqrt",
+        "rows_before": {
+          "0": 49113,
+          "2": 1936,
+          "3": 6,
+          "4": 9,
+          "6": 13
+        },
+        "rows_after": {
+          "0": 49113,
+          "2": 1936,
+          "3": 6,
+          "4": 9,
+          "6": 13
+        },
+        "class_weights": {
+          "0": 1.0,
+          "2": 5.036693868398887,
+          "3": 90.47375310000133,
+          "4": 73.87151006985034,
+          "6": 61.46481169679996
+        }
+      },
+      "fit_seconds": 5.159220075999883,
+      "leakage_checks": {
+        "train_rows_before_dedup": 51554,
+        "train_rows_after_dedup": 51077,
+        "test_rows": 16149,
+        "test_rows_with_identical_train_feature_vector": 192,
+        "dropped_identifier_columns": [
+          "Flow ID",
+          "Src IP",
+          "Dst IP",
+          "Timestamp",
+          "Src Port"
+        ]
+      },
+      "grouped": {
+        "benign_loco": [
+          {
+            "capture": "background_traffic_20230319T1802",
+            "flows": 5297,
+            "threshold": 0.3,
+            "false_positives": 0,
+            "fpr": 0.0,
+            "seconds": 9.673984827999902
+          },
+          {
+            "capture": "grafana_20230320T1603",
+            "flows": 10956,
+            "threshold": 0.3,
+            "false_positives": 72,
+            "fpr": 0.0065717415115005475,
+            "seconds": 7.065133522999986
+          },
+          {
+            "capture": "grafana_20230320T1710",
+            "flows": 17623,
+            "threshold": 0.3,
+            "false_positives": 3,
+            "fpr": 0.00017023208307325653,
+            "seconds": 9.634612596999887
+          },
+          {
+            "capture": "nodered_20230320T1759",
+            "flows": 26595,
+            "threshold": null,
+            "false_positives": 20099,
+            "fpr": 0.755743560819703,
+            "seconds": 7.247900092000009
+          }
+        ],
+        "recon_loro": [
+          {
+            "run": "dataset:reconnaissance",
+            "attack_flows": 2206,
+            "benign_flows": 269,
+            "threshold": 0.7,
+            "attack_recall": 0.0,
+            "class_recall": 0.0,
+            "benign_fpr": 0.0
+          },
+          {
+            "run": "recon_run1",
+            "attack_flows": 303,
+            "benign_flows": 703,
+            "threshold": 0.3,
+            "attack_recall": 0.9900990099009901,
+            "class_recall": 0.9900990099009901,
+            "benign_fpr": 0.005689900426742532
+          },
+          {
+            "run": "recon_run2",
+            "attack_flows": 202,
+            "benign_flows": 566,
+            "threshold": 0.3,
+            "attack_recall": 0.9900990099009901,
+            "class_recall": 0.9900990099009901,
+            "benign_fpr": 0.0
+          }
+        ],
+        "benign_loco_mean_fpr": 0.1906213836035692,
+        "benign_loco_max_fpr": 0.755743560819703,
+        "recon_loro_mean_recall": 0.6600660066006601,
+        "recon_loro_min_recall": 0.0
+      },
+      "profile": {
+        "model": "v2_et_sqrt",
+        "model_bytes": 44728569,
+        "rss_imports_mb": 236.1,
+        "rss_loaded_mb": 322.2,
+        "model_rss_mb": 86.1,
+        "peak_rss_mb": 370.4,
+        "load_seconds": 0.237,
+        "batch_rows": 16149,
+        "batch_ms": 416.65,
+        "batch_cpu_ms": 989.25,
+        "batch_per_flow_us": 25.8,
+        "single_flow_median_ms": 53.481,
+        "single_flow_p95_ms": 66.867,
+        "pid": 86660
+      }
+    },
+    "v2_et_none": {
+      "name": "v2_et_none",
+      "model": "extratrees",
+      "imbalance": "none",
+      "params": null,
+      "features": "all",
+      "n_features": null,
+      "decision": {
+        "attack_threshold": 0.3,
+        "validation_rows": 10214,
+        "validation_attack_rows": 435,
+        "chosen": {
+          "threshold": 0.3,
+          "f1_macro": 0.5929255196182257,
+          "benign_fpr": 0.0012271193373555578,
+          "attack_recall": 0.9586206896551724
+        },
+        "max_val_benign_fpr": 0.005,
+        "tuned": true
+      },
+      "test": {
+        "accuracy": 0.9982042231717134,
+        "test_rows": 16149,
+        "precision_macro": 0.7634621009051166,
+        "recall_macro": 0.7479978289819916,
+        "f1_macro": 0.7290347184282975,
+        "precision_weighted": 0.9983496395304615,
+        "recall_weighted": 0.9982042231717134,
+        "f1_weighted": 0.9982437799208037,
+        "per_class": [
+          {
+            "label": 0,
+            "name": "Benign",
+            "precision": 0.9996784772683429,
+            "recall": 0.9987151484003598,
+            "f1": 0.9991965806472346,
+            "support": 15566,
+            "recall_ci95": [
+              0.9980161215327072,
+              0.9991680758967645
+            ]
+          },
+          {
+            "label": 2,
+            "name": "Node-RED Reconnaissance",
+            "precision": 0.9676320272572402,
+            "recall": 0.9912739965095986,
+            "f1": 0.9793103448275862,
+            "support": 573,
+            "recall_ci95": [
+              0.9797372716048339,
+              0.996267232924659
+            ]
+          },
+          {
+            "label": 3,
+            "name": "Node-RED RCE",
+            "precision": 0.6,
+            "recall": 0.75,
+            "f1": 0.6666666666666666,
+            "support": 4,
+            "recall_ci95": [
+              0.3006360524426366,
+              0.9544139373553637
+            ]
+          },
+          {
+            "label": 4,
+            "name": "Node-RED Container Escape",
+            "precision": 0.25,
+            "recall": 0.5,
+            "f1": 0.3333333333333333,
+            "support": 2,
+            "recall_ci95": [
+              0.09452865480086614,
+              0.9054713451991339
+            ]
+          },
+          {
+            "label": 6,
+            "name": "CVE-2019-20933",
+            "precision": 1.0,
+            "recall": 0.5,
+            "f1": 0.6666666666666666,
+            "support": 4,
+            "recall_ci95": [
+              0.15003570882017148,
+              0.8499642911798285
+            ]
+          }
+        ],
+        "labels": [
+          0,
+          2,
+          3,
+          4,
+          6
+        ],
+        "confusion_matrix": [
+          [
+            15546,
+            19,
+            0,
+            1,
+            0
+          ],
+          [
+            5,
+            568,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            3,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            1,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            1,
+            1,
+            2
+          ]
+        ],
+        "binary": {
+          "tp": 578,
+          "fp": 20,
+          "fn": 5,
+          "tn": 15546,
+          "detection_rate": 0.9914236706689536,
+          "false_positive_rate": 0.0012848515996402416,
+          "precision": 0.9665551839464883
+        }
+      },
+      "lab": {
+        "benign_eval_a": {
+          "flows": 191,
+          "benign_flows": 191,
+          "attack_flows": 0,
+          "benign_fpr": 0.0
+        },
+        "benign_eval_b": {
+          "flows": 1450,
+          "benign_flows": 1450,
+          "attack_flows": 0,
+          "benign_fpr": 0.000689655172413793
+        },
+        "recon_run2": {
+          "flows": 768,
+          "benign_flows": 566,
+          "attack_flows": 202,
+          "benign_fpr": 0.0,
+          "attack_recall": 0.9900990099009901,
+          "class_recall": 0.9900990099009901
+        }
+      },
+      "imbalance_report": {
+        "strategy": "none",
+        "rows_before": {
+          "0": 49113,
+          "2": 1936,
+          "3": 6,
+          "4": 9,
+          "6": 13
+        },
+        "rows_after": {
+          "0": 49113,
+          "2": 1936,
+          "3": 6,
+          "4": 9,
+          "6": 13
+        },
+        "class_weights": null
+      },
+      "fit_seconds": 3.110148916000071,
+      "leakage_checks": {
+        "train_rows_before_dedup": 51554,
+        "train_rows_after_dedup": 51077,
+        "test_rows": 16149,
+        "test_rows_with_identical_train_feature_vector": 192,
+        "dropped_identifier_columns": [
+          "Flow ID",
+          "Src IP",
+          "Dst IP",
+          "Timestamp",
+          "Src Port"
+        ]
+      },
+      "grouped": {
+        "benign_loco": [
+          {
+            "capture": "background_traffic_20230319T1802",
+            "flows": 5297,
+            "threshold": 0.3,
+            "false_positives": 0,
+            "fpr": 0.0,
+            "seconds": 5.584591215999808
+          },
+          {
+            "capture": "grafana_20230320T1603",
+            "flows": 10956,
+            "threshold": 0.3,
+            "false_positives": 105,
+            "fpr": 0.009583789704271631,
+            "seconds": 6.031873085000143
+          },
+          {
+            "capture": "grafana_20230320T1710",
+            "flows": 17623,
+            "threshold": 0.3,
+            "false_positives": 11,
+            "fpr": 0.0006241843046019406,
+            "seconds": 4.565857090000009
+          },
+          {
+            "capture": "nodered_20230320T1759",
+            "flows": 26595,
+            "threshold": 0.5,
+            "false_positives": 19684,
+            "fpr": 0.7401391238954691,
+            "seconds": 3.9203666200000953
+          }
+        ],
+        "recon_loro": [
+          {
+            "run": "dataset:reconnaissance",
+            "attack_flows": 2206,
+            "benign_flows": 269,
+            "threshold": 0.7,
+            "attack_recall": 0.0,
+            "class_recall": 0.0,
+            "benign_fpr": 0.0
+          },
+          {
+            "run": "recon_run1",
+            "attack_flows": 303,
+            "benign_flows": 703,
+            "threshold": 0.3,
+            "attack_recall": 0.9966996699669967,
+            "class_recall": 0.9966996699669967,
+            "benign_fpr": 0.005689900426742532
+          },
+          {
+            "run": "recon_run2",
+            "attack_flows": 202,
+            "benign_flows": 566,
+            "threshold": 0.3,
+            "attack_recall": 0.9900990099009901,
+            "class_recall": 0.9900990099009901,
+            "benign_fpr": 0.0
+          }
+        ],
+        "benign_loco_mean_fpr": 0.18758677447608565,
+        "benign_loco_max_fpr": 0.7401391238954691,
+        "recon_loro_mean_recall": 0.6622662266226622,
+        "recon_loro_min_recall": 0.0
+      },
+      "profile": {
+        "model": "v2_et_none",
+        "model_bytes": 42177289,
+        "rss_imports_mb": 236.5,
+        "rss_loaded_mb": 318.0,
+        "model_rss_mb": 81.5,
+        "peak_rss_mb": 367.2,
+        "load_seconds": 0.259,
+        "batch_rows": 16149,
+        "batch_ms": 439.98,
+        "batch_cpu_ms": 1027.68,
+        "batch_per_flow_us": 27.25,
+        "single_flow_median_ms": 52.668,
+        "single_flow_p95_ms": 69.22,
+        "pid": 86708
+      }
+    },
+    "v2_et_smote": {
+      "name": "v2_et_smote",
+      "model": "extratrees",
+      "imbalance": {
+        "strategy": "smote",
+        "smote_target": 300,
+        "smote_k": 5
+      },
+      "params": null,
+      "features": "all",
+      "n_features": null,
+      "decision": {
+        "attack_threshold": 0.3,
+        "validation_rows": 10214,
+        "validation_attack_rows": 435,
+        "chosen": {
+          "threshold": 0.3,
+          "f1_macro": 0.5971147072916281,
+          "benign_fpr": 0.0011248593925759281,
+          "attack_recall": 0.9954022988505747
+        },
+        "max_val_benign_fpr": 0.005,
+        "tuned": true
+      },
+      "test": {
+        "accuracy": 0.9969038330546783,
+        "test_rows": 16149,
+        "precision_macro": 0.7862134009727202,
+        "recall_macro": 0.8480513532536904,
+        "f1_macro": 0.7728862146316797,
+        "precision_weighted": 0.9972013364494522,
+        "recall_weighted": 0.9969038330546783,
+        "f1_weighted": 0.9969771983743155,
+        "per_class": [
+          {
+            "label": 0,
+            "name": "Benign",
+            "precision": 0.9998067757310318,
+            "recall": 0.9972375690607734,
+            "f1": 0.9985205197478451,
+            "support": 15566,
+            "recall_ci95": [
+              0.9962813656200975,
+              0.9979484022665583
+            ]
+          },
+          {
+            "label": 2,
+            "name": "Node-RED Reconnaissance",
+            "precision": 0.9312602291325696,
+            "recall": 0.9930191972076788,
+            "f1": 0.9611486486486487,
+            "support": 573,
+            "recall_ci95": [
+              0.9821895659197952,
+              0.9972820949312946
+            ]
+          },
+          {
+            "label": 3,
+            "name": "Node-RED RCE",
+            "precision": 0.6,
+            "recall": 0.75,
+            "f1": 0.6666666666666666,
+            "support": 4,
+            "recall_ci95": [
+              0.3006360524426366,
+              0.9544139373553637
+            ]
+          },
+          {
+            "label": 4,
+            "name": "Node-RED Container Escape",
+            "precision": 0.4,
+            "recall": 1.0,
+            "f1": 0.5714285714285714,
+            "support": 2,
+            "recall_ci95": [
+              0.34237195288961925,
+              1.0
+            ]
+          },
+          {
+            "label": 6,
+            "name": "CVE-2019-20933",
+            "precision": 1.0,
+            "recall": 0.5,
+            "f1": 0.6666666666666666,
+            "support": 4,
+            "recall_ci95": [
+              0.15003570882017148,
+              0.8499642911798285
+            ]
+          }
+        ],
+        "labels": [
+          0,
+          2,
+          3,
+          4,
+          6
+        ],
+        "confusion_matrix": [
+          [
+            15523,
+            42,
+            0,
+            1,
+            0
+          ],
+          [
+            3,
+            569,
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            3,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            2,
+            0
+          ],
+          [
+            0,
+            0,
+            2,
+            0,
+            2
+          ]
+        ],
+        "binary": {
+          "tp": 580,
+          "fp": 43,
+          "fn": 3,
+          "tn": 15523,
+          "detection_rate": 0.9948542024013722,
+          "false_positive_rate": 0.0027624309392265192,
+          "precision": 0.9309791332263242
+        }
+      },
+      "lab": {
+        "benign_eval_a": {
+          "flows": 191,
+          "benign_flows": 191,
+          "attack_flows": 0,
+          "benign_fpr": 0.0
+        },
+        "benign_eval_b": {
+          "flows": 1450,
+          "benign_flows": 1450,
+          "attack_flows": 0,
+          "benign_fpr": 0.002758620689655172
+        },
+        "recon_run2": {
+          "flows": 768,
+          "benign_flows": 566,
+          "attack_flows": 202,
+          "benign_fpr": 0.0,
+          "attack_recall": 0.9900990099009901,
+          "class_recall": 0.9900990099009901
+        }
+      },
+      "imbalance_report": {
+        "strategy": "smote",
+        "rows_before": {
+          "0": 49113,
+          "2": 1936,
+          "3": 6,
+          "4": 9,
+          "6": 13
+        },
+        "rows_after": {
+          "0": 49113,
+          "2": 1936,
+          "3": 300,
+          "4": 300,
+          "6": 300
+        },
+        "class_weights": null
+      },
+      "fit_seconds": 3.2818715299999894,
+      "leakage_checks": {
+        "train_rows_before_dedup": 51554,
+        "train_rows_after_dedup": 51077,
+        "test_rows": 16149,
+        "test_rows_with_identical_train_feature_vector": 192,
+        "dropped_identifier_columns": [
+          "Flow ID",
+          "Src IP",
+          "Dst IP",
+          "Timestamp",
+          "Src Port"
+        ]
+      },
+      "grouped": {
+        "benign_loco": [
+          {
+            "capture": "background_traffic_20230319T1802",
+            "flows": 5297,
+            "threshold": 0.3,
+            "false_positives": 1,
+            "fpr": 0.00018878610534264677,
+            "seconds": 5.741137365999975
+          },
+          {
+            "capture": "grafana_20230320T1603",
+            "flows": 10956,
+            "threshold": 0.4,
+            "false_positives": 23,
+            "fpr": 0.002099306316173786,
+            "seconds": 5.315958726999952
+          },
+          {
+            "capture": "grafana_20230320T1710",
+            "flows": 17623,
+            "threshold": 0.4,
+            "false_positives": 5,
+            "fpr": 0.00028372013845542757,
+            "seconds": 5.454035752999971
+          },
+          {
+            "capture": "nodered_20230320T1759",
+            "flows": 26595,
+            "threshold": 0.5,
+            "false_positives": 19760,
+            "fpr": 0.7429968039105095,
+            "seconds": 4.5702675350000845
+          }
+        ],
+        "recon_loro": [
+          {
+            "run": "dataset:reconnaissance",
+            "attack_flows": 2206,
+            "benign_flows": 269,
+            "threshold": 0.7,
+            "attack_recall": 0.00045330915684496827,
+            "class_recall": 0.0,
+            "benign_fpr": 0.0
+          },
+          {
+            "run": "recon_run1",
+            "attack_flows": 303,
+            "benign_flows": 703,
+            "threshold": 0.4,
+            "attack_recall": 0.9834983498349835,
+            "class_recall": 0.9834983498349835,
+            "benign_fpr": 0.0
+          },
+          {
+            "run": "recon_run2",
+            "attack_flows": 202,
+            "benign_flows": 566,
+            "threshold": 0.3,
+            "attack_recall": 0.9900990099009901,
+            "class_recall": 0.9900990099009901,
+            "benign_fpr": 0.0
+          }
+        ],
+        "benign_loco_mean_fpr": 0.18639215411762033,
+        "benign_loco_max_fpr": 0.7429968039105095,
+        "recon_loro_mean_recall": 0.6580168896309395,
+        "recon_loro_min_recall": 0.00045330915684496827
+      },
+      "profile": {
+        "model": "v2_et_smote",
+        "model_bytes": 47132889,
+        "rss_imports_mb": 236.2,
+        "rss_loaded_mb": 327.2,
+        "model_rss_mb": 91.0,
+        "peak_rss_mb": 375.2,
+        "load_seconds": 0.257,
+        "batch_rows": 16149,
+        "batch_ms": 424.63,
+        "batch_cpu_ms": 1259.19,
+        "batch_per_flow_us": 26.29,
+        "single_flow_median_ms": 52.726,
+        "single_flow_p95_ms": 67.359,
+        "pid": 86750
+      }
+    },
+    "v2_et_under": {
+      "name": "v2_et_under",
+      "model": "extratrees",
+      "imbalance": {
+        "strategy": "undersample",
+        "benign_ratio": 10
+      },
+      "params": null,
+      "features": "all",
+      "n_features": null,
+      "decision": {
+        "attack_threshold": 0.3,
+        "validation_rows": 10214,
+        "validation_attack_rows": 435,
+        "chosen": {
+          "threshold": 0.3,
+          "f1_macro": 0.5938412484305797,
+          "benign_fpr": 0.0024542386747111156,
+          "attack_recall": 0.993103448275862
+        },
+        "max_val_benign_fpr": 0.005,
+        "tuned": true
+      },
+      "test": {
+        "accuracy": 0.9942411294817016,
+        "test_rows": 16149,
+        "precision_macro": 0.5245401220961521,
+        "recall_macro": 0.5478864527534505,
+        "f1_macro": 0.5354167266442923,
+        "precision_weighted": 0.9948698343812901,
+        "recall_weighted": 0.9942411294817016,
+        "f1_weighted": 0.9944080185053393,
+        "per_class": [
+          {
+            "label": 0,
+            "name": "Benign",
+            "precision": 0.9998062766369624,
+            "recall": 0.994667865861493,
+            "f1": 0.9972304521447893,
+            "support": 15566,
+            "recall_ci95": [
+              0.9933953813663727,
+              0.9956962481849518
+            ]
+          },
+          {
+            "label": 2,
+            "name": "Node-RED Reconnaissance",
+            "precision": 0.8728943338437979,
+            "recall": 0.9947643979057592,
+            "f1": 0.9298531810766721,
+            "support": 573,
+            "recall_ci95": [
+              0.9847209262740649,
+              0.9982178908986218
+            ]
+          },
+          {
+            "label": 3,
+            "name": "Node-RED RCE",
+            "precision": 0.25,
+            "recall": 0.25,
+            "f1": 0.25,
+            "support": 4,
+            "recall_ci95": [
+              0.045586062644636216,
+              0.6993639475573634
+            ]
+          },
+          {
+            "label": 4,
+            "name": "Node-RED Container Escape",
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 2,
+            "recall_ci95": [
+              0.0,
+              0.6576280471103807
+            ]
+          },
+          {
+            "label": 6,
+            "name": "CVE-2019-20933",
+            "precision": 0.5,
+            "recall": 0.5,
+            "f1": 0.5,
+            "support": 4,
+            "recall_ci95": [
+              0.15003570882017148,
+              0.8499642911798285
+            ]
+          }
+        ],
+        "labels": [
+          0,
+          2,
+          3,
+          4,
+          6
+        ],
+        "confusion_matrix": [
+          [
+            15483,
+            82,
+            0,
+            1,
+            0
+          ],
+          [
+            3,
+            570,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            1,
+            1,
+            2
+          ],
+          [
+            0,
+            0,
+            2,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            1,
+            0,
+            2
+          ]
+        ],
+        "binary": {
+          "tp": 580,
+          "fp": 83,
+          "fn": 3,
+          "tn": 15483,
+          "detection_rate": 0.9948542024013722,
+          "false_positive_rate": 0.005332134138507002,
+          "precision": 0.8748114630467572
+        }
+      },
+      "lab": {
+        "benign_eval_a": {
+          "flows": 191,
+          "benign_flows": 191,
+          "attack_flows": 0,
+          "benign_fpr": 0.010471204188481676
+        },
+        "benign_eval_b": {
+          "flows": 1450,
+          "benign_flows": 1450,
+          "attack_flows": 0,
+          "benign_fpr": 0.007586206896551724
+        },
+        "recon_run2": {
+          "flows": 768,
+          "benign_flows": 566,
+          "attack_flows": 202,
+          "benign_fpr": 0.00530035335689046,
+          "attack_recall": 0.995049504950495,
+          "class_recall": 0.995049504950495
+        }
+      },
+      "imbalance_report": {
+        "strategy": "undersample",
+        "rows_before": {
+          "0": 49113,
+          "2": 1936,
+          "3": 6,
+          "4": 9,
+          "6": 13
+        },
+        "rows_after": {
+          "0": 19640,
+          "2": 1936,
+          "3": 6,
+          "4": 9,
+          "6": 13
+        },
+        "class_weights": null
+      },
+      "fit_seconds": 2.3479008010001508,
+      "leakage_checks": {
+        "train_rows_before_dedup": 51554,
+        "train_rows_after_dedup": 51077,
+        "test_rows": 16149,
+        "test_rows_with_identical_train_feature_vector": 192,
+        "dropped_identifier_columns": [
+          "Flow ID",
+          "Src IP",
+          "Dst IP",
+          "Timestamp",
+          "Src Port"
+        ]
+      },
+      "grouped": {
+        "benign_loco": [
+          {
+            "capture": "background_traffic_20230319T1802",
+            "flows": 5297,
+            "threshold": 0.3,
+            "false_positives": 1,
+            "fpr": 0.00018878610534264677,
+            "seconds": 4.084043356999928
+          },
+          {
+            "capture": "grafana_20230320T1603",
+            "flows": 10956,
+            "threshold": 0.3,
+            "false_positives": 173,
+            "fpr": 0.01579043446513326,
+            "seconds": 4.419898294999939
+          },
+          {
+            "capture": "grafana_20230320T1710",
+            "flows": 17623,
+            "threshold": 0.3,
+            "false_positives": 18,
+            "fpr": 0.0010213924984395393,
+            "seconds": 4.696579405999955
+          },
+          {
+            "capture": "nodered_20230320T1759",
+            "flows": 26595,
+            "threshold": 0.4,
+            "false_positives": 20290,
+            "fpr": 0.7629253619101335,
+            "seconds": 4.275548640000125
+          }
+        ],
+        "recon_loro": [
+          {
+            "run": "dataset:reconnaissance",
+            "attack_flows": 2206,
+            "benign_flows": 269,
+            "threshold": 0.7,
+            "attack_recall": 0.0,
+            "class_recall": 0.0,
+            "benign_fpr": 0.0
+          },
+          {
+            "run": "recon_run1",
+            "attack_flows": 303,
+            "benign_flows": 703,
+            "threshold": 0.3,
+            "attack_recall": 0.9933993399339934,
+            "class_recall": 0.9933993399339934,
+            "benign_fpr": 0.015647226173541962
+          },
+          {
+            "run": "recon_run2",
+            "attack_flows": 202,
+            "benign_flows": 566,
+            "threshold": 0.3,
+            "attack_recall": 0.995049504950495,
+            "class_recall": 0.995049504950495,
+            "benign_fpr": 0.00530035335689046
+          }
+        ],
+        "benign_loco_mean_fpr": 0.19498149374476223,
+        "benign_loco_max_fpr": 0.7629253619101335,
+        "recon_loro_mean_recall": 0.6628162816281629,
+        "recon_loro_min_recall": 0.0
+      },
+      "profile": {
+        "model": "v2_et_under",
+        "model_bytes": 34301993,
+        "rss_imports_mb": 236.4,
+        "rss_loaded_mb": 302.9,
+        "model_rss_mb": 66.5,
+        "peak_rss_mb": 351.1,
+        "load_seconds": 0.198,
+        "batch_rows": 16149,
+        "batch_ms": 458.18,
+        "batch_cpu_ms": 1047.3,
+        "batch_per_flow_us": 28.37,
+        "single_flow_median_ms": 53.496,
+        "single_flow_p95_ms": 68.097,
+        "pid": 86808
+      }
+    },
+    "v2_rf_balanced": {
+      "name": "v2_rf_balanced",
+      "model": "random_forest",
+      "imbalance": "balanced",
+      "params": null,
+      "features": "all",
+      "n_features": null,
+      "decision": {
+        "attack_threshold": 0.3,
+        "validation_rows": 10214,
+        "validation_attack_rows": 435,
+        "chosen": {
+          "threshold": 0.3,
+          "f1_macro": 0.5868658252271083,
+          "benign_fpr": 0.003374578177727784,
+          "attack_recall": 0.9494252873563218
+        },
+        "max_val_benign_fpr": 0.005,
+        "tuned": true
+      },
+      "test": {
+        "accuracy": 0.9929407393646665,
+        "test_rows": 16149,
+        "precision_macro": 0.5684184011881073,
+        "recall_macro": 0.5482890171647653,
+        "f1_macro": 0.5534607616437979,
+        "precision_weighted": 0.9937253899346755,
+        "recall_weighted": 0.9929407393646665,
+        "f1_weighted": 0.9930843900225332,
+        "per_class": [
+          {
+            "label": 0,
+            "name": "Benign",
+            "precision": 0.9996766892984158,
+            "recall": 0.9931902865219068,
+            "f1": 0.9964229319068029,
+            "support": 15566,
+            "recall_ci95": [
+              0.9917710832153757,
+              0.9943661167931332
+            ]
+          },
+          {
+            "label": 2,
+            "name": "Node-RED Reconnaissance",
+            "precision": 0.8424153166421208,
+            "recall": 0.9982547993019197,
+            "f1": 0.9137380191693291,
+            "support": 573,
+            "recall_ci95": [
+              0.9901812591222833,
+              0.999691870693597
+            ]
+          },
+          {
+            "label": 3,
+            "name": "Node-RED RCE",
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 4,
+            "recall_ci95": [
+              0.0,
+              0.48990002040399916
+            ]
+          },
+          {
+            "label": 4,
+            "name": "Node-RED Container Escape",
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 2,
+            "recall_ci95": [
+              0.0,
+              0.6576280471103807
+            ]
+          },
+          {
+            "label": 6,
+            "name": "CVE-2019-20933",
+            "precision": 1.0,
+            "recall": 0.75,
+            "f1": 0.8571428571428571,
+            "support": 4,
+            "recall_ci95": [
+              0.3006360524426366,
+              0.9544139373553637
+            ]
+          }
+        ],
+        "labels": [
+          0,
+          2,
+          3,
+          4,
+          6
+        ],
+        "confusion_matrix": [
+          [
+            15460,
+            106,
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            572,
+            0,
+            0,
+            0
+          ],
+          [
+            3,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            1,
+            0,
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            0,
+            0,
+            3
+          ]
+        ],
+        "binary": {
+          "tp": 578,
+          "fp": 106,
+          "fn": 5,
+          "tn": 15460,
+          "detection_rate": 0.9914236706689536,
+          "false_positive_rate": 0.0068097134780932805,
+          "precision": 0.8450292397660819
+        }
+      },
+      "lab": {
+        "benign_eval_a": {
+          "flows": 191,
+          "benign_flows": 191,
+          "attack_flows": 0,
+          "benign_fpr": 0.02617801047120419
+        },
+        "benign_eval_b": {
+          "flows": 1450,
+          "benign_flows": 1450,
+          "attack_flows": 0,
+          "benign_fpr": 0.017241379310344827
+        },
+        "recon_run2": {
+          "flows": 768,
+          "benign_flows": 566,
+          "attack_flows": 202,
+          "benign_fpr": 0.026501766784452298,
+          "attack_recall": 1.0,
+          "class_recall": 1.0
+        }
+      },
+      "imbalance_report": {
+        "strategy": "balanced",
+        "rows_before": {
+          "0": 49113,
+          "2": 1936,
+          "3": 6,
+          "4": 9,
+          "6": 13
+        },
+        "rows_after": {
+          "0": 49113,
+          "2": 1936,
+          "3": 6,
+          "4": 9,
+          "6": 13
+        },
+        "class_weights": {
+          "0": 0.207997882434386,
+          "2": 5.276549586776859,
+          "3": 1702.5666666666666,
+          "4": 1135.0444444444445,
+          "6": 785.8
+        }
+      },
+      "fit_seconds": 2.3157450460000746,
+      "leakage_checks": {
+        "train_rows_before_dedup": 51554,
+        "train_rows_after_dedup": 51077,
+        "test_rows": 16149,
+        "test_rows_with_identical_train_feature_vector": 192,
+        "dropped_identifier_columns": [
+          "Flow ID",
+          "Src IP",
+          "Dst IP",
+          "Timestamp",
+          "Src Port"
+        ]
+      },
+      "grouped": {
+        "benign_loco": [
+          {
+            "capture": "background_traffic_20230319T1802",
+            "flows": 5297,
+            "threshold": 0.3,
+            "false_positives": 0,
+            "fpr": 0.0,
+            "seconds": 4.629563241000142
+          },
+          {
+            "capture": "grafana_20230320T1603",
+            "flows": 10956,
+            "threshold": null,
+            "false_positives": 81,
+            "fpr": 0.007393209200438116,
+            "seconds": 4.753736333000006
+          },
+          {
+            "capture": "grafana_20230320T1710",
+            "flows": 17623,
+            "threshold": 0.4,
+            "false_positives": 9,
+            "fpr": 0.0005106962492197696,
+            "seconds": 4.520510497000032
+          },
+          {
+            "capture": "nodered_20230320T1759",
+            "flows": 26595,
+            "threshold": 0.7,
+            "false_positives": 8549,
+            "fpr": 0.3214514006392179,
+            "seconds": 3.951309209999863
+          }
+        ],
+        "recon_loro": [
+          {
+            "run": "dataset:reconnaissance",
+            "attack_flows": 2206,
+            "benign_flows": 269,
+            "threshold": 0.6,
+            "attack_recall": 0.0,
+            "class_recall": 0.0,
+            "benign_fpr": 0.0
+          },
+          {
+            "run": "recon_run1",
+            "attack_flows": 303,
+            "benign_flows": 703,
+            "threshold": 0.4,
+            "attack_recall": 0.9933993399339934,
+            "class_recall": 0.9933993399339934,
+            "benign_fpr": 0.017069701280227598
+          },
+          {
+            "run": "recon_run2",
+            "attack_flows": 202,
+            "benign_flows": 566,
+            "threshold": 0.3,
+            "attack_recall": 1.0,
+            "class_recall": 1.0,
+            "benign_fpr": 0.026501766784452298
+          }
+        ],
+        "benign_loco_mean_fpr": 0.08233882652221895,
+        "benign_loco_max_fpr": 0.3214514006392179,
+        "recon_loro_mean_recall": 0.6644664466446645,
+        "recon_loro_min_recall": 0.0
+      },
+      "profile": {
+        "model": "v2_rf_balanced",
+        "model_bytes": 10380313,
+        "rss_imports_mb": 236.1,
+        "rss_loaded_mb": 256.0,
+        "model_rss_mb": 19.8,
+        "peak_rss_mb": 306.6,
+        "load_seconds": 0.075,
+        "batch_rows": 16149,
+        "batch_ms": 309.54,
+        "batch_cpu_ms": 539.8,
+        "batch_per_flow_us": 19.17,
+        "single_flow_median_ms": 44.147,
+        "single_flow_p95_ms": 61.071,
+        "pid": 86850
+      }
+    },
+    "v2_lgbm_balanced": {
+      "name": "v2_lgbm_balanced",
+      "model": "lightgbm",
+      "imbalance": "balanced",
+      "params": null,
+      "features": "all",
+      "n_features": null,
+      "decision": {
+        "attack_threshold": 0.8,
+        "validation_rows": 10214,
+        "validation_attack_rows": 435,
+        "chosen": {
+          "threshold": 0.8,
+          "f1_macro": 0.5867123986188841,
+          "benign_fpr": 0.0019429389508129665,
+          "attack_recall": 0.9195402298850575
+        },
+        "max_val_benign_fpr": 0.005,
+        "tuned": true
+      },
+      "test": {
+        "accuracy": 0.9968419097157719,
+        "test_rows": 16149,
+        "precision_macro": 0.696171539282265,
+        "recall_macro": 0.6869698781902382,
+        "f1_macro": 0.6914501366077872,
+        "precision_weighted": 0.9965707924965487,
+        "recall_weighted": 0.9968419097157719,
+        "f1_weighted": 0.9966839830344342,
+        "per_class": [
+          {
+            "label": 0,
+            "name": "Benign",
+            "precision": 0.9973714578792153,
+            "recall": 0.9994218167801618,
+            "f1": 0.998395584648954,
+            "support": 15566,
+            "recall_ci95": [
+              0.9989014041201237,
+              0.999695781351564
+            ]
+          },
+          {
+            "label": 2,
+            "name": "Node-RED Reconnaissance",
+            "precision": 0.9834862385321101,
+            "recall": 0.9354275741710296,
+            "f1": 0.9588550983899821,
+            "support": 573,
+            "recall_ci95": [
+              0.9122626450899063,
+              0.9527928571484898
+            ]
+          },
+          {
+            "label": 3,
+            "name": "Node-RED RCE",
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 4,
+            "recall_ci95": [
+              0.0,
+              0.48990002040399916
+            ]
+          },
+          {
+            "label": 4,
+            "name": "Node-RED Container Escape",
+            "precision": 0.5,
+            "recall": 0.5,
+            "f1": 0.5,
+            "support": 2,
+            "recall_ci95": [
+              0.09452865480086614,
+              0.9054713451991339
+            ]
+          },
+          {
+            "label": 6,
+            "name": "CVE-2019-20933",
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 4,
+            "recall_ci95": [
+              0.5100999795960008,
+              1.0
+            ]
+          }
+        ],
+        "labels": [
+          0,
+          2,
+          3,
+          4,
+          6
+        ],
+        "confusion_matrix": [
+          [
+            15557,
+            9,
+            0,
+            0,
+            0
+          ],
+          [
+            37,
+            536,
+            0,
+            0,
+            0
+          ],
+          [
+            3,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            1,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            4
+          ]
+        ],
+        "binary": {
+          "tp": 542,
+          "fp": 9,
+          "fn": 41,
+          "tn": 15557,
+          "detection_rate": 0.9296740994854202,
+          "false_positive_rate": 0.0005781832198381087,
+          "precision": 0.9836660617059891
+        }
+      },
+      "lab": {
+        "benign_eval_a": {
+          "flows": 191,
+          "benign_flows": 191,
+          "attack_flows": 0,
+          "benign_fpr": 0.0
+        },
+        "benign_eval_b": {
+          "flows": 1450,
+          "benign_flows": 1450,
+          "attack_flows": 0,
+          "benign_fpr": 0.0
+        },
+        "recon_run2": {
+          "flows": 768,
+          "benign_flows": 566,
+          "attack_flows": 202,
+          "benign_fpr": 0.0,
+          "attack_recall": 0.9851485148514851,
+          "class_recall": 0.9851485148514851
+        }
+      },
+      "imbalance_report": {
+        "strategy": "balanced",
+        "rows_before": {
+          "0": 49113,
+          "2": 1936,
+          "3": 6,
+          "4": 9,
+          "6": 13
+        },
+        "rows_after": {
+          "0": 49113,
+          "2": 1936,
+          "3": 6,
+          "4": 9,
+          "6": 13
+        },
+        "class_weights": {
+          "0": 0.207997882434386,
+          "2": 5.276549586776859,
+          "3": 1702.5666666666666,
+          "4": 1135.0444444444445,
+          "6": 785.8
+        }
+      },
+      "fit_seconds": 52.995783052000206,
+      "leakage_checks": {
+        "train_rows_before_dedup": 51554,
+        "train_rows_after_dedup": 51077,
+        "test_rows": 16149,
+        "test_rows_with_identical_train_feature_vector": 192,
+        "dropped_identifier_columns": [
+          "Flow ID",
+          "Src IP",
+          "Dst IP",
+          "Timestamp",
+          "Src Port"
+        ]
+      },
+      "grouped": {
+        "benign_loco": [
+          {
+            "capture": "background_traffic_20230319T1802",
+            "flows": 5297,
+            "threshold": 0.7,
+            "false_positives": 0,
+            "fpr": 0.0,
+            "seconds": 38.563665729999684
+          },
+          {
+            "capture": "grafana_20230320T1603",
+            "flows": 10956,
+            "threshold": 0.8,
+            "false_positives": 0,
+            "fpr": 0.0,
+            "seconds": 65.34809687699999
+          },
+          {
+            "capture": "grafana_20230320T1710",
+            "flows": 17623,
+            "threshold": 0.7,
+            "false_positives": 0,
+            "fpr": 0.0,
+            "seconds": 46.15652716800014
+          },
+          {
+            "capture": "nodered_20230320T1759",
+            "flows": 26595,
+            "threshold": 0.1,
+            "false_positives": 20291,
+            "fpr": 0.762962962962963,
+            "seconds": 32.516903533999994
+          }
+        ],
+        "recon_loro": [
+          {
+            "run": "dataset:reconnaissance",
+            "attack_flows": 2206,
+            "benign_flows": 269,
+            "threshold": 0.9,
+            "attack_recall": 0.00045330915684496827,
+            "class_recall": 0.0,
+            "benign_fpr": 0.0
+          },
+          {
+            "run": "recon_run1",
+            "attack_flows": 303,
+            "benign_flows": 703,
+            "threshold": 0.9,
+            "attack_recall": 0.9867986798679867,
+            "class_recall": 0.9867986798679867,
+            "benign_fpr": 0.0
+          },
+          {
+            "run": "recon_run2",
+            "attack_flows": 202,
+            "benign_flows": 566,
+            "threshold": 0.8,
+            "attack_recall": 0.9851485148514851,
+            "class_recall": 0.9851485148514851,
+            "benign_fpr": 0.0
+          }
+        ],
+        "benign_loco_mean_fpr": 0.19074074074074074,
+        "benign_loco_max_fpr": 0.762962962962963,
+        "recon_loro_mean_recall": 0.657466834625439,
+        "recon_loro_min_recall": 0.00045330915684496827
+      },
+      "profile": {
+        "model": "v2_lgbm_balanced",
+        "model_bytes": 5567396,
+        "rss_imports_mb": 236.0,
+        "rss_loaded_mb": 249.4,
+        "model_rss_mb": 13.4,
+        "peak_rss_mb": 292.9,
+        "load_seconds": 0.09,
+        "batch_rows": 16149,
+        "batch_ms": 729.71,
+        "batch_cpu_ms": 6108.45,
+        "batch_per_flow_us": 45.19,
+        "single_flow_median_ms": 27.909,
+        "single_flow_p95_ms": 38.664,
+        "pid": 86898
+      }
+    },
+    "v2_xgb_sqrt": {
+      "name": "v2_xgb_sqrt",
+      "model": "xgboost",
+      "imbalance": "sqrt",
+      "params": null,
+      "features": "all",
+      "n_features": null,
+      "decision": {
+        "attack_threshold": 0.2,
+        "validation_rows": 10214,
+        "validation_attack_rows": 435,
+        "chosen": {
+          "threshold": 0.2,
+          "f1_macro": 0.584000187094841,
+          "benign_fpr": 0.003988137846405563,
+          "attack_recall": 0.9356321839080459
+        },
+        "max_val_benign_fpr": 0.005,
+        "tuned": true
+      },
+      "test": {
+        "accuracy": 0.9982661465106198,
+        "test_rows": 16149,
+        "precision_macro": 0.6962729014792809,
+        "recall_macro": 0.6953339930250273,
+        "f1_macro": 0.6958020870885793,
+        "precision_weighted": 0.9980156672147957,
+        "recall_weighted": 0.9982661465106198,
+        "f1_weighted": 0.9981406186793301,
+        "per_class": [
+          {
+            "label": 0,
+            "name": "Benign",
+            "precision": 0.9989083670455275,
+            "recall": 0.9993575742001799,
+            "f1": 0.9991329201323099,
+            "support": 15566,
+            "recall_ci95": [
+              0.9988177290747057,
+              0.9996510029385989
+            ]
+          },
+          {
+            "label": 2,
+            "name": "Node-RED Reconnaissance",
+            "precision": 0.9824561403508771,
+            "recall": 0.9773123909249564,
+            "f1": 0.9798775153105862,
+            "support": 573,
+            "recall_ci95": [
+              0.9615729905962843,
+              0.9866942633604344
+            ]
+          },
+          {
+            "label": 3,
+            "name": "Node-RED RCE",
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 4,
+            "recall_ci95": [
+              0.0,
+              0.48990002040399916
+            ]
+          },
+          {
+            "label": 4,
+            "name": "Node-RED Container Escape",
+            "precision": 0.5,
+            "recall": 0.5,
+            "f1": 0.5,
+            "support": 2,
+            "recall_ci95": [
+              0.09452865480086614,
+              0.9054713451991339
+            ]
+          },
+          {
+            "label": 6,
+            "name": "CVE-2019-20933",
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 4,
+            "recall_ci95": [
+              0.5100999795960008,
+              1.0
+            ]
+          }
+        ],
+        "labels": [
+          0,
+          2,
+          3,
+          4,
+          6
+        ],
+        "confusion_matrix": [
+          [
+            15556,
+            10,
+            0,
+            0,
+            0
+          ],
+          [
+            13,
+            560,
+            0,
+            0,
+            0
+          ],
+          [
+            3,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            1,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            4
+          ]
+        ],
+        "binary": {
+          "tp": 566,
+          "fp": 10,
+          "fn": 17,
+          "tn": 15556,
+          "detection_rate": 0.9708404802744426,
+          "false_positive_rate": 0.0006424257998201208,
+          "precision": 0.9826388888888888
+        }
+      },
+      "lab": {
+        "benign_eval_a": {
+          "flows": 191,
+          "benign_flows": 191,
+          "attack_flows": 0,
+          "benign_fpr": 0.0
+        },
+        "benign_eval_b": {
+          "flows": 1450,
+          "benign_flows": 1450,
+          "attack_flows": 0,
+          "benign_fpr": 0.000689655172413793
+        },
+        "recon_run2": {
+          "flows": 768,
+          "benign_flows": 566,
+          "attack_flows": 202,
+          "benign_fpr": 0.0,
+          "attack_recall": 0.9900990099009901,
+          "class_recall": 0.9900990099009901
+        }
+      },
+      "imbalance_report": {
+        "strategy": "sqrt",
+        "rows_before": {
+          "0": 49113,
+          "2": 1936,
+          "3": 6,
+          "4": 9,
+          "6": 13
+        },
+        "rows_after": {
+          "0": 49113,
+          "2": 1936,
+          "3": 6,
+          "4": 9,
+          "6": 13
+        },
+        "class_weights": {
+          "0": 1.0,
+          "2": 5.036693868398887,
+          "3": 90.47375310000133,
+          "4": 73.87151006985034,
+          "6": 61.46481169679996
+        }
+      },
+      "fit_seconds": 18.65451774200028,
+      "leakage_checks": {
+        "train_rows_before_dedup": 51554,
+        "train_rows_after_dedup": 51077,
+        "test_rows": 16149,
+        "test_rows_with_identical_train_feature_vector": 192,
+        "dropped_identifier_columns": [
+          "Flow ID",
+          "Src IP",
+          "Dst IP",
+          "Timestamp",
+          "Src Port"
+        ]
+      },
+      "grouped": {
+        "benign_loco": [
+          {
+            "capture": "background_traffic_20230319T1802",
+            "flows": 5297,
+            "threshold": 0.7,
+            "false_positives": 0,
+            "fpr": 0.0,
+            "seconds": 23.19093901899987
+          },
+          {
+            "capture": "grafana_20230320T1603",
+            "flows": 10956,
+            "threshold": 0.7,
+            "false_positives": 0,
+            "fpr": 0.0,
+            "seconds": 22.53487876400004
+          },
+          {
+            "capture": "grafana_20230320T1710",
+            "flows": 17623,
+            "threshold": 0.4,
+            "false_positives": 0,
+            "fpr": 0.0,
+            "seconds": 20.649438052000278
+          },
+          {
+            "capture": "nodered_20230320T1759",
+            "flows": 26595,
+            "threshold": 0.7,
+            "false_positives": 20291,
+            "fpr": 0.762962962962963,
+            "seconds": 19.010586765000426
+          }
+        ],
+        "recon_loro": [
+          {
+            "run": "dataset:reconnaissance",
+            "attack_flows": 2206,
+            "benign_flows": 269,
+            "threshold": 0.9,
+            "attack_recall": 0.0,
+            "class_recall": 0.0,
+            "benign_fpr": 0.0
+          },
+          {
+            "run": "recon_run1",
+            "attack_flows": 303,
+            "benign_flows": 703,
+            "threshold": 0.7,
+            "attack_recall": 0.9834983498349835,
+            "class_recall": 0.9834983498349835,
+            "benign_fpr": 0.0
+          },
+          {
+            "run": "recon_run2",
+            "attack_flows": 202,
+            "benign_flows": 566,
+            "threshold": 0.2,
+            "attack_recall": 0.9900990099009901,
+            "class_recall": 0.9900990099009901,
+            "benign_fpr": 0.0
+          }
+        ],
+        "benign_loco_mean_fpr": 0.19074074074074074,
+        "benign_loco_max_fpr": 0.762962962962963,
+        "recon_loro_mean_recall": 0.6578657865786579,
+        "recon_loro_min_recall": 0.0
+      },
+      "profile": {
+        "model": "v2_xgb_sqrt",
+        "model_bytes": 2177552,
+        "rss_imports_mb": 236.0,
+        "rss_loaded_mb": 254.3,
+        "model_rss_mb": 18.2,
+        "peak_rss_mb": 301.6,
+        "load_seconds": 0.105,
+        "batch_rows": 16149,
+        "batch_ms": 319.04,
+        "batch_cpu_ms": 2375.59,
+        "batch_per_flow_us": 19.76,
+        "single_flow_median_ms": 31.471,
+        "single_flow_p95_ms": 41.848,
+        "pid": 86933
+      }
+    },
+    "v2_et_sqrt_selected": {
+      "name": "v2_et_sqrt_selected",
+      "model": "extratrees",
+      "imbalance": "sqrt",
+      "params": null,
+      "features": "selected",
+      "n_features": 8,
+      "decision": {
+        "attack_threshold": 0.8,
+        "validation_rows": 10214,
+        "validation_attack_rows": 435,
+        "chosen": {
+          "threshold": 0.8,
+          "f1_macro": 0.5966392484482566,
+          "benign_fpr": 0.0006135596686777789,
+          "attack_recall": 0.9885057471264368
+        },
+        "max_val_benign_fpr": 0.005,
+        "tuned": true
+      },
+      "test": {
+        "accuracy": 0.990154189113877,
+        "test_rows": 16149,
+        "precision_macro": 0.5948864838217376,
+        "recall_macro": 0.4499844719069328,
+        "f1_macro": 0.5026199390419313,
+        "precision_weighted": 0.9898555642604319,
+        "recall_weighted": 0.990154189113877,
+        "f1_weighted": 0.9894065488441189,
+        "per_class": [
+          {
+            "label": 0,
+            "name": "Benign",
+            "precision": 0.9904507257448434,
+            "recall": 0.9994860593601439,
+            "f1": 0.9949478800281384,
+            "support": 15566,
+            "recall_ci95": [
+              0.9989860845134255,
+              0.9997395544166456
+            ]
+          },
+          {
+            "label": 2,
+            "name": "Node-RED Reconnaissance",
+            "precision": 0.9839816933638444,
+            "recall": 0.7504363001745201,
+            "f1": 0.8514851485148515,
+            "support": 573,
+            "recall_ci95": [
+              0.7134127885259907,
+              0.7841241436231472
+            ]
+          },
+          {
+            "label": 3,
+            "name": "Node-RED RCE",
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 4,
+            "recall_ci95": [
+              0.0,
+              0.48990002040399916
+            ]
+          },
+          {
+            "label": 4,
+            "name": "Node-RED Container Escape",
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 2,
+            "recall_ci95": [
+              0.0,
+              0.6576280471103807
+            ]
+          },
+          {
+            "label": 6,
+            "name": "CVE-2019-20933",
+            "precision": 1.0,
+            "recall": 0.5,
+            "f1": 0.6666666666666666,
+            "support": 4,
+            "recall_ci95": [
+              0.15003570882017148,
+              0.8499642911798285
+            ]
+          }
+        ],
+        "labels": [
+          0,
+          2,
+          3,
+          4,
+          6
+        ],
+        "confusion_matrix": [
+          [
+            15558,
+            7,
+            0,
+            1,
+            0
+          ],
+          [
+            143,
+            430,
+            0,
+            0,
+            0
+          ],
+          [
+            3,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            2,
+            0,
+            0,
+            0,
+            2
+          ]
+        ],
+        "binary": {
+          "tp": 433,
+          "fp": 8,
+          "fn": 150,
+          "tn": 15558,
+          "detection_rate": 0.7427101200686106,
+          "false_positive_rate": 0.0005139406398560967,
+          "precision": 0.981859410430839
+        }
+      },
+      "lab": {
+        "benign_eval_a": {
+          "flows": 191,
+          "benign_flows": 191,
+          "attack_flows": 0,
+          "benign_fpr": 0.0
+        },
+        "benign_eval_b": {
+          "flows": 1450,
+          "benign_flows": 1450,
+          "attack_flows": 0,
+          "benign_fpr": 0.004137931034482759
+        },
+        "recon_run2": {
+          "flows": 768,
+          "benign_flows": 566,
+          "attack_flows": 202,
+          "benign_fpr": 0.01060070671378092,
+          "attack_recall": 0.9405940594059405,
+          "class_recall": 0.9405940594059405
+        }
+      },
+      "imbalance_report": {
+        "strategy": "sqrt",
+        "rows_before": {
+          "0": 49113,
+          "2": 1936,
+          "3": 6,
+          "4": 9,
+          "6": 13
+        },
+        "rows_after": {
+          "0": 49113,
+          "2": 1936,
+          "3": 6,
+          "4": 9,
+          "6": 13
+        },
+        "class_weights": {
+          "0": 1.0,
+          "2": 5.036693868398887,
+          "3": 90.47375310000133,
+          "4": 73.87151006985034,
+          "6": 61.46481169679996
+        }
+      },
+      "fit_seconds": 3.8056500050001887,
+      "leakage_checks": {
+        "train_rows_before_dedup": 51554,
+        "train_rows_after_dedup": 51077,
+        "test_rows": 16149,
+        "test_rows_with_identical_train_feature_vector": 192,
+        "dropped_identifier_columns": [
+          "Flow ID",
+          "Src IP",
+          "Dst IP",
+          "Timestamp",
+          "Src Port"
+        ]
+      },
+      "grouped": {
+        "benign_loco": [
+          {
+            "capture": "background_traffic_20230319T1802",
+            "flows": 5297,
+            "threshold": 0.8,
+            "false_positives": 0,
+            "fpr": 0.0,
+            "seconds": 7.628895377999925
+          },
+          {
+            "capture": "grafana_20230320T1603",
+            "flows": 10956,
+            "threshold": 0.9,
+            "false_positives": 0,
+            "fpr": 0.0,
+            "seconds": 7.242964581000251
+          },
+          {
+            "capture": "grafana_20230320T1710",
+            "flows": 17623,
+            "threshold": 0.8,
+            "false_positives": 0,
+            "fpr": 0.0,
+            "seconds": 6.958951180999975
+          },
+          {
+            "capture": "nodered_20230320T1759",
+            "flows": 26595,
+            "threshold": 0.9,
+            "false_positives": 19393,
+            "fpr": 0.7291972175220907,
+            "seconds": 6.048551208999925
+          }
+        ],
+        "recon_loro": [
+          {
+            "run": "dataset:reconnaissance",
+            "attack_flows": 2206,
+            "benign_flows": 269,
+            "threshold": 0.8,
+            "attack_recall": 0.0,
+            "class_recall": 0.0,
+            "benign_fpr": 0.0
+          },
+          {
+            "run": "recon_run1",
+            "attack_flows": 303,
+            "benign_flows": 703,
+            "threshold": 0.8,
+            "attack_recall": 0.9075907590759076,
+            "class_recall": 0.9075907590759076,
+            "benign_fpr": 0.0
+          },
+          {
+            "run": "recon_run2",
+            "attack_flows": 202,
+            "benign_flows": 566,
+            "threshold": 0.8,
+            "attack_recall": 0.9405940594059405,
+            "class_recall": 0.9405940594059405,
+            "benign_fpr": 0.01060070671378092
+          }
+        ],
+        "benign_loco_mean_fpr": 0.18229930438052266,
+        "benign_loco_max_fpr": 0.7291972175220907,
+        "recon_loro_mean_recall": 0.616061606160616,
+        "recon_loro_min_recall": 0.0
+      },
+      "profile": {
+        "model": "v2_et_sqrt_selected",
+        "model_bytes": 27715257,
+        "rss_imports_mb": 236.2,
+        "rss_loaded_mb": 289.8,
+        "model_rss_mb": 53.6,
+        "peak_rss_mb": 336.7,
+        "load_seconds": 0.175,
+        "batch_rows": 16149,
+        "batch_ms": 405.04,
+        "batch_cpu_ms": 875.43,
+        "batch_per_flow_us": 25.08,
+        "single_flow_median_ms": 52.308,
+        "single_flow_p95_ms": 64.752,
+        "pid": 86970
+      }
+    },
+    "v2_et_sqrt_small": {
+      "name": "v2_et_sqrt_small",
+      "model": "extratrees",
+      "imbalance": "sqrt",
+      "params": {
+        "n_estimators": 100,
+        "max_depth": 24
+      },
+      "features": "all",
+      "n_features": null,
+      "decision": {
+        "attack_threshold": 0.3,
+        "validation_rows": 10214,
+        "validation_attack_rows": 435,
+        "chosen": {
+          "threshold": 0.3,
+          "f1_macro": 0.5912403687091891,
+          "benign_fpr": 0.0015338991716944473,
+          "attack_recall": 0.9517241379310345
+        },
+        "max_val_benign_fpr": 0.005,
+        "tuned": true
+      },
+      "test": {
+        "accuracy": 0.9951699795652982,
+        "test_rows": 16149,
+        "precision_macro": 0.6291094192158075,
+        "recall_macro": 0.5977429888697768,
+        "f1_macro": 0.5879278618199442,
+        "precision_weighted": 0.9954742495895361,
+        "recall_weighted": 0.9951699795652982,
+        "f1_weighted": 0.995204562985557,
+        "per_class": [
+          {
+            "label": 0,
+            "name": "Benign",
+            "precision": 0.9994841039530534,
+            "recall": 0.9956957471412052,
+            "f1": 0.9975863289672706,
+            "support": 15566,
+            "recall_ci95": [
+              0.9945378796659509,
+              0.9966090052195063
+            ]
+          },
+          {
+            "label": 2,
+            "name": "Node-RED Reconnaissance",
+            "precision": 0.8960629921259843,
+            "recall": 0.9930191972076788,
+            "f1": 0.9420529801324503,
+            "support": 573,
+            "recall_ci95": [
+              0.9821895659197952,
+              0.9972820949312946
+            ]
+          },
+          {
+            "label": 3,
+            "name": "Node-RED RCE",
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 4,
+            "recall_ci95": [
+              0.0,
+              0.48990002040399916
+            ]
+          },
+          {
+            "label": 4,
+            "name": "Node-RED Container Escape",
+            "precision": 0.25,
+            "recall": 0.5,
+            "f1": 0.3333333333333333,
+            "support": 2,
+            "recall_ci95": [
+              0.09452865480086614,
+              0.9054713451991339
+            ]
+          },
+          {
+            "label": 6,
+            "name": "CVE-2019-20933",
+            "precision": 1.0,
+            "recall": 0.5,
+            "f1": 0.6666666666666666,
+            "support": 4,
+            "recall_ci95": [
+              0.15003570882017148,
+              0.8499642911798285
+            ]
+          }
+        ],
+        "labels": [
+          0,
+          2,
+          3,
+          4,
+          6
+        ],
+        "confusion_matrix": [
+          [
+            15499,
+            66,
+            0,
+            1,
+            0
+          ],
+          [
+            4,
+            569,
+            0,
+            0,
+            0
+          ],
+          [
+            3,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            1,
+            0,
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            1,
+            1,
+            2
+          ]
+        ],
+        "binary": {
+          "tp": 575,
+          "fp": 67,
+          "fn": 8,
+          "tn": 15499,
+          "detection_rate": 0.9862778730703259,
+          "false_positive_rate": 0.004304252858794809,
+          "precision": 0.8956386292834891
+        }
+      },
+      "lab": {
+        "benign_eval_a": {
+          "flows": 191,
+          "benign_flows": 191,
+          "attack_flows": 0,
+          "benign_fpr": 0.0
+        },
+        "benign_eval_b": {
+          "flows": 1450,
+          "benign_flows": 1450,
+          "attack_flows": 0,
+          "benign_fpr": 0.002758620689655172
+        },
+        "recon_run2": {
+          "flows": 768,
+          "benign_flows": 566,
+          "attack_flows": 202,
+          "benign_fpr": 0.0017667844522968198,
+          "attack_recall": 0.995049504950495,
+          "class_recall": 0.995049504950495
+        }
+      },
+      "imbalance_report": {
+        "strategy": "sqrt",
+        "rows_before": {
+          "0": 49113,
+          "2": 1936,
+          "3": 6,
+          "4": 9,
+          "6": 13
+        },
+        "rows_after": {
+          "0": 49113,
+          "2": 1936,
+          "3": 6,
+          "4": 9,
+          "6": 13
+        },
+        "class_weights": {
+          "0": 1.0,
+          "2": 5.036693868398887,
+          "3": 90.47375310000133,
+          "4": 73.87151006985034,
+          "6": 61.46481169679996
+        }
+      },
+      "fit_seconds": 2.63399901899993,
+      "leakage_checks": {
+        "train_rows_before_dedup": 51554,
+        "train_rows_after_dedup": 51077,
+        "test_rows": 16149,
+        "test_rows_with_identical_train_feature_vector": 192,
+        "dropped_identifier_columns": [
+          "Flow ID",
+          "Src IP",
+          "Dst IP",
+          "Timestamp",
+          "Src Port"
+        ]
+      },
+      "grouped": {
+        "benign_loco": [
+          {
+            "capture": "background_traffic_20230319T1802",
+            "flows": 5297,
+            "threshold": 0.3,
+            "false_positives": 0,
+            "fpr": 0.0,
+            "seconds": 6.497132826999859
+          },
+          {
+            "capture": "grafana_20230320T1603",
+            "flows": 10956,
+            "threshold": 0.4,
+            "false_positives": 8,
+            "fpr": 0.0007301935012778386,
+            "seconds": 5.399448336000205
+          },
+          {
+            "capture": "grafana_20230320T1710",
+            "flows": 17623,
+            "threshold": 0.4,
+            "false_positives": 0,
+            "fpr": 0.0,
+            "seconds": 4.72782264999978
+          },
+          {
+            "capture": "nodered_20230320T1759",
+            "flows": 26595,
+            "threshold": 0.5,
+            "false_positives": 20164,
+            "fpr": 0.7581876292536192,
+            "seconds": 4.786527808000301
+          }
+        ],
+        "recon_loro": [
+          {
+            "run": "dataset:reconnaissance",
+            "attack_flows": 2206,
+            "benign_flows": 269,
+            "threshold": 0.7,
+            "attack_recall": 0.0,
+            "class_recall": 0.0,
+            "benign_fpr": 0.0
+          },
+          {
+            "run": "recon_run1",
+            "attack_flows": 303,
+            "benign_flows": 703,
+            "threshold": 0.3,
+            "attack_recall": 0.9900990099009901,
+            "class_recall": 0.9900990099009901,
+            "benign_fpr": 0.007112375533428165
+          },
+          {
+            "run": "recon_run2",
+            "attack_flows": 202,
+            "benign_flows": 566,
+            "threshold": 0.3,
+            "attack_recall": 0.995049504950495,
+            "class_recall": 0.995049504950495,
+            "benign_fpr": 0.0017667844522968198
+          }
+        ],
+        "benign_loco_mean_fpr": 0.18972945568872424,
+        "benign_loco_max_fpr": 0.7581876292536192,
+        "recon_loro_mean_recall": 0.6617161716171617,
+        "recon_loro_min_recall": 0.0
+      },
+      "profile": {
+        "model": "v2_et_sqrt_small",
+        "model_bytes": 12042057,
+        "rss_imports_mb": 236.2,
+        "rss_loaded_mb": 258.8,
+        "model_rss_mb": 22.5,
+        "peak_rss_mb": 309.5,
+        "load_seconds": 0.063,
+        "batch_rows": 16149,
+        "batch_ms": 251.15,
+        "batch_cpu_ms": 463.63,
+        "batch_per_flow_us": 15.55,
+        "single_flow_median_ms": 35.941,
+        "single_flow_p95_ms": 49.358,
+        "pid": 87028
+      }
+    }
+  },
+  "total_seconds": 1670.0147524289998,
+  "profiled_at": "2026-10-31T05:22:00.703341+00:00"
+}

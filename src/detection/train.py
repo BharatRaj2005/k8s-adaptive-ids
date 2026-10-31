@@ -6,6 +6,7 @@ Examples:
     python -m src.detection.train --model lightgbm --label-policy attack_focused
     python -m src.detection.train --model lightgbm --split random     # optimistic comparison
     python -m src.detection.train --model pca_ae_nb                   # base-paper reference
+    python -m src.detection.train --model extratrees --label-policy evidence --imbalance sqrt --tune-threshold
 """
 from __future__ import annotations
 
@@ -23,7 +24,8 @@ import pandas as pd
 import sklearn
 
 from src.detection.evaluate import classification_metrics, measure_latency
-from src.detection.models import MODEL_NAMES, build_model, predict_proba
+from src.detection import imbalance as imb
+from src.detection.models import MODEL_NAMES, build_model, decide, predict_proba
 from src.preprocessing.cleaning import (
     background_like_mask,
     background_service_signatures,
@@ -31,9 +33,10 @@ from src.preprocessing.cleaning import (
     label_noise_analysis,
 )
 from src.preprocessing.dataset import CAPTURE, capture_prefix, dataset_manifest, load_dataset
+from src.preprocessing.labeling import STATUS, label_dataset, supported_classes, trainable_mask
 from src.preprocessing.pipeline import build_preprocessor
 from src.preprocessing.schema import DST_IP, DST_PORT, PROTOCOL, SRC_IP, SRC_PORT, TIMESTAMP, LABEL
-from src.preprocessing.splitting import TEST, TRAIN, make_split
+from src.preprocessing.splitting import TEST, TRAIN, make_split, temporal_split
 from src.utils.config import class_names, get_path, load_config
 from src.utils.logging_setup import get_logger
 from src.utils.native import ensure_libgomp
@@ -51,17 +54,69 @@ def feature_columns(df: pd.DataFrame, cfg: dict[str, Any]) -> list[str]:
     return cols
 
 
-def fit_model(train_df: pd.DataFrame, features: list[str], model_name: str, cfg: dict[str, Any]):
-    pre = build_preprocessor(cfg["features"]["correlation_threshold"])
+def fit_model(train_df: pd.DataFrame, features: list[str], model_name: str, cfg: dict[str, Any],
+              imbalance: dict[str, Any] | None = None, keep_features: list[str] | None = None,
+              params: dict[str, Any] | None = None, return_report: bool = False):
+    """Fit preprocessing and the classifier on training rows only.
+
+    imbalance=None keeps the configured model parameters as they are (including
+    any class_weight), which reproduces the original models. With a strategy spec,
+    class_weight is removed from the parameters and the strategy is applied instead.
+    """
+    pre = build_preprocessor(cfg["features"]["correlation_threshold"], keep_features)
     X = pre.fit_transform(train_df[features])
-    model = build_model(model_name, cfg["models"].get(model_name), cfg["training"]["random_state"])
-    model.fit(X, train_df[LABEL].to_numpy())
-    return pre, model
+    y = train_df[LABEL].to_numpy()
+    params = dict(cfg["models"].get(model_name) or {}) if params is None else dict(params)
+    weight, report = None, {"strategy": "config"}
+    if imbalance is not None:
+        params.pop("class_weight", None)
+        X, y, weight, report = imb.apply(X, y, imbalance, cfg["benign_label"], cfg["training"]["random_state"])
+    model = build_model(model_name, params, cfg["training"]["random_state"])
+    if weight is not None:
+        model.fit(X, y, sample_weight=weight)
+    else:
+        model.fit(X, y)
+    return (pre, model, report) if return_report else (pre, model)
 
 
-def predict_labels(pre, model, frame: pd.DataFrame, features: list[str]) -> tuple[np.ndarray, np.ndarray]:
+def predict_labels(pre, model, frame: pd.DataFrame, features: list[str], attack_threshold: float | None = None,
+                   benign_label: int = 0) -> tuple[np.ndarray, np.ndarray]:
     proba = predict_proba(model, pre.transform(frame[features]))
-    return np.asarray(model.classes_)[proba.argmax(axis=1)], proba.max(axis=1)
+    return decide(proba, model.classes_, benign_label, attack_threshold)
+
+
+def tune_threshold(train_df: pd.DataFrame, features: list[str], model_name: str, cfg: dict[str, Any],
+                   imbalance: dict[str, Any] | None = None, keep_features: list[str] | None = None,
+                   params: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Choose the attack-probability threshold on a validation split of the training data.
+
+    The validation part is the latest `val_fraction` of every training capture. The
+    test set is never touched. Objective: highest validation macro F1 among thresholds
+    whose validation benign FPR stays within `max_val_benign_fpr`. Plain argmax
+    (threshold None) competes as well.
+    """
+    tt = cfg["training"]["threshold_tuning"]
+    benign = cfg["benign_label"]
+    split = temporal_split(train_df, tt["val_fraction"])
+    inner = train_df[split == TRAIN]
+    val = train_df[split == TEST]
+    pre, model = fit_model(inner, features, model_name, cfg, imbalance, keep_features, params)
+    proba = predict_proba(model, pre.transform(val[features]))
+    labels = [int(c) for c in model.classes_]
+    y = val[LABEL].to_numpy()
+    rows = []
+    for t in [None, *tt["grid"]]:
+        pred, _ = decide(proba, model.classes_, benign, t)
+        m = classification_metrics(y, pred, labels, {}, benign)
+        rows.append({"threshold": t, "f1_macro": m["f1_macro"], "benign_fpr": m["binary"]["false_positive_rate"],
+                     "attack_recall": m["binary"]["detection_rate"]})
+    ok = [r for r in rows if (r["benign_fpr"] or 0.0) <= tt["max_val_benign_fpr"]]
+    if not ok:
+        ok = [min(rows, key=lambda r: r["benign_fpr"] or 0.0)]
+    best = max(ok, key=lambda r: (round(r["f1_macro"], 6), r["threshold"] or 0.5))
+    return {"attack_threshold": best["threshold"], "validation_rows": int(len(val)),
+            "validation_attack_rows": int((y != benign).sum()), "chosen": best, "grid": rows,
+            "max_val_benign_fpr": tt["max_val_benign_fpr"]}
 
 
 def apply_label_policy(df: pd.DataFrame, policy: str, signatures: set[str], cfg: dict[str, Any]):
@@ -69,6 +124,23 @@ def apply_label_policy(df: pd.DataFrame, policy: str, signatures: set[str], cfg:
     report: dict[str, Any] = {"policy": policy}
     if policy == "dataset":
         return df, report
+    if policy == "evidence":
+        # Per-flow evidence labels (src/preprocessing/labeling.py). Infrastructure
+        # signatures come from the training part of the background capture only.
+        bg_prefix = cfg["dataset"]["background_capture_prefix"]
+        bg_train = df[(df[CAPTURE].map(capture_prefix) == bg_prefix) & (df[SPLIT] == TRAIN)]
+        labelled = label_dataset(df, cfg, signature_source=bg_train)
+        supported, counts = supported_classes(labelled, cfg)
+        keep = trainable_mask(labelled, cfg) & labelled[LABEL].isin([benign, *supported])
+        names = class_names(cfg)
+        report.update(
+            status_counts={k: int(v) for k, v in labelled[STATUS].value_counts().items()},
+            attack_evidence_counts=counts, trained_attack_classes=supported,
+            untrained_classes={c: names[c] for c in counts if c not in supported},
+            background_action=cfg["labeling"]["background_action"],
+            dropped_rows=int((~keep).sum()),
+        )
+        return labelled.loc[keep], report
     if policy != "attack_focused":
         raise ValueError(f"unknown label policy: {policy}")
     if not signatures:
@@ -89,7 +161,9 @@ def apply_label_policy(df: pd.DataFrame, policy: str, signatures: set[str], cfg:
 
 
 def benign_holdout_eval(df: pd.DataFrame, features: list[str], capture: str, model_name: str,
-                        cfg: dict[str, Any]) -> dict[str, Any]:
+                        cfg: dict[str, Any], imbalance: dict[str, Any] | None = None,
+                        keep_features: list[str] | None = None, params: dict[str, Any] | None = None,
+                        attack_threshold: float | None = None) -> dict[str, Any]:
     """Retrain without one whole benign capture and measure false positives on it."""
     benign = cfg["benign_label"]
     hold = df[df[CAPTURE] == capture]
@@ -98,8 +172,8 @@ def benign_holdout_eval(df: pd.DataFrame, features: list[str], capture: str, mod
     if (hold[LABEL] != benign).any():
         return {"skipped": f"capture {capture} is not benign"}
     train_df = df[(df[SPLIT] == TRAIN) & (df[CAPTURE] != capture)].drop_duplicates(subset=features + [LABEL])
-    pre, model = fit_model(train_df, features, model_name, cfg)
-    pred, _ = predict_labels(pre, model, hold, features)
+    pre, model = fit_model(train_df, features, model_name, cfg, imbalance, keep_features, params)
+    pred, _ = predict_labels(pre, model, hold, features, attack_threshold, benign)
     fp = pred != benign
     names = class_names(cfg)
     fp_classes = pd.Series(pred[fp]).value_counts()
@@ -112,10 +186,11 @@ def benign_holdout_eval(df: pd.DataFrame, features: list[str], capture: str, mod
     }
 
 
-def lab_eval_metrics(pre, model, lab: pd.DataFrame, features: list[str], cfg: dict[str, Any]) -> dict[str, Any]:
+def lab_eval_metrics(pre, model, lab: pd.DataFrame, features: list[str], cfg: dict[str, Any],
+                     attack_threshold: float | None = None) -> dict[str, Any]:
     """Benign false-positive rate and attack detection on a held-out lab set."""
     benign = cfg["benign_label"]
-    pred, conf = predict_labels(pre, model, lab, features)
+    pred, conf = predict_labels(pre, model, lab, features, attack_threshold, benign)
     y = lab[LABEL].to_numpy()
     is_b, mal = y == benign, pred != benign
     out: dict[str, Any] = {"flows": int(len(lab)), "benign_flows": int(is_b.sum()), "attack_flows": int((~is_b).sum()),
@@ -151,6 +226,10 @@ def run_training(
     benign_holdout: str | None = "config",
     lab_train: list[str] | None = None,
     lab_eval: list[str] | None = None,
+    imbalance: dict[str, Any] | None = None,
+    keep_features: list[str] | None = None,
+    model_params: dict[str, Any] | None = None,
+    tune: bool = False,
 ) -> dict[str, Any]:
     cfg = cfg or load_config()
     tr = cfg["training"]
@@ -215,12 +294,19 @@ def run_training(
     test_hashes = pd.util.hash_pandas_object(test_df[features], index=False)
     identical_in_train = int(test_hashes.isin(train_hashes).sum())
 
+    decision: dict[str, Any] = {"attack_threshold": None, "tuned": False}
+    if tune:
+        decision = {**tune_threshold(train_df, features, model_name, cfg, imbalance, keep_features, model_params),
+                    "tuned": True}
+    threshold = decision["attack_threshold"]
+
     t_fit = time.perf_counter()
-    pre, model = fit_model(train_df, features, model_name, cfg)
+    pre, model, imbalance_report = fit_model(train_df, features, model_name, cfg, imbalance, keep_features,
+                                             model_params, return_report=True)
     fit_seconds = time.perf_counter() - t_fit
     labels = [int(c) for c in model.classes_]
 
-    y_pred, conf = predict_labels(pre, model, test_df, features)
+    y_pred, conf = predict_labels(pre, model, test_df, features, threshold, benign)
     metrics = classification_metrics(test_df[LABEL].to_numpy(), y_pred, labels, names, benign)
     latency = measure_latency(pre, model, test_df[features], tr["latency_samples"], tr["random_state"])
 
@@ -231,11 +317,13 @@ def run_training(
         for set_name in lab_eval:
             if set_name in lab_train:
                 raise ValueError(f"lab set {set_name} is used for training and cannot be an evaluation set")
-            lab_results[set_name] = lab_eval_metrics(pre, model, load_lab_set(set_name, cfg), features, cfg)
+            lab_results[set_name] = lab_eval_metrics(pre, model, load_lab_set(set_name, cfg), features, cfg,
+                                                     threshold)
 
     holdout_capture = tr.get("benign_holdout_capture") if benign_holdout == "config" else benign_holdout
     holdout = (
-        benign_holdout_eval(df, features, holdout_capture, model_name, cfg) if holdout_capture
+        benign_holdout_eval(df, features, holdout_capture, model_name, cfg, imbalance, keep_features, model_params,
+                            threshold) if holdout_capture
         else {"skipped": "disabled"}
     )
 
@@ -244,6 +332,7 @@ def run_training(
     joblib.dump(pre, out / "preprocessor.joblib")
     joblib.dump(model, out / "model.joblib")
     cleaner = pre.named_steps["clean"]
+    _write_json(out / "decision.json", decision)
     _write_json(out / "class_mapping.json", {
         "benign_label": benign,
         "model_classes": {str(c): names[c] for c in labels},
@@ -281,6 +370,10 @@ def run_training(
             "dropped_identifier_columns": cfg["features"]["drop_columns"],
         },
         "label_policy_report": policy_report,
+        "imbalance": imbalance_report,
+        "keep_features": keep_features,
+        "decision": {k: v for k, v in decision.items() if k != "grid"},
+        "model_bytes": sum(f.stat().st_size for f in out.glob("*.joblib")),
         "label_noise_analysis": noise,
         "split_counts_by_capture": split_counts,
         "fit_seconds": fit_seconds,
@@ -289,7 +382,10 @@ def run_training(
     _write_json(out / "metrics.json", result)
     _write_json(out / "training_config.json", {
         "model": model_name,
-        "model_params": cfg["models"].get(model_name),
+        "model_params": model_params if model_params is not None else cfg["models"].get(model_name),
+        "imbalance": imbalance,
+        "keep_features": keep_features,
+        "attack_threshold": threshold,
         "label_policy": label_policy,
         "split": split_method,
         "test_fraction": tr["test_fraction"],
@@ -305,6 +401,7 @@ def run_training(
             "pandas": pd.__version__,
             "numpy": np.__version__,
             "lightgbm": __import__("lightgbm").__version__ if model_name == "lightgbm" else None,
+            "xgboost": __import__("xgboost").__version__ if model_name == "xgboost" else None,
             "libgomp": libgomp,
         },
     })
@@ -325,6 +422,11 @@ def run_training(
         "trained_at": result["trained_at"], "classes": len(labels),
         "accuracy": metrics["accuracy"], "f1_macro": metrics["f1_macro"], "f1_weighted": metrics["f1_weighted"],
         "benign_holdout_fpr": holdout.get("false_positive_rate"),
+        "recall_macro": metrics["recall_macro"],
+        "attack_recall": metrics["binary"]["detection_rate"],
+        "benign_fpr": metrics["binary"]["false_positive_rate"],
+        "attack_threshold": threshold,
+        "imbalance": (imbalance or {}).get("strategy", "config"),
         "lab_train_sets": lab_train,
         "lab_evaluation": lab_results,
     })
@@ -336,7 +438,9 @@ def run_training(
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--model", choices=MODEL_NAMES, default=load_config()["training"]["default_model"])
-    ap.add_argument("--label-policy", choices=("dataset", "attack_focused"))
+    ap.add_argument("--label-policy", choices=("dataset", "attack_focused", "evidence"))
+    ap.add_argument("--imbalance", choices=imb.STRATEGIES, help="override the configured class weighting")
+    ap.add_argument("--tune-threshold", action="store_true", help="tune the attack threshold on validation data")
     ap.add_argument("--split", choices=("temporal", "random"))
     ap.add_argument("--name", help="output directory name under models/")
     ap.add_argument("--no-holdout", action="store_true", help="skip the benign-capture holdout evaluation")
@@ -345,7 +449,8 @@ def main(argv: list[str] | None = None) -> None:
     args = ap.parse_args(argv)
     res = run_training(args.model, args.label_policy, args.split, args.name,
                        benign_holdout=None if args.no_holdout else "config",
-                       lab_train=args.lab_train, lab_eval=args.lab_eval)
+                       lab_train=args.lab_train, lab_eval=args.lab_eval,
+                       imbalance={"strategy": args.imbalance} if args.imbalance else None, tune=args.tune_threshold)
     t = res["test"]
     print(f"\n{res['name']}: accuracy={t['accuracy']:.4f} macroF1={t['f1_macro']:.4f} "
           f"weightedF1={t['f1_weighted']:.4f} binaryFPR={t['binary']['false_positive_rate']}")

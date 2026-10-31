@@ -286,5 +286,465 @@
         "attack_correct_conf_ge_0.9": 0.0
       }
     }
+  },
+  "v2_et_sqrt": {
+    "model": "extratrees",
+    "label_policy": "evidence",
+    "split": "temporal",
+    "trained_at": "2026-10-31T04:56:39.388080+00:00",
+    "classes": 5,
+    "accuracy": 0.9980803764939006,
+    "f1_macro": 0.59584427505913,
+    "f1_weighted": 0.9980146801232201,
+    "benign_holdout_fpr": null,
+    "recall_macro": 0.5976744858743684,
+    "attack_recall": 0.9828473413379074,
+    "benign_fpr": 0.0011563664396762173,
+    "attack_threshold": 0.3,
+    "imbalance": "sqrt",
+    "lab_train_sets": [
+      "benign_train",
+      "recon_run1"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.001379310344827586,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9900990099009901,
+        "attack_detected_correct_class": 0.9900990099009901,
+        "attack_correct_conf_ge_0.9": 0.7128712871287128
+      }
+    }
+  },
+  "v2_et_balanced": {
+    "model": "extratrees",
+    "label_policy": "evidence",
+    "split": "temporal",
+    "trained_at": "2026-10-31T04:54:49.565629+00:00",
+    "classes": 5,
+    "accuracy": 0.9977088364604619,
+    "f1_macro": 0.5947771909808148,
+    "f1_weighted": 0.9976463255413044,
+    "benign_holdout_fpr": null,
+    "recall_macro": 0.5969250115311506,
+    "attack_recall": 0.9794168096054888,
+    "benign_fpr": 0.0014133367596042656,
+    "attack_threshold": 0.3,
+    "imbalance": "balanced",
+    "lab_train_sets": [
+      "benign_train",
+      "recon_run1"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.002758620689655172,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9900990099009901,
+        "attack_detected_correct_class": 0.9900990099009901,
+        "attack_correct_conf_ge_0.9": 0.7227722772277227
+      }
+    }
+  },
+  "v2_et_none": {
+    "model": "extratrees",
+    "label_policy": "evidence",
+    "split": "temporal",
+    "trained_at": "2026-10-31T04:58:17.188667+00:00",
+    "classes": 5,
+    "accuracy": 0.9982042231717134,
+    "f1_macro": 0.7290347184282975,
+    "f1_weighted": 0.9982437799208037,
+    "benign_holdout_fpr": null,
+    "recall_macro": 0.7479978289819916,
+    "attack_recall": 0.9914236706689536,
+    "benign_fpr": 0.0012848515996402416,
+    "attack_threshold": 0.3,
+    "imbalance": "none",
+    "lab_train_sets": [
+      "benign_train",
+      "recon_run1"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.000689655172413793,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9900990099009901,
+        "attack_detected_correct_class": 0.9900990099009901,
+        "attack_correct_conf_ge_0.9": 0.7128712871287128
+      }
+    }
+  },
+  "v2_et_smote": {
+    "model": "extratrees",
+    "label_policy": "evidence",
+    "split": "temporal",
+    "trained_at": "2026-10-31T04:59:23.425255+00:00",
+    "classes": 5,
+    "accuracy": 0.9969038330546783,
+    "f1_macro": 0.7728862146316797,
+    "f1_weighted": 0.9969771983743155,
+    "benign_holdout_fpr": null,
+    "recall_macro": 0.8480513532536904,
+    "attack_recall": 0.9948542024013722,
+    "benign_fpr": 0.0027624309392265192,
+    "attack_threshold": 0.3,
+    "imbalance": "smote",
+    "lab_train_sets": [
+      "benign_train",
+      "recon_run1"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.002758620689655172,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9900990099009901,
+        "attack_detected_correct_class": 0.9900990099009901,
+        "attack_correct_conf_ge_0.9": 0.7574257425742574
+      }
+    }
+  },
+  "v2_et_under": {
+    "model": "extratrees",
+    "label_policy": "evidence",
+    "split": "temporal",
+    "trained_at": "2026-10-31T05:00:33.174500+00:00",
+    "classes": 5,
+    "accuracy": 0.9942411294817016,
+    "f1_macro": 0.5354167266442923,
+    "f1_weighted": 0.9944080185053393,
+    "benign_holdout_fpr": null,
+    "recall_macro": 0.5478864527534505,
+    "attack_recall": 0.9948542024013722,
+    "benign_fpr": 0.005332134138507002,
+    "attack_threshold": 0.3,
+    "imbalance": "undersample",
+    "lab_train_sets": [
+      "benign_train",
+      "recon_run1"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.010471204188481676,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.007586206896551724,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.00530035335689046,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.995049504950495,
+        "attack_detected_correct_class": 0.995049504950495,
+        "attack_correct_conf_ge_0.9": 0.7475247524752475
+      }
+    }
+  },
+  "v2_rf_balanced": {
+    "model": "random_forest",
+    "label_policy": "evidence",
+    "split": "temporal",
+    "trained_at": "2026-10-31T05:01:32.403486+00:00",
+    "classes": 5,
+    "accuracy": 0.9929407393646665,
+    "f1_macro": 0.5534607616437979,
+    "f1_weighted": 0.9930843900225332,
+    "benign_holdout_fpr": null,
+    "recall_macro": 0.5482890171647653,
+    "attack_recall": 0.9914236706689536,
+    "benign_fpr": 0.0068097134780932805,
+    "attack_threshold": 0.3,
+    "imbalance": "balanced",
+    "lab_train_sets": [
+      "benign_train",
+      "recon_run1"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.02617801047120419,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.017241379310344827,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.026501766784452298,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.7871287128712872
+      }
+    }
+  },
+  "v2_lgbm_balanced": {
+    "model": "lightgbm",
+    "label_policy": "evidence",
+    "split": "temporal",
+    "trained_at": "2026-10-31T05:04:27.062761+00:00",
+    "classes": 5,
+    "accuracy": 0.9968419097157719,
+    "f1_macro": 0.6914501366077872,
+    "f1_weighted": 0.9966839830344342,
+    "benign_holdout_fpr": null,
+    "recall_macro": 0.6869698781902382,
+    "attack_recall": 0.9296740994854202,
+    "benign_fpr": 0.0005781832198381087,
+    "attack_threshold": 0.8,
+    "imbalance": "balanced",
+    "lab_train_sets": [
+      "benign_train",
+      "recon_run1"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9851485148514851,
+        "attack_detected_correct_class": 0.9851485148514851,
+        "attack_correct_conf_ge_0.9": 0.9851485148514851
+      }
+    }
+  },
+  "v2_xgb_sqrt": {
+    "model": "xgboost",
+    "label_policy": "evidence",
+    "split": "temporal",
+    "trained_at": "2026-10-31T05:10:55.212955+00:00",
+    "classes": 5,
+    "accuracy": 0.9982661465106198,
+    "f1_macro": 0.6958020870885793,
+    "f1_weighted": 0.9981406186793301,
+    "benign_holdout_fpr": null,
+    "recall_macro": 0.6953339930250273,
+    "attack_recall": 0.9708404802744426,
+    "benign_fpr": 0.0006424257998201208,
+    "attack_threshold": 0.2,
+    "imbalance": "sqrt",
+    "lab_train_sets": [
+      "benign_train",
+      "recon_run1"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.000689655172413793,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9900990099009901,
+        "attack_detected_correct_class": 0.9900990099009901,
+        "attack_correct_conf_ge_0.9": 0.9752475247524752
+      }
+    }
+  },
+  "v2_et_sqrt_selected": {
+    "model": "extratrees",
+    "label_policy": "evidence",
+    "split": "temporal",
+    "trained_at": "2026-10-31T05:16:13.573470+00:00",
+    "classes": 5,
+    "accuracy": 0.990154189113877,
+    "f1_macro": 0.5026199390419313,
+    "f1_weighted": 0.9894065488441189,
+    "benign_holdout_fpr": null,
+    "recall_macro": 0.4499844719069328,
+    "attack_recall": 0.7427101200686106,
+    "benign_fpr": 0.0005139406398560967,
+    "attack_threshold": 0.8,
+    "imbalance": "sqrt",
+    "lab_train_sets": [
+      "benign_train",
+      "recon_run1"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.004137931034482759,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.01060070671378092,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9405940594059405,
+        "attack_detected_correct_class": 0.9405940594059405,
+        "attack_correct_conf_ge_0.9": 0.900990099009901
+      }
+    }
+  },
+  "v2_et_sqrt_small": {
+    "model": "extratrees",
+    "label_policy": "evidence",
+    "split": "temporal",
+    "trained_at": "2026-10-31T05:17:46.718828+00:00",
+    "classes": 5,
+    "accuracy": 0.9951699795652982,
+    "f1_macro": 0.5879278618199442,
+    "f1_weighted": 0.995204562985557,
+    "benign_holdout_fpr": null,
+    "recall_macro": 0.5977429888697768,
+    "attack_recall": 0.9862778730703259,
+    "benign_fpr": 0.004304252858794809,
+    "attack_threshold": 0.3,
+    "imbalance": "sqrt",
+    "lab_train_sets": [
+      "benign_train",
+      "recon_run1"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.002758620689655172,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.0017667844522968198,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.995049504950495,
+        "attack_detected_correct_class": 0.995049504950495,
+        "attack_correct_conf_ge_0.9": 0.7326732673267327
+      }
+    }
   }
 }

@@ -271,6 +271,12 @@ def deception_interactions(limit: int = Query(200, ge=1, le=5000), decoy: str | 
     return queries.interactions(limit, decoy, CFG)
 
 
+@app.get("/api/deception/interaction-summary")
+def deception_interaction_summary(src_ip: str | None = Query(None, max_length=64)):
+    """Decoy interactions summarised per (source, decoy): requests, distinct paths, unknown-path share, status codes and a category (enumerating, repeated_access, exploring, single_probe)."""
+    return queries.interaction_summary(src_ip, CFG)
+
+
 @app.post("/api/deception/enable")
 def deception_enable():
     """Enable automatic deception. Only evidence arriving after this call is acted on."""

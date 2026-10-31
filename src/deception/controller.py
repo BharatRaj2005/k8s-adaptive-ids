@@ -3,9 +3,11 @@
 Monitor   new ML detections, flow bursts and simulated test events; decoy status
           from Kubernetes; decoy interactions from decoy logs
 Analyze   group evidence by (source, attack class); apply confidence thresholds,
-          repeated-evidence and corroboration rules
-Plan      map the class (or burst target port) to decoy profiles; choose deploy,
-          scale, refresh or a suppression (limit, cooldown) per profile
+          repeated-evidence and corroboration rules; correlate all evidence of a
+          source into one incident (ML, behaviour, earlier decoy interactions)
+Plan      map the class (or burst target port) to decoy profiles, ordered by the
+          attacked application, the source's own decoy engagement and overall
+          engagement; choose deploy, scale, refresh or a suppression per profile
 Execute   create / scale / remove decoys through DecoyManager
 Knowledge SQLite: every decision with its reason and evidence, decoy lifecycle,
           interactions; past engagement reorders profile choice and drives density
@@ -25,6 +27,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from src.deception.k8s_decoys import _NAME_RE as DECOY_NAME_RE, DecoyError, decoy_name
+from src.deception.profiling import summarize
 from src.utils import db
 from src.utils.config import load_config
 from src.utils.logging_setup import get_logger
@@ -137,9 +140,12 @@ class MapeKController:
                 "AND src_ip IS ? AND detected_at >= ?", (cls, src, since)).fetchone()[0]
             corroborated = src is not None and c.execute(
                 "SELECT COUNT(*) FROM behavior_alerts WHERE src_ip = ? AND detected_at >= ?", (src, since)).fetchone()[0] > 0
-            out.append(self._assess("ml", src, cls, max(r["confidence"] for r in rows), max(history, len(rows)),
-                                    corroborated, {"detection_ids": [r["id"] for r in rows[:50]], "batch": len(rows)},
-                                    simulated=False))
+            a = self._assess("ml", src, cls, max(r["confidence"] for r in rows), max(history, len(rows)),
+                             corroborated, {"detection_ids": [r["id"] for r in rows[:50]], "batch": len(rows)},
+                             simulated=False)
+            ports = [r["dst_port"] for r in rows if r.get("dst_port") is not None]
+            a["target_port"] = max(set(ports), key=ports.count) if ports else None
+            out.append(a)
 
         for e in ev["simulated"]:
             out.append(self._assess("simulated", e["src_ip"], e["attack_class"], e["confidence"], e["count"], False,
@@ -149,20 +155,71 @@ class MapeKController:
         for a in ev["alerts"]:
             bursts[(a["src_ip"], a["dst_port"])].append(a)
         for (src, port), rows in bursts.items():
-            a = max(rows, key=lambda r: r["flows"])
+            high = [r for r in rows if (r.get("severity") or "high") == "high"]
+            a = max(high or rows, key=lambda r: r["flows"])
+            kind = a.get("alert_type") or "flow_burst"
             windows = c.execute("SELECT COUNT(*) FROM behavior_alerts WHERE src_ip = ? AND dst_port = ? AND detected_at >= ?",
                                 (src, port, since)).fetchone()[0]
+            count = max(windows, len(rows))
+            if high:
+                assessment, actionable, why = "high", True, "fixed flow-burst rule"
+            else:
+                # learned-threshold alerts need repetition or an ML detection from the same source
+                ml = c.execute("SELECT COUNT(*) FROM detections WHERE src_ip = ? AND is_malicious = 1 AND simulated = 0 "
+                               "AND detected_at >= ?", (src, since)).fetchone()[0]
+                need = th["behavior_repeat_count"]
+                actionable = count >= need or ml > 0
+                assessment = "medium"
+                why = (f"{count} alert window(s) >= {need}" if count >= need else
+                       f"corroborated by {ml} ML detection(s)" if ml else
+                       f"{count}/{need} alert windows, awaiting evidence")
+            measure = (f"{a['flows']} flows in {a['window_s']:.0f}s ({a['rate_per_s']}/s)" if kind != "slow_scan" else
+                       f"{json.loads(a.get('details') or '{}').get('horizon_flows', '?')} flows in the last "
+                       f"{json.loads(a.get('details') or '{}').get('horizon_s', 0):.0f}s")
             out.append({
-                "trigger": "behavior", "src_ip": src, "attack_class": "Reconnaissance (flow burst)",
-                "assessment": "high", "max_confidence": None, "evidence_count": max(windows, len(rows)),
-                "actionable": True, "target_port": port, "simulated": False,
-                "reason": (f"flow burst: {a['flows']} flows in {a['window_s']:.0f}s ({a['rate_per_s']}/s) from "
-                           f"{src} to {a['dst_ip']}:{port} (threshold {self.cfg['behavior']['min_flows']}); "
-                           f"{max(windows, len(rows))} burst window(s) in {th['repeat_window_seconds']}s"),
+                "trigger": "behavior", "src_ip": src,
+                "attack_class": {"flow_burst": "Reconnaissance (flow burst)", "adaptive_rate": "Reconnaissance (adaptive rate)",
+                                 "slow_scan": "Reconnaissance (slow scan)"}.get(kind, f"Reconnaissance ({kind})"),
+                "assessment": assessment, "max_confidence": None, "evidence_count": count,
+                "actionable": actionable, "target_port": port, "simulated": False,
+                "reason": (f"{kind.replace('_', ' ')}: {measure} from {src} to {a['dst_ip']}:{port} "
+                           f"(threshold {a.get('threshold') or self.cfg['behavior']['min_flows']}); {why}; "
+                           f"{count} alert window(s) in {th['repeat_window_seconds']}s"),
                 "evidence": {"behavior_alert_ids": [r["id"] for r in rows],
+                             "alert_types": sorted({r.get("alert_type") or "flow_burst" for r in rows}),
                              "ml_classes": json.loads(a["ml_classes"] or "{}")},
             })
-        return out
+        return self.correlate(c, out)
+
+    def correlate(self, c, assessments: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """One incident per source: annotate every assessment with all evidence of that
+        source and order actionable, stronger evidence first, so the decoy chosen for a
+        source is decided once per cycle (later duplicates become refreshes)."""
+        by_src: dict[Any, list[dict]] = defaultdict(list)
+        for a in assessments:
+            if not a["simulated"]:
+                by_src[a["src_ip"]].append(a)
+        for src, group in by_src.items():
+            hist = db.query_df(c, "SELECT * FROM interactions WHERE src_ip IS ?", (src,)) if src else None
+            engaged = summarize(hist, self.d["profiling"]) if hist is not None else []
+            info = {
+                "incident": f"src:{src}",
+                "detectors": sorted({a["trigger"] for a in group}),
+                "ml_classes": sorted({a["attack_class"] for a in group if a["trigger"] == "ml"}),
+                "behavior_classes": sorted({a["attack_class"] for a in group if a["trigger"] == "behavior"}),
+                "prior_decoy_engagement": [{k: e[k] for k in ("decoy_name", "decoy_profile", "requests", "category")}
+                                           for e in engaged],
+            }
+            for a in group:
+                a["evidence"] = {**(a.get("evidence") or {}), "correlation": info}
+                if len(info["detectors"]) > 1:
+                    a["reason"] += "; ML and behavioural evidence from the same source"
+                if engaged:
+                    a["reason"] += (f"; source already engaged {len(engaged)} decoy(s) "
+                                    f"({', '.join(e['decoy_profile'] or e['decoy_name'] for e in engaged)})")
+        rank = {"high": 0, "medium": 1, "low": 2, "benign": 3, "n/a": 4}
+        return sorted(assessments, key=lambda a: (a["simulated"], not a["actionable"], rank.get(a["assessment"], 5),
+                                                  -(a.get("evidence_count") or 0)))
 
     def _assess(self, trigger, src, cls, conf, count, corroborated, evidence, simulated) -> dict[str, Any]:
         th = self.d["thresholds"]
@@ -188,16 +245,33 @@ class MapeKController:
                 "reason": tag + f"confidence {conf:.2f} below {th['medium_confidence']}; recorded and monitored"}
 
     # --- Plan -----------------------------------------------------------------------
-    def _profiles_for(self, c, a: dict[str, Any]) -> list[str]:
+    def _profiles_for(self, c, a: dict[str, Any]) -> tuple[list[str], str]:
+        """Candidate profiles in preference order, with the reason for that order."""
+        pol = self.d["behavior_policy"]
         if a["trigger"] == "behavior":
-            pol = self.d["behavior_policy"]
             profiles = list(pol.get(str(a["target_port"]), pol["default"]))
         else:
             profiles = list(self.d["attack_policy"][a["attack_class"]])
-        # Knowledge: profiles that attracted more interactions before come first.
-        engagement = {r["decoy_profile"]: r["n"] for r in c.execute(
-            "SELECT decoy_profile, COUNT(*) n FROM interactions GROUP BY decoy_profile")}
-        return sorted(profiles, key=lambda p: (-engagement.get(p, 0), profiles.index(p)))
+        # 1) the decoy of the attacked application (by destination port), when the policy allows it
+        app = set(pol.get(str(a.get("target_port")), [])) if a.get("target_port") is not None else set()
+        # 2) Knowledge: decoys this source already engaged with, 3) decoys that engaged more sources overall
+        summaries = summarize(db.query_df(c, "SELECT * FROM interactions"), self.d["profiling"])
+        own = {s["decoy_profile"] for s in summaries if a.get("src_ip") and s["src_ip"] == a["src_ip"]}
+        engaged_sources: dict[str, int] = defaultdict(int)
+        for s in summaries:
+            if s["category"] != "single_probe" and s["decoy_profile"]:
+                engaged_sources[s["decoy_profile"]] += 1
+        ordered = sorted(profiles, key=lambda p: (p not in app, p not in own, -engaged_sources.get(p, 0),
+                                                  profiles.index(p)))
+        why = []
+        if app & set(profiles):
+            why.append(f"matches attacked service :{a['target_port']}")
+        if own & set(profiles):
+            why.append("source engaged before")
+        if any(engaged_sources.get(p) for p in profiles):
+            why.append("engagement history " + ", ".join(f"{p}={engaged_sources[p]}" for p in ordered
+                                                          if engaged_sources.get(p)))
+        return ordered, "; ".join(why)
 
     def plan(self, c, assessments: list[dict[str, Any]]) -> list[dict[str, Any]]:
         now = now_utc()
@@ -211,7 +285,8 @@ class MapeKController:
                 actions.append({**a, "action": "await_evidence" if a["assessment"] == "medium" else "monitor",
                                 "profile": None})
                 continue
-            for profile in self._profiles_for(c, a):
+            profiles, why = self._profiles_for(c, a)
+            for profile in profiles:
                 name = decoy_name(profile)
                 act = {**a, "profile": profile, "name": name}
                 if name in planned:
@@ -238,7 +313,8 @@ class MapeKController:
                     # The cooldown is measured from deployments of earlier cycles, so every
                     # profile mapped to this assessment can be deployed together.
                     actions.append({**act, "action": "deploy",
-                                    "reason": a["reason"] + f"; policy {a['attack_class']} -> {profile}"})
+                                    "reason": a["reason"] + f"; policy {a['attack_class']} -> {profile}"
+                                              + (f" ({why})" if why else "")})
                     active_count += 1
                 planned.add(name)
         return actions
