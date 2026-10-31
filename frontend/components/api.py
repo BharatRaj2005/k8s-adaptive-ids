@@ -108,6 +108,33 @@ def captures(limit=100):
     return read("/api/captures", lambda: queries.captures(limit), limit=limit)
 
 
+def monitoring_overview(windows=60):
+    def offline():
+        out = queries.monitoring_overview(windows)
+        out["capture"] = {"status": "unknown (backend offline)", "running": False}
+        out["pending"] = []
+        out["simulations"] = queries.simulation_runs(5)
+        return out
+    return read("/api/monitoring/overview", offline, windows=windows)
+
+
+def monitoring_feed(after_id=0, limit=300, **filters):
+    return read("/api/monitoring/feed", lambda: queries.monitoring_feed(after_id, limit, **filters),
+                after_id=after_id, limit=limit, **filters)
+
+
+def simulation_scenarios():
+    return read("/api/simulations/scenarios")       # needs the backend: no offline catalogue of runnable Jobs
+
+
+def simulation_logs(run_id: str, tail: int = 60):
+    return read(f"/api/simulations/{run_id}/logs", tail=tail)
+
+
+def simulation_cleanup(run_id: str):
+    return read(f"/api/simulations/{run_id}/cleanup")
+
+
 def capture_status():
     return read("/api/capture/status", lambda: {"service": {"status": "unknown (backend offline)", "running": False},
                                                 "recent": queries.captures(20), "pending": []})

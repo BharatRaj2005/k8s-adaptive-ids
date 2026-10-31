@@ -16,6 +16,8 @@ from src.backend.app import app  # noqa: E402
 GROUPS = [("Health & metrics", ("/api/health", "/api/metrics", "/api/classes")),
           ("Detections", ("/api/detections", "/api/alerts", "/api/datasets", "/api/detection/")),
           ("Capture", ("/api/capture", "/api/captures")),
+          ("Live security monitoring", ("/api/monitoring",)),
+          ("Attack simulator", ("/api/simulations",)),
           ("Deception (MAPE-K)", ("/api/deception",)),
           ("Kubernetes & model", ("/api/kubernetes", "/api/model"))]
 

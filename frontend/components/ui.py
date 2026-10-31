@@ -44,6 +44,11 @@ CSS = f"""
 .ids-stage {{display:inline-block; padding:6px 14px; margin:0 4px 6px 0; border-radius:8px; border:1px solid {BORDER};
             color:{INK2}; background:{SURFACE}; font-size:0.85rem;}}
 .ids-stage.on {{border-color:{SERIES[0]}; color:{INK}; box-shadow: inset 0 0 0 1px {SERIES[0]};}}
+.ids-stage.done {{border-color:{STATUS['good']}; color:{INK};}}
+.ids-stage.fail {{border-color:{STATUS['critical']}; color:{INK}; box-shadow: inset 0 0 0 1px {STATUS['critical']};}}
+.ids-section {{color:{INK}; font-size:1.05rem; font-weight:600; margin:1.2rem 0 .4rem 0;}}
+div[data-testid="stHorizontalBlock"] {{gap: 0.75rem;}}
+.ids-card {{margin-bottom: .25rem;}}
 .ids-note {{color:{INK2}; font-size:0.82rem;}}
 .ids-sim {{color:{STATUS['warning']}; font-weight:700;}}
 </style>
@@ -54,9 +59,14 @@ def setup_page() -> None:
     st.markdown(CSS, unsafe_allow_html=True)
 
 
-def card(label: str, value: Any, sub: str = "") -> str:
+def card(label: str, value: Any, sub: str = "", help: str = "", state: str | None = None) -> str:
+    """Metric tile. `help` becomes a hover tooltip; `state` (a STATUS key) adds an accent bar plus an icon."""
     v = "—" if value is None else value
-    return (f'<div class="ids-card"><div class="lbl">{html.escape(label)}</div>'
+    accent = f' style="border-left:3px solid {STATUS[state]}"' if state in STATUS else ""
+    icon = {"good": "✓ ", "warning": "? ", "serious": "! ", "critical": "✕ "}.get(state or "", "")
+    tip = f' title="{html.escape(help)}"' if help else ""
+    return (f'<div class="ids-card"{accent}{tip}><div class="lbl">{html.escape(icon + label)}'
+            f'{" ⓘ" if help else ""}</div>'
             f'<div class="val">{html.escape(str(v))}</div><div class="sub">{html.escape(sub)}</div></div>')
 
 
@@ -99,6 +109,41 @@ def style(fig: go.Figure, height: int = 320, legend: bool = True) -> go.Figure:
     fig.update_xaxes(gridcolor=GRID, linecolor=AXIS, zerolinecolor=AXIS, tickfont=dict(color=MUTED), title_font=dict(color=INK2))
     fig.update_yaxes(gridcolor=GRID, linecolor=AXIS, zerolinecolor=AXIS, tickfont=dict(color=MUTED), title_font=dict(color=INK2))
     return fig
+
+
+# Per-flow verdicts of the unified monitoring page. Suspicious = the classifier said benign but a
+# behavioural alert covers the flow's source and service in that window.
+VERDICTS = {"benign": ("✓ Benign", "good"), "suspicious": ("! Suspicious", "serious"),
+            "malicious": ("✕ Malicious", "critical"), "unknown": ("? Unknown", "warning")}
+
+
+def verdict(status: str, behavioural: bool) -> str:
+    if status == "attack":
+        return "malicious"
+    if status == "unknown":
+        return "unknown"
+    return "suspicious" if behavioural else "benign"
+
+
+def short(name: Any, n: int = 30) -> str:
+    """Middle-truncated file name (start and the distinguishing end stay visible)."""
+    s = "" if name is None or (isinstance(name, float) and name != name) else str(name)
+    return s if len(s) <= n else f"{s[: n // 2 - 1]}…{s[-(n - n // 2):]}"
+
+
+def stage_tracker(stages: list[tuple[str, str]], reached: dict[str, Any], current: str | None,
+                  failed: bool = False) -> None:
+    """Horizontal lifecycle tracker: done ✓, current ●, failed ✕, pending ○."""
+    parts = []
+    for key, label in stages:
+        if key in reached and key != current:
+            mark, cls, tip = "✓", "done", str(reached[key])[:19].replace("T", " ")
+        elif key == current:
+            mark, cls, tip = ("✕", "fail", "failed here") if failed else ("●", "on", "in progress")
+        else:
+            mark, cls, tip = "○", "", "pending"
+        parts.append(f'<span class="ids-stage {cls}" title="{html.escape(tip)}">{mark} {html.escape(label)}</span>')
+    st.markdown("".join(parts), unsafe_allow_html=True)
 
 
 def empty(msg: str) -> None:

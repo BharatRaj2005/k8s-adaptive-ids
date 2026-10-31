@@ -2,19 +2,24 @@
 # Build config/ids-controller.kubeconfig from the ids-controller service-account
 # token, so the backend talks to the API server with least privilege instead of
 # the admin kubeconfig. Revoke by deleting secret ids-controller-token.
+#   create-kubeconfig.sh                                   # ids-controller (deception)
+#   create-kubeconfig.sh ids-traffic ids-attack-generator-token config/ids-attack-generator.kubeconfig
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
-OUT=config/ids-controller.kubeconfig
+NS="${1:-ids-deception}"
+SECRET="${2:-ids-controller-token}"
+OUT="${3:-config/ids-controller.kubeconfig}"
+USER_NAME="${SECRET%-token}"
 
 for _ in $(seq 30); do
-    TOKEN=$(kubectl -n ids-deception get secret ids-controller-token -o jsonpath='{.data.token}' 2>/dev/null | base64 -d || true)
+    TOKEN=$(kubectl -n "$NS" get secret "$SECRET" -o jsonpath='{.data.token}' 2>/dev/null | base64 -d || true)
     [ -n "$TOKEN" ] && break
     sleep 1
 done
 [ -n "$TOKEN" ] || { echo "token not populated"; exit 1; }
 SERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
-CA=$(kubectl -n ids-deception get secret ids-controller-token -o jsonpath='{.data.ca\.crt}')
+CA=$(kubectl -n "$NS" get secret "$SECRET" -o jsonpath='{.data.ca\.crt}')
 
 umask 077
 cat > "$OUT" <<EOF
@@ -26,12 +31,12 @@ clusters:
     server: $SERVER
     certificate-authority-data: $CA
 users:
-- name: ids-controller
+- name: $USER_NAME
   user:
     token: $TOKEN
 contexts:
-- name: ids-controller
-  context: {cluster: k3s, user: ids-controller, namespace: ids-deception}
-current-context: ids-controller
+- name: $USER_NAME
+  context: {cluster: k3s, user: $USER_NAME, namespace: $NS}
+current-context: $USER_NAME
 EOF
 echo "wrote $OUT"

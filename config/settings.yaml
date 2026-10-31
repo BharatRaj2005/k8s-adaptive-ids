@@ -383,3 +383,63 @@ cicflowmeter:
   jnetpcap_maven_jar: ~/.m2/repository/org/jnetpcap/jnetpcap/1.4.1/jnetpcap-1.4.1.jar
   java: java
   timeout_seconds: 300
+
+# Attack Simulator (src/simulation/manager.py): controlled traffic-generation Jobs started from the
+# dashboard. Only these predefined scenarios exist; every parameter is validated against `limits`.
+# Generator script and Job template are the dataset-generation ones (no second generator);
+# target applications are the allow-list in config/datagen.yaml (`apps`).
+simulator:
+  namespace: ids-traffic
+  # least-privilege identity (kubernetes/simulator/rbac.yaml; kubeconfig built by
+  # kubernetes/rbac/create-kubeconfig.sh ids-traffic ids-attack-generator-token config/ids-attack-generator.kubeconfig)
+  kubeconfig: config/ids-attack-generator.kubeconfig
+  job_template: kubernetes/traffic-generator/datagen-job.yaml
+  configmap: datagen-generator-script
+  managed_by: ids-attack-generator
+  run_dir: data/simulations          # generator logs and connection records per run
+  max_active: 1
+  ttl_seconds_after_finished: 300    # Kubernetes backstop; runs are also deleted explicitly
+  pod_start_timeout_s: 90
+  capture_tail_s: 3                  # the capture must run this long past the last request
+  result_timeout_s: 150              # max wait for the final window to be classified
+  cleanup_timeout_s: 60
+  limits:
+    duration_s: [10, 300]
+    rate_per_s: [0.2, 10]            # approximate requests per second (all workers together)
+    max_requests: [5, 600]
+  scenarios:
+    recon:
+      sequential:  {label: Sequential scanner, profile: seq_wordlist,
+                    description: "Fixed-order wordlist, fixed spacing, new connection per request",
+                    defaults: {rate_per_s: 5, duration_s: 60, max_requests: 200}}
+      shuffled:    {label: Shuffled jitter scanner, profile: shuffled_jitter, jitter: 0.7,
+                    description: "Shuffled paths x suffixes, random spacing, GET/HEAD/OPTIONS, random user agent",
+                    defaults: {rate_per_s: 4, duration_s: 60, max_requests: 200}}
+      threaded:    {label: Threaded scanner, profile: threaded_parallel, workers: 4,
+                    description: "Four concurrent workers draining a shared shuffled wordlist",
+                    defaults: {rate_per_s: 8, duration_s: 45, max_requests: 300}}
+      slow:        {label: Slow scanner, profile: head_crawler, jitter: 0.5,
+                    description: "HEAD-only breadth-first crawl at a low rate",
+                    defaults: {rate_per_s: 0.3, duration_s: 180, max_requests: 50}}
+      keepalive:   {label: Keep-alive scanner, profile: keepalive_scanner, jitter: 0.5, reconnect: [5, 20],
+                    description: "Many probes over persistent connections (few, long flows)",
+                    defaults: {rate_per_s: 5, duration_s: 60, max_requests: 250}}
+      multi_app:   {label: Multi-application sweep, profile: multi_app_sweep, all_apps: true,
+                    description: "Every path tried on Node-RED, Grafana and InfluxDB in turn",
+                    defaults: {rate_per_s: 6, duration_s: 60, max_requests: 300}}
+    benign:
+      browse:      {label: Browsing user, profile: browse, jitter: 0.6,
+                    description: "Page loads with a few assets and think time",
+                    defaults: {rate_per_s: 1, duration_s: 90, max_requests: 80}}
+      poller:      {label: Health / metrics poller, profile: poller, jitter: 0.1,
+                    description: "Near-fixed interval polling of health and metrics endpoints",
+                    defaults: {rate_per_s: 1, duration_s: 90, max_requests: 90}}
+      api_client:  {label: High-volume API client, profile: api_consumer, jitter: 0.4,
+                    description: "Valid API endpoints only, at high request rates",
+                    defaults: {rate_per_s: 8, duration_s: 60, max_requests: 400}}
+      burst:       {label: Bursty dashboard refresh, profile: burst_refresh, workers: 4, burst: [3, 6],
+                    description: "Parallel bursts of requests every few seconds",
+                    defaults: {rate_per_s: 2, duration_s: 90, max_requests: 180}}
+      keepalive:   {label: Keep-alive API client, profile: keepalive_client, jitter: 0.5, reconnect: [10, 40],
+                    description: "Persistent connections, reconnecting after a number of requests",
+                    defaults: {rate_per_s: 3, duration_s: 60, max_requests: 180}}

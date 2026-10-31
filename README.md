@@ -21,6 +21,7 @@ records when the backend or the cluster is down.
 | [reports/model_evaluation.md](reports/model_evaluation.md) | Model evaluation, label-noise analysis, lab validation |
 | [reports/deception_test_report.md](reports/deception_test_report.md) | End-to-end demonstration results (live cluster) |
 | [reports/performance.md](reports/performance.md) | Measured latencies, deployment times, CPU / memory |
+| [reports/simulator_live_validation.md](reports/simulator_live_validation.md) | Live validation of the unified monitoring page and the Attack Simulator (recon, benign, cancel, backend interruption, 13-step demo) |
 
 ## Status
 
@@ -34,7 +35,7 @@ records when the backend or the cluster is down.
 | 3 | MAPE-K controller, attack→decoy policy, 6 decoy profiles, RBAC, NetworkPolicies, TTL/cooldown/limits | Done, tested (incl. live cluster) |
 | 3 | Decoy interaction logging and knowledge base | Done, tested (incl. live cluster) |
 | 3 | Kubernetes audit-log monitor | **Not built** (left out by decision, see below) |
-| 4 | FastAPI backend (31 operations), Streamlit dashboard (7 pages, offline fallback) | Done, tested |
+| 4 | FastAPI backend (41 operations), Streamlit dashboard (6 pages, offline fallback) | Done, tested |
 | 5 | Repeatable live demonstration (13 checks), diagrams, API docs, reports | Done |
 
 ### Improvements (branch `improvements`, 2026-10-31)
@@ -46,6 +47,8 @@ records when the backend or the cluster is down.
 | Unknown traffic | Attack verdicts on a service without a benign training profile are reported as *Unknown / Requires Investigation* and never trigger decoys. Evaluated leave-one-application-out. | `reports/unknown_traffic.md` |
 | Behavioural detection | The fixed flow-burst rule is kept and learned per-service thresholds (`adaptive_rate`, `slow_scan`) are added, never above the fixed level. Evaluated on held-out lab sessions with slow, distributed, changing-benign and unseen-scanner traffic. | `reports/behavioural_detection.md` |
 | Deception | Per-source incident correlation (ML, behaviour, earlier interactions); decoy order by attacked service and engagement; interaction profiling (`/api/deception/interaction-summary`). Learned-threshold alerts act only with ML corroboration at ≥ 0.6 confidence. | tests, `reports/deception_test_report.md` |
+| Live Security Monitoring | Traffic Capture and Live Traffic Monitoring merged into one page: capture toolbar, live per-window prediction feed (incremental polling, ML / behavioural / unknown / lab-simulation origin), six live charts, capture-window history. | tests, `docs/API.md` |
+| Attack Simulator | Controlled traffic-generation Jobs (6 scanners, 5 benign profiles) started from the dashboard; capture coordination, run-id tagging of generated traffic, verified cleanup and recovery; dedicated least-privilege identity. | `tests/test_simulation.py`, `docs/architecture.md` §4 |
 | Dashboard | The Model Performance page separates the dataset test, model comparison, independent lab results, unseen applications and live counts (known attack / unknown / behavioural). | |
 
 Reproduce: `python -m src.preprocessing.dataset_report`, `python -m src.detection.experiments`,
@@ -203,12 +206,14 @@ kubectl apply -f kubernetes/namespaces/ids-deception.yaml
 kubectl apply -k kubernetes/deception                  # decoy server ConfigMap + decoy NetworkPolicy
 kubectl apply -f kubernetes/rbac/ids-controller.yaml   # least-privilege identity for the backend
 kubernetes/rbac/create-kubeconfig.sh                   # -> config/ids-controller.kubeconfig
+kubectl apply -f kubernetes/simulator/rbac.yaml        # Attack Simulator identity (Jobs in ids-traffic only)
+kubernetes/rbac/create-kubeconfig.sh ids-traffic ids-attack-generator-token config/ids-attack-generator.kubeconfig
 ```
 
 | Namespace | Contents |
 |---|---|
 | `target-apps` (existing) | Node-RED, Grafana, InfluxDB — see [kubernetes/targets/README.md](kubernetes/targets/README.md) |
-| `ids-traffic` | `traffic-benign` Deployment; on-demand `recon-job.yaml` and `decoy-probe-job.yaml` Jobs |
+| `ids-traffic` | `traffic-benign` Deployment; on-demand `recon-job.yaml` and `decoy-probe-job.yaml` Jobs; `sim-*` Jobs of the Attack Simulator (deleted after each run); `ids-attack-generator` ServiceAccount |
 | `ids-deception` | decoys created at runtime from `kubernetes/deception/decoy-template.yaml`; `ids-controller` ServiceAccount |
 
 * **Traffic generator.**
@@ -222,6 +227,13 @@ kubernetes/rbac/create-kubeconfig.sh                   # -> config/ids-controlle
   * May read pods and events in the lab namespaces.
   * Verified with `kubectl auth can-i`: it **cannot** create resources in `target-apps`, read secrets,
     touch `kube-system` or create cluster role bindings.
+* **Simulator identity (`ids-attack-generator`).**
+  * May create, list and delete Jobs and delete Pods only in `ids-traffic`, read Pod logs there and read
+    only the `datagen-generator-script` ConfigMap; read-only on pods in `target-apps`.
+  * Verified with `kubectl auth can-i`: it **cannot** create bare Pods or Deployments, delete anything in
+    `target-apps`, read Secrets, touch `kube-system`, list nodes or create cluster role bindings.
+  * The backend deletes only objects that carry `app.kubernetes.io/managed-by=ids-attack-generator`
+    and the run's own `ids.lab/sim-run` label.
 * **Pod hardening.** All lab pods run as non-root with a read-only root filesystem, all capabilities
   dropped and no service-account token. No `privileged`, `hostNetwork`, `hostPID` or `hostPath`.
 
@@ -364,15 +376,20 @@ class, for example the runc escape, which must never be executed. Such events:
 | Page | Shows |
 |---|---|
 | Security Overview | Flow counters, active threats, decoys, interactions, model accuracy, cluster status; benign/malicious by source; attack categories; recent detections and decisions |
-| Live Traffic Monitoring | Filterable flow table (class, source IP, destination IP, status, data source clearly labelled); flows per minute; flow bursts |
+| Live Security Monitoring | Toolbar (start/stop monitoring, window count, Attack Simulator, auto refresh, status); counters (flows, benign, malicious, unknown, behavioural alerts, active simulations, decoys, current window, processing latency); live prediction feed of every processed window with filters (class, source IP, application, status, detection mechanism, traffic origin); traffic volume, verdict, attack-class, source-activity, behavioural-alert and latency charts; capture-window history with details; simulation lifecycle tracker; historical records and dataset replay |
 | Attack Classification | Class distribution, mean confidence per class, per-class history heatmap, confidence distribution, detailed records |
 | Adaptive Deception | MAPE-K stage, enabled state, active decoys with **why they were activated**, controls (enable/disable, run cycle, manual deploy/remove, labelled simulated event), decision history, interactions, deployment history, policy |
-| Traffic Capture | Start/stop capture, process pending, current window, PCAP/CSV names, packets, conversion and classification status, window table, dataset replay |
 | Model Performance | Accuracy, macro/weighted metrics, latency, confusion matrix, per-class P/R/F1, all models, lab validation, label-noise analysis |
 | Kubernetes Status | Connection, nodes, namespaces, target-app pods, traffic generator, decoy pods and services, recent events |
 
 * **Offline mode.** If the backend is unreachable, pages read stored records directly from SQLite
   (read-only) and show a banner.
+* **Window-based, not per packet.** The feed shows each window's flows once it has been converted and
+  classified (window length 5–30 s plus about 1 s of processing). It polls `/api/monitoring/feed?after_id=…`
+  every 3 s (auto refresh, always on during a simulation), so only flows newer than those shown are fetched.
+* **Verdicts.** ✓ Benign · ! Suspicious (classifier benign, but inside a behavioural alert) · ✕ Malicious
+  (classifier attack verdict) · ? Unknown (attack verdict on a service without a benign profile; never
+  acted on). Flows generated by a simulation run are marked *🧪 Lab simulation <run id>*.
 * **Colors.** Benign/malicious use status colors with ✓/✕ labels, and series use a palette validated for
   colour-vision deficiency on the dark surface.
 
@@ -401,9 +418,11 @@ The scenario runs the steps from the project brief on the live cluster and recor
 12. Labelled simulated CVE-2019-5736 event handled.
 13. Decoys cleaned up, with no managed resources left.
 
-To show it on the dashboard instead, use the Traffic Capture page (start capture), run
-`kubectl create -f kubernetes/traffic-generator/recon-job.yaml`, enable deception on the Adaptive
-Deception page, then `kubectl create -f kubernetes/traffic-generator/decoy-probe-job.yaml`.
+To show it on the dashboard instead: on *Live Security Monitoring*, open **Attack Simulator**, choose a
+reconnaissance scanner and a target, confirm and click **START SIMULATION**. The run starts (or attaches to)
+the capture, the lifecycle tracker follows it from Job creation to cleanup, and its flows appear in the
+feed tagged with the run id. Enable deception on the Adaptive Deception page first to see decoys deployed;
+`kubectl create -f kubernetes/traffic-generator/decoy-probe-job.yaml` then visits them.
 
 ## Design decisions
 
@@ -445,6 +464,9 @@ Deception page, then `kubectl create -f kubernetes/traffic-generator/decoy-probe
 | `tcpdump: ... Operation not permitted` | `getcap /usr/bin/tcpdump` must show `cap_net_admin,cap_net_raw=eip` |
 | Capture start returns 409 | A capture is already running: `python -m src.capture.service status` / `stop` |
 | Decoy operations return 503 | Cluster unreachable or `config/ids-controller.kubeconfig` missing: run `kubernetes/rbac/create-kubeconfig.sh` |
+| Simulator: 503 "Kubernetes unavailable" | `config/ids-attack-generator.kubeconfig` missing: apply `kubernetes/simulator/rbac.yaml`, then `kubernetes/rbac/create-kubeconfig.sh ids-traffic ids-attack-generator-token config/ids-attack-generator.kubeconfig` |
+| Simulator: 409 | A run is still active (one at a time), or the target application has no ready pod |
+| Simulation left a Job behind | `curl -X POST localhost:8000/api/simulations/recover` (also runs at backend start); check with `GET /api/simulations/<run>/cleanup` |
 | Traffic Job cannot reach a decoy | Apply the current `kubernetes/traffic-generator` kustomization (its NetworkPolicy allows the decoy port) |
 | Dashboard shows "Backend offline" | `./start.sh status`; logs in `logs/backend.log`; stored records are still shown |
 | Sidebar lists raw file names | A `frontend/pages/` directory exists; page modules belong in `frontend/views/` |
@@ -459,8 +481,10 @@ src/capture/                  tcpdump windows, capture service, process_pcap
 src/feature_extraction/       CICFlowMeter wrapper
 src/deception/                MAPE-K controller, Kubernetes decoy manager
 src/backend/                  FastAPI app, queries, cluster status
+src/simulation/               Attack Simulator: scenarios, Job lifecycle manager
+src/datagen/                  dataset generation (generator plan, session capture, labelling, build)
 src/utils/                    config, logging, SQLite, native-library loader
-frontend/                     app.py, views/ (7 pages), components/ (API client with fallback, UI kit)
+frontend/                     app.py, views/ (6 pages), components/ (API client with fallback, UI kit, simulator)
 scripts/                      demo_scenario.py, measure_performance.py, gen_api_docs.py
 models/  data/  captures/  reports/  docs/  logs/  tests/
 ```

@@ -133,6 +133,126 @@ def captures(limit: int = 100, cfg=None) -> list[dict[str, Any]]:
     return _q("SELECT * FROM captures ORDER BY id DESC LIMIT ?", (int(limit),), cfg)
 
 
+# --- unified live monitoring -----------------------------------------------------------
+# Only captured traffic (sources pcap/live); dataset replays and simulated deception events are excluded.
+LIVE = "d.simulated = 0 AND d.source IN ('pcap', 'live')"
+STATUS_SQL = "COALESCE(d.status, CASE WHEN d.is_malicious = 1 THEN 'attack' ELSE 'benign' END)"
+# a flow is part of a behavioural alert when the alert of its window names its source and service (either direction)
+BEHAVIOURAL_SQL = ("EXISTS (SELECT 1 FROM behavior_alerts b WHERE b.capture_id = d.capture_id AND "
+                   "((b.src_ip = d.src_ip AND (b.dst_port IS NULL OR b.dst_port = d.dst_port)) OR "
+                   "(b.src_ip = d.dst_ip AND (b.dst_port IS NULL OR b.dst_port = d.src_port))))")
+ACTIVE_SIM_STATUSES = ("requested", "running", "processing")
+
+
+def app_ports(cfg=None) -> dict[str, list[int]]:
+    return {a: [int(p) for p in ports] for a, ports in (cfg or load_config())["unknown_eval"]["applications"].items()}
+
+
+def monitoring_feed(after_id: int = 0, limit: int = 300, predicted_class: str | None = None, src_ip: str | None = None,
+                    app: str | None = None, status: str | None = None, mechanism: str | None = None,
+                    origin: str | None = None, cfg=None) -> list[dict[str, Any]]:
+    """Newest classified flows of captured windows (id > after_id), with status, mechanism and origin."""
+    where, params = [LIVE, "d.id > ?"], [int(after_id)]
+    if predicted_class:
+        where.append("d.predicted_class = ?")
+        params.append(predicted_class)
+    if src_ip:
+        where.append("d.src_ip = ?")
+        params.append(src_ip)
+    if app:
+        ports = app_ports(cfg).get(app)
+        if not ports:
+            return []
+        marks = ",".join("?" * len(ports))
+        where.append(f"(d.dst_port IN ({marks}) OR d.src_port IN ({marks}))")
+        params += ports * 2
+    if status in ("benign", "attack", "unknown"):
+        where.append(f"{STATUS_SQL} = ?")
+        params.append(status)
+    if mechanism in ("ml", "behavioural", "both", "none"):
+        ml, beh = f"{STATUS_SQL} = 'attack'", BEHAVIOURAL_SQL
+        where.append({"ml": f"{ml} AND NOT {beh}", "behavioural": f"NOT ({ml}) AND {beh}",
+                      "both": f"{ml} AND {beh}", "none": f"NOT ({ml}) AND NOT {beh}"}[mechanism])
+    if origin == "simulation":
+        where.append("d.sim_run_id IS NOT NULL")
+    elif origin == "observed":
+        where.append("d.sim_run_id IS NULL")
+    sql = (f"SELECT d.id, d.capture_id, d.timestamp, d.detected_at, d.src_ip, d.src_port, d.dst_ip, d.dst_port, "
+           f"d.protocol, d.predicted_class, d.confidence, d.is_malicious, {STATUS_SQL} AS status, d.unknown_reason, "
+           f"d.sim_run_id, d.capture_file, d.model, {BEHAVIOURAL_SQL} AS behavioural "
+           f"FROM detections d WHERE {' AND '.join(where)} ORDER BY d.id DESC LIMIT ?")
+    return _q(sql, (*params, int(limit)), cfg)
+
+
+def monitoring_overview(windows: int = 60, cfg=None) -> dict[str, Any]:
+    """Counters, per-window aggregates and distributions of the latest capture windows, in one read."""
+    cfg = cfg or load_config()
+    with db.connect(db.db_path(cfg)) as c:
+        one = lambda sql, p=(): c.execute(sql, p).fetchone()[0]
+        totals = c.execute(
+            f"SELECT COUNT(*), SUM({STATUS_SQL} = 'benign'), SUM({STATUS_SQL} = 'attack'), SUM({STATUS_SQL} = 'unknown'), "
+            f"SUM(d.sim_run_id IS NOT NULL) FROM detections d WHERE {LIVE}").fetchone()
+        win = db.query_df(c, f"""
+            SELECT c.id, c.pcap_file, c.interface, c.started_at, c.ended_at, c.duration_s, c.packets, c.bytes, c.status,
+                   c.csv_file, c.flows, c.conversion_s, c.prediction_ms, c.pipeline_s, c.next_window_s, c.error,
+                   COALESCE(SUM({STATUS_SQL} = 'benign'), 0) benign, COALESCE(SUM({STATUS_SQL} = 'attack'), 0) malicious,
+                   COALESCE(SUM({STATUS_SQL} = 'unknown'), 0) unknown, COALESCE(SUM(d.sim_run_id IS NOT NULL), 0) lab_flows,
+                   COALESCE(SUM({STATUS_SQL} = 'benign' AND {BEHAVIOURAL_SQL}), 0) suspicious,
+                   (SELECT COUNT(*) FROM behavior_alerts b WHERE b.capture_id = c.id) alerts
+            FROM (SELECT * FROM captures ORDER BY id DESC LIMIT ?) c
+            LEFT JOIN detections d ON d.capture_id = c.id AND d.simulated = 0
+            GROUP BY c.id ORDER BY c.id DESC""", (int(windows),))
+        first = int(win["id"].min()) if len(win) else 0
+        classes = db.query_df(c, f"SELECT d.predicted_class, {STATUS_SQL} status, COUNT(*) n FROM detections d "
+                                 f"WHERE {LIVE} AND d.capture_id >= ? GROUP BY 1, 2 ORDER BY n DESC", (first,))
+        sources = db.query_df(c, f"SELECT d.src_ip, COUNT(*) flows, SUM({STATUS_SQL} = 'attack') malicious, "
+                                 f"SUM({STATUS_SQL} = 'unknown') unknown, MAX(d.sim_run_id) sim_run_id "
+                                 f"FROM detections d WHERE {LIVE} AND d.capture_id >= ? "
+                                 f"GROUP BY 1 ORDER BY flows DESC LIMIT 15", (first,))
+        alerts = db.query_df(c, "SELECT id, capture_id, detected_at, alert_type, severity, src_ip, dst_ip, dst_port, "
+                                "flows, rate_per_s, window_s, ml_malicious_flows, sim_run_id FROM behavior_alerts "
+                                "WHERE capture_id >= ? ORDER BY id DESC LIMIT 500", (first,))
+        lat = db.query_df(c, "SELECT AVG(pipeline_s) mean_s, MAX(pipeline_s) max_s FROM "
+                             "(SELECT pipeline_s FROM captures WHERE status = 'classified' ORDER BY id DESC LIMIT 20)")
+        summary = {
+            "total_flows": int(totals[0] or 0), "benign_flows": int(totals[1] or 0),
+            "malicious_flows": int(totals[2] or 0), "unknown_flows": int(totals[3] or 0),
+            "lab_simulation_flows": int(totals[4] or 0),
+            "behavior_alerts": one("SELECT COUNT(*) FROM behavior_alerts"),
+            "active_simulations": one(f"SELECT COUNT(*) FROM simulation_runs WHERE status IN "
+                                      f"({','.join('?' * len(ACTIVE_SIM_STATUSES))})", ACTIVE_SIM_STATUSES),
+            "active_decoys": one("SELECT COUNT(*) FROM decoys WHERE status IN ('deploying', 'active')"),
+            "capture_windows": one("SELECT COUNT(*) FROM captures"),
+            "pipeline_mean_s": float(lat["mean_s"].iloc[0]) if len(lat) and pd.notna(lat["mean_s"].iloc[0]) else None,
+            "pipeline_max_s": float(lat["max_s"].iloc[0]) if len(lat) and pd.notna(lat["max_s"].iloc[0]) else None,
+        }
+    return {"summary": summary, "windows": _records(win), "classes": _records(classes),
+            "sources": _records(sources), "alerts": _records(alerts), "app_ports": app_ports(cfg)}
+
+
+RUN_COUNTS = ("requests", "connections", "packets", "flows", "detections", "attacks", "unknown", "alerts",
+              "capture_owned", "capture_pid")
+
+
+def _decode_runs(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    for r in rows:
+        for k in ("params", "stages", "capture_ids", "cleanup"):
+            r[k] = json.loads(r[k]) if r.get(k) else None
+        for k in RUN_COUNTS:          # pandas turns integer columns with NULLs into floats
+            if r.get(k) is not None:
+                r[k] = int(r[k])
+    return rows
+
+
+def simulation_runs(limit: int = 20, cfg=None) -> list[dict[str, Any]]:
+    return _decode_runs(_q("SELECT * FROM simulation_runs ORDER BY created_at DESC LIMIT ?", (int(limit),), cfg))
+
+
+def simulation_run(run_id: str, cfg=None) -> dict[str, Any] | None:
+    rows = _decode_runs(_q("SELECT * FROM simulation_runs WHERE run_id = ?", (run_id,), cfg))
+    return rows[0] if rows else None
+
+
 def controller_snapshot(cfg=None) -> dict[str, Any]:
     """Stored controller state (used when the backend, and thus the live controller, is down)."""
     with db.connect(db.db_path(cfg)) as c:

@@ -1,0 +1,64 @@
+# Identity of the Attack Simulator (src/simulation/manager.py). No cluster-wide rights:
+#  * ids-traffic: create / watch / delete Jobs, read and delete their Pods, read Pod logs,
+#    read only the generator ConfigMap. The backend deletes only objects labelled
+#    app.kubernetes.io/managed-by=ids-attack-generator with the run's own id.
+#  * target-apps: read-only (target availability check), through the existing ids-viewer Role.
+# Apply:  kubectl apply -f kubernetes/simulator/rbac.yaml
+#         kubernetes/rbac/create-kubeconfig.sh ids-traffic ids-attack-generator-token config/ids-attack-generator.kubeconfig
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ids-attack-generator
+  namespace: ids-traffic
+  labels: {app.kubernetes.io/managed-by: ids-attack-generator}
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ids-attack-generator-token
+  namespace: ids-traffic
+  annotations:
+    kubernetes.io/service-account.name: ids-attack-generator
+type: kubernetes.io/service-account-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ids-attack-generator
+  namespace: ids-traffic
+rules:
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: ["batch"]
+    resources: ["jobs/status"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "delete"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames: ["datagen-generator-script"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ids-attack-generator
+  namespace: ids-traffic
+subjects:
+  - {kind: ServiceAccount, name: ids-attack-generator, namespace: ids-traffic}
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: Role, name: ids-attack-generator}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ids-attack-generator-viewer
+  namespace: target-apps
+subjects:
+  - {kind: ServiceAccount, name: ids-attack-generator, namespace: ids-traffic}
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: Role, name: ids-viewer}

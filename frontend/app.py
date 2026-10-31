@@ -19,10 +19,10 @@ ui.setup_page()
 
 pages = [
     st.Page("views/overview.py", title="Security Overview", icon=":material/dashboard:", default=True),
-    st.Page("views/monitoring.py", title="Live Traffic Monitoring", icon=":material/lan:"),
+    # capture control + live classification feed (replaces Traffic Capture and Live Traffic Monitoring)
+    st.Page("views/live_monitoring.py", title="Live Security Monitoring", icon=":material/radar:"),
     st.Page("views/classification.py", title="Attack Classification", icon=":material/category:"),
     st.Page("views/deception.py", title="Adaptive Deception", icon=":material/shield:"),
-    st.Page("views/capture.py", title="Traffic Capture", icon=":material/radio_button_checked:"),
     st.Page("views/performance.py", title="Model Performance", icon=":material/monitoring:"),
     st.Page("views/kubernetes.py", title="Kubernetes Status", icon=":material/hub:"),
 ]

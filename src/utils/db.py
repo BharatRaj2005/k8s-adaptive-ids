@@ -160,6 +160,41 @@ CREATE TABLE IF NOT EXISTS kv (
     key     TEXT PRIMARY KEY,
     value   TEXT
 );
+
+-- Controlled traffic-generation runs started from the dashboard (src/simulation/manager.py).
+-- Their traffic is real captured traffic; detections/alerts of the generator pod carry sim_run_id.
+CREATE TABLE IF NOT EXISTS simulation_runs (
+    run_id          TEXT PRIMARY KEY,
+    created_at      TEXT NOT NULL,
+    updated_at      TEXT,
+    category        TEXT NOT NULL,      -- recon | benign
+    profile         TEXT NOT NULL,      -- generator profile / scanner implementation
+    target          TEXT NOT NULL,      -- application name
+    params          TEXT,               -- JSON: rate, duration, max requests, ...
+    status          TEXT NOT NULL,      -- requested | running | processing | completed | failed | cancelled | timeout | interrupted
+    stage           TEXT,
+    stages          TEXT,               -- JSON {stage: time reached}
+    job_name        TEXT,
+    pod_name        TEXT,
+    pod_ip          TEXT,
+    capture_owned   INTEGER NOT NULL DEFAULT 0,   -- 1 = capture was started for this run
+    capture_pid     INTEGER,
+    traffic_start   TEXT,
+    traffic_end     TEXT,
+    finished_at     TEXT,
+    requests        INTEGER,
+    connections     INTEGER,
+    packets         INTEGER,
+    flows           INTEGER,
+    detections      INTEGER,
+    attacks         INTEGER,
+    unknown         INTEGER,
+    alerts          INTEGER,
+    capture_ids     TEXT,               -- JSON list of capture window ids
+    cleanup         TEXT,               -- JSON cleanup result
+    error           TEXT,
+    log_file        TEXT
+);
 """
 
 DETECTION_COLUMNS = [
@@ -191,8 +226,14 @@ def connect(path: Path | None = None) -> Iterator[sqlite3.Connection]:
 
 
 # Columns added after the first release; added in place to existing databases.
-MIGRATIONS = {"behavior_alerts": {"severity": "TEXT", "threshold": "REAL", "baseline": "REAL", "details": "TEXT"},
-              "detections": {"status": "TEXT", "unknown_reason": "TEXT"}}
+MIGRATIONS = {"behavior_alerts": {"severity": "TEXT", "threshold": "REAL", "baseline": "REAL", "details": "TEXT",
+                                  "sim_run_id": "TEXT"},
+              "detections": {"status": "TEXT", "unknown_reason": "TEXT", "sim_run_id": "TEXT"}}
+POST_MIGRATION_INDEXES = (
+    "CREATE INDEX IF NOT EXISTS idx_det_sim_run ON detections(sim_run_id)",
+    "CREATE INDEX IF NOT EXISTS idx_alert_capture ON behavior_alerts(capture_id)",
+    "CREATE INDEX IF NOT EXISTS idx_det_source_id ON detections(source, id)",
+)
 
 
 def _migrate(conn: sqlite3.Connection) -> None:
@@ -201,6 +242,8 @@ def _migrate(conn: sqlite3.Connection) -> None:
         for col, typ in cols.items():
             if col not in have:
                 conn.execute(f"ALTER TABLE {table} ADD COLUMN {col} {typ}")
+    for sql in POST_MIGRATION_INDEXES:
+        conn.execute(sql)
 
 
 def _clean(v):

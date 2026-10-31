@@ -9,6 +9,10 @@ configMapGenerator:
   - name: traffic-generator-script
     files:
       - traffic_generator.py
+  # generator v2: dataset generation and the dashboard's Attack Simulator Jobs
+  - name: datagen-generator-script
+    files:
+      - datagen_generator.py
 generatorOptions:
   # Stable name so the on-demand recon Job (recon-job.yaml) can reference it.
   disableNameSuffixHash: true

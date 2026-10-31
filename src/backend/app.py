@@ -24,6 +24,7 @@ from src.capture.process_pcap import pending_pcaps, process_pcap, resolve_pcap
 from src.deception.controller import MapeKController
 from src.deception.k8s_decoys import DecoyError
 from src.preprocessing.dataset import discover_capture_files
+from src.simulation.manager import SimulationError, SimulationManager
 from src.utils import db
 from src.utils.config import class_names, get_path, load_config
 from src.utils.logging_setup import get_logger
@@ -46,11 +47,20 @@ def controller() -> MapeKController:
     return STATE["controller"]
 
 
+def simulator() -> SimulationManager:
+    return STATE["simulator"]
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     ctl = MapeKController(CFG)
     STATE["controller"] = ctl
     ctl.start()  # housekeeping always; decisions only while enabled
+    sim = SimulationManager(CFG)
+    STATE["simulator"] = sim
+    # runs left active by a previous backend process: close them and remove their Jobs/Pods
+    threading.Thread(target=lambda: STATE.__setitem__("simulator_recovery", sim.recover()),
+                     name="simulator-recovery", daemon=True).start()
     log.info("backend started; deception enabled=%s", ctl.enabled)
     yield
     ctl.stop()
@@ -92,6 +102,15 @@ class TestEvent(BaseModel):
 
 class DecoyRequest(BaseModel):
     profile: str
+
+
+class SimulationRequest(BaseModel):
+    category: Literal["recon", "benign"]
+    scenario: str = Field(..., max_length=32, description="scenario key from /api/simulations/scenarios")
+    target: str = Field(..., max_length=32, description="application name from the scenario catalogue ('all' for the sweep)")
+    duration_s: int | None = Field(None, description="within simulator.limits.duration_s")
+    rate_per_s: float | None = Field(None, description="approximate requests per second, within simulator.limits")
+    max_requests: int | None = Field(None, description="within simulator.limits.max_requests")
 
 
 # --- health / metrics -----------------------------------------------------------------
@@ -236,6 +255,92 @@ def capture_process(req: ProcessRequest):
     else:
         targets = pending_pcaps(CFG)[: req.limit]
     return {"processed": [process_pcap(p, predictor(), CFG) for p in targets]}
+
+
+# --- unified live monitoring ----------------------------------------------------------
+
+@app.get("/api/monitoring/overview")
+def monitoring_overview(windows: int = Query(60, ge=1, le=500)):
+    """Live Security Monitoring in one read: capture-service state, counters (captured traffic only), the latest capture windows with per-window benign/malicious/unknown/alert counts and timings, class and source distributions, and behavioural alerts of those windows."""
+    out = queries.monitoring_overview(windows, CFG)
+    out["capture"] = capture_service.read_state(CFG)
+    out["pending"] = [p.name for p in pending_pcaps(CFG)]
+    out["simulations"] = queries.simulation_runs(5, CFG)
+    return out
+
+
+# --- attack simulator -----------------------------------------------------------------
+
+def _sim_call(fn, *args, **kwargs):
+    try:
+        return fn(*args, **kwargs)
+    except SimulationError as e:
+        raise HTTPException(e.status_code, str(e))
+
+
+@app.get("/api/simulations/scenarios")
+def simulation_scenarios():
+    """Predefined simulator scenarios (reconnaissance scanners, benign traffic profiles), allowed target applications, parameter limits and lifecycle stages."""
+    return simulator().scenarios()
+
+
+@app.post("/api/simulations", status_code=201)
+def simulation_start(req: SimulationRequest):
+    """Start a controlled traffic-generation Job in ids-traffic. Validates the scenario and limits, checks that the target is ready, attaches to (or starts) the capture. 409 while another run is active; 422 for invalid parameters; 503 if Kubernetes is unavailable."""
+    return _sim_call(simulator().start, req.category, req.scenario, req.target, req.duration_s, req.rate_per_s,
+                     req.max_requests)
+
+
+@app.get("/api/simulations")
+def simulation_list(limit: int = Query(20, ge=1, le=200)):
+    """Recent simulation runs, newest first, with stage timestamps and results."""
+    return simulator().list(limit)
+
+
+@app.get("/api/simulations/{run_id}")
+def simulation_status(run_id: str):
+    """Status of one run: lifecycle stage, generator pod and IP, requests, windows, detections, alerts and cleanup result."""
+    run = simulator().get(run_id)
+    if run is None:
+        raise HTTPException(404, f"unknown run {run_id}")
+    return run
+
+
+@app.get("/api/simulations/{run_id}/logs")
+def simulation_logs(run_id: str, tail: int = Query(200, ge=1, le=5000)):
+    """Generator log lines of a run (JSON lines: connections with local ports, requests); saved before the Job is deleted."""
+    return _sim_call(simulator().logs, run_id, tail)
+
+
+@app.post("/api/simulations/{run_id}/cancel")
+def simulation_cancel(run_id: str):
+    """Cancel an active run: the Job is stopped and deleted after its logs are collected; captured windows are still processed."""
+    return _sim_call(simulator().cancel, run_id)
+
+
+@app.get("/api/simulations/{run_id}/cleanup")
+def simulation_cleanup(run_id: str):
+    """Jobs and Pods of the run that still exist (listed by its labels), plus the recorded cleanup result."""
+    if simulator().get(run_id) is None:
+        raise HTTPException(404, f"unknown run {run_id}")
+    return _sim_call(simulator().cleanup_status, run_id)
+
+
+@app.post("/api/simulations/recover")
+def simulation_recover():
+    """Recovery cleanup (also run at startup): closes runs left active and deletes leftover simulator Jobs/Pods."""
+    return simulator().recover()
+
+
+@app.get("/api/monitoring/feed")
+def monitoring_feed(after_id: int = Query(0, ge=0, description="only flows with a larger detection id (incremental polling)"),
+                    limit: int = Query(300, ge=1, le=2000), predicted_class: str | None = Query(None, max_length=64),
+                    src_ip: str | None = Query(None, max_length=64), app_name: str | None = Query(None, alias="app", max_length=32),
+                    status: Literal["benign", "attack", "unknown"] | None = None,
+                    mechanism: Literal["ml", "behavioural", "both", "none"] | None = None,
+                    origin: Literal["simulation", "observed"] | None = None):
+    """Classified flows of captured windows, newest first: status (benign / attack / unknown), whether a behavioural alert covers the flow, capture window id and the simulation run whose generator produced it (if any)."""
+    return queries.monitoring_feed(after_id, limit, predicted_class, src_ip, app_name, status, mechanism, origin, CFG)
 
 
 # --- deception ------------------------------------------------------------------------

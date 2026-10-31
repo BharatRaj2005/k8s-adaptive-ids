@@ -103,6 +103,89 @@ Body:
   - `pcap` (string | null) — file name inside captures/pcap; omitted = all pending
   - `limit` (integer, default `20`, minimum 1.0, maximum 200.0)
 
+## Live security monitoring
+
+### `GET /api/monitoring/overview`
+
+Live Security Monitoring in one read: capture-service state, counters (captured traffic only), the latest capture windows with per-window benign/malicious/unknown/alert counts and timings, class and source distributions, and behavioural alerts of those windows.
+
+Parameters:
+  - `windows` (query, integer, default `60`, minimum 1, maximum 500)
+
+### `GET /api/monitoring/feed`
+
+Classified flows of captured windows, newest first: status (benign / attack / unknown), whether a behavioural alert covers the flow, capture window id and the simulation run whose generator produced it (if any).
+
+Parameters:
+  - `after_id` (query, integer, default `0`, minimum 0)
+  - `limit` (query, integer, default `300`, minimum 1, maximum 2000)
+  - `predicted_class` (query, string)
+  - `src_ip` (query, string)
+  - `app` (query, string)
+  - `status` (query, string, one of ['benign', 'attack', 'unknown'])
+  - `mechanism` (query, string, one of ['ml', 'behavioural', 'both', 'none'])
+  - `origin` (query, string, one of ['simulation', 'observed'])
+
+## Attack simulator
+
+### `GET /api/simulations/scenarios`
+
+Predefined simulator scenarios (reconnaissance scanners, benign traffic profiles), allowed target applications, parameter limits and lifecycle stages.
+
+
+### `POST /api/simulations`
+
+Start a controlled traffic-generation Job in ids-traffic. Validates the scenario and limits, checks that the target is ready, attaches to (or starts) the capture. 409 while another run is active; 422 for invalid parameters; 503 if Kubernetes is unavailable.
+
+Body:
+  - `category` (string, required)
+  - `scenario` (string, required, maxLength 32) — scenario key from /api/simulations/scenarios
+  - `target` (string, required, maxLength 32) — application name from the scenario catalogue ('all' for the sweep)
+  - `duration_s` (integer | null) — within simulator.limits.duration_s
+  - `rate_per_s` (number | null) — approximate requests per second, within simulator.limits
+  - `max_requests` (integer | null) — within simulator.limits.max_requests
+
+### `GET /api/simulations`
+
+Recent simulation runs, newest first, with stage timestamps and results.
+
+Parameters:
+  - `limit` (query, integer, default `20`, minimum 1, maximum 200)
+
+### `GET /api/simulations/{run_id}`
+
+Status of one run: lifecycle stage, generator pod and IP, requests, windows, detections, alerts and cleanup result.
+
+Parameters:
+  - `run_id` (path, string)
+
+### `GET /api/simulations/{run_id}/logs`
+
+Generator log lines of a run (JSON lines: connections with local ports, requests); saved before the Job is deleted.
+
+Parameters:
+  - `run_id` (path, string)
+  - `tail` (query, integer, default `200`, minimum 1, maximum 5000)
+
+### `POST /api/simulations/{run_id}/cancel`
+
+Cancel an active run: the Job is stopped and deleted after its logs are collected; captured windows are still processed.
+
+Parameters:
+  - `run_id` (path, string)
+
+### `GET /api/simulations/{run_id}/cleanup`
+
+Jobs and Pods of the run that still exist (listed by its labels), plus the recorded cleanup result.
+
+Parameters:
+  - `run_id` (path, string)
+
+### `POST /api/simulations/recover`
+
+Recovery cleanup (also run at startup): closes runs left active and deletes leftover simulator Jobs/Pods.
+
+
 ## Deception (MAPE-K)
 
 ### `GET /api/deception/status`

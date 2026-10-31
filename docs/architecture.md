@@ -15,7 +15,8 @@ flowchart LR
         db[("SQLite knowledge base<br/>data/ids.sqlite")]
         api["FastAPI backend<br/>src/backend/app.py"]
         mapek["MAPE-K controller<br/>src/deception/controller.py"]
-        ui["Streamlit SOC dashboard<br/>frontend/app.py"]
+        ui["Streamlit SOC dashboard<br/>frontend/app.py<br/>(Live Security Monitoring + Attack Simulator)"]
+        sim["Attack Simulator<br/>src/simulation/manager.py<br/>one run at a time"]
         tcpdump --> cap --> cfm --> det --> unk --> db
         cfm --> beh --> db
         db <--> mapek
@@ -23,6 +24,9 @@ flowchart LR
         api <--> db
         ui -->|HTTP| api
         ui -.->|read-only fallback| db
+        api --- sim
+        sim -->|"attach / start + stop own capture"| cap
+        sim -->|"run record, tag detections"| db
     end
 
     subgraph k3s["K3s single-node cluster"]
@@ -35,6 +39,7 @@ flowchart LR
         subgraph trf["ids-traffic"]
             ben["traffic-benign Deployment"]
             rec["recon / decoy-probe Jobs"]
+            simj["sim-* Jobs (generator v2)<br/>managed-by=ids-attack-generator"]
         end
         subgraph dec["ids-deception"]
             d1["decoy-* Deployments + Services<br/>(created at runtime)"]
@@ -43,6 +48,7 @@ flowchart LR
         ben --> nr & gf & ifx
         rec --> nr
         rec --> d1
+        simj --> nr & gf & ifx
     end
 
     cni0(("cni0 bridge")) --- tcpdump
@@ -50,6 +56,7 @@ flowchart LR
     tns --- cni0
     mapek -->|"create / scale / delete<br/>(ids-controller token)"| d1
     mapek -->|"read pod logs<br/>(interactions)"| d1
+    sim -->|"create / delete Jobs, read logs<br/>(ids-attack-generator token)"| simj
 ```
 
 Isolation and least privilege:
@@ -135,3 +142,55 @@ flowchart LR
 Housekeeping (status reconciliation, readiness and deployment time, interaction collection, TTL expiry,
 engagement-based scaling) runs every cycle even when automatic deception is disabled. The ML model is
 never retrained from decoy interactions.
+
+## 4. Attack Simulator run
+
+Started only by the **START SIMULATION** button on Live Security Monitoring (`POST /api/simulations`).
+Every run is a predefined scenario: the request carries a scenario key, an allowed application name and
+three bounded numbers, never a URL, command or manifest field.
+
+```mermaid
+sequenceDiagram
+    participant UI as Dashboard
+    participant API as FastAPI
+    participant SIM as SimulationManager
+    participant CAP as Capture service
+    participant K8S as ids-traffic (Job)
+    participant DB as SQLite
+    UI->>API: POST /api/simulations (scenario, target, duration, rate, max requests)
+    API->>SIM: validate scenario + limits, one active run, ConfigMap readable, target pod ready
+    SIM->>DB: simulation_runs: requested
+    alt capture running
+        SIM->>CAP: attach (never stopped by the run)
+    else capture stopped
+        SIM->>CAP: start (owned by the run)
+    end
+    SIM->>K8S: create Job sim-… (labels managed-by + run id, ttlSecondsAfterFinished, activeDeadlineSeconds)
+    K8S-->>SIM: pod running, pod IP
+    K8S-->>SIM: Job complete / failed / deadline, or user cancel
+    SIM->>K8S: read generator log → data/simulations/<run>.log.jsonl (before any deletion)
+    CAP->>DB: windows: PCAP → CICFlowMeter → ML + behavioural → detections
+    SIM->>DB: wait until a processed window covers the last request, then tag generator-pod flows/alerts with sim_run_id
+    opt capture owned by the run
+        SIM->>CAP: stop (only if the PID is still the run's capture)
+    end
+    SIM->>K8S: delete Job (foreground) and verify no Job/Pod with the run's labels remains
+    SIM->>DB: results + cleanup result; status completed | cancelled | failed | timeout
+    UI->>API: GET /api/monitoring/overview every 3 s while a run is active
+```
+
+* **Cleanup paths.** Success, failure, cancellation and timeout all end in the same `cleanup()`. The
+  Job carries `ttlSecondsAfterFinished` as a Kubernetes-side backstop. At backend start-up (and via
+  `POST /api/simulations/recover`), runs left active by an interrupted backend are marked
+  `interrupted`, their Jobs and Pods deleted and a capture they owned stopped.
+* **Stopping traffic and keeping ground truth.** The generator runs as PID 1 without a SIGTERM handler, so
+  simulator Jobs use `terminationGracePeriodSeconds: 1` (a cancel stops traffic within about a second).
+  The generator log is snapshotted during the run and, after a stop, read until the pod is gone; the
+  generator flushes every line, so the saved log covers every connection that produced a flow.
+* **What can be deleted.** Only Jobs/Pods labelled `app.kubernetes.io/managed-by=ids-attack-generator`
+  *and* carrying the run's own `ids.lab/sim-run` label; the code checks the labels again before each
+  delete. The `ids-attack-generator` identity (kubernetes/simulator/rbac.yaml) can manage Jobs/Pods
+  only in `ids-traffic`, read only the generator ConfigMap there, and read pods in `target-apps`.
+* **Traffic origin vs labels.** `sim_run_id` marks flows whose source or destination is the generator
+  pod: real captured packets with a known origin. The ML verdict on them is shown as-is; a "Detected
+  attack" on simulated reconnaissance is a detection, not a successful exploit.

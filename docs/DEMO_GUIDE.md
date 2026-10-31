@@ -99,10 +99,10 @@ The **packet-capture service** is separate, and is started from the dashboard or
 
 | Action | Dashboard | API / CLI |
 |---|---|---|
-| Start capture | *Traffic Capture* → Start | `curl -X POST localhost:8000/api/capture/start -H 'Content-Type: application/json' -d '{}'`, or `.venv/bin/python -m src.capture.service start` |
+| Start capture | *Live Security Monitoring* → Start monitoring | `curl -X POST localhost:8000/api/capture/start -H 'Content-Type: application/json' -d '{}'`, or `.venv/bin/python -m src.capture.service start` |
 | Capture N windows only | window count field | `-d '{"windows": 6}'`, or `... service start --windows 6` |
-| Status | *Traffic Capture* page | `curl localhost:8000/api/capture/status`, or `... service status` |
-| Stop capture | *Traffic Capture* → Stop | `curl -X POST localhost:8000/api/capture/stop`, or `... service stop` |
+| Status | *Live Security Monitoring* page | `curl localhost:8000/api/capture/status`, or `... service status` |
+| Stop capture | *Live Security Monitoring* → Stop monitoring | `curl -X POST localhost:8000/api/capture/stop`, or `... service stop` |
 
 Automatic deception is **off at start** (`deception.enabled_on_start: false`). Enable it on the
 *Adaptive Deception* page, or with `curl -X POST localhost:8000/api/deception/enable`.
@@ -163,8 +163,8 @@ Performance measurements: `.venv/bin/python scripts/measure_performance.py` (wri
 ### Step 1: show normal operation
 1. Run `./start.sh` and open http://localhost:8501.
 2. On *Kubernetes Status*, show the node, namespaces, target-app pods and the benign generator.
-3. On *Traffic Capture*, click **Start capture**.
-4. After 2–3 windows (10 s each), go to *Live Traffic Monitoring*. Flows are classified **Benign**, and the
+3. On *Live Security Monitoring*, click **Start monitoring**.
+4. After 2–3 windows (10 s each), watch the live prediction feed on the same page. Flows are classified **Benign**, and the
    data source is shown as `pcap` (live), not dataset replay.
 5. On *Adaptive Deception*, click **Enable**. Point out that no decoy is deployed for benign traffic.
 
@@ -186,7 +186,7 @@ and `RECON_DELAY` in the Job's `env` before creating it:
 | Slow scan | `1.0` or higher | ≤ ~10 flows / window: **below the burst threshold (15)**. This demonstrates the known limitation for slow scans |
 
 ### Step 3: show detection
-* On *Live Traffic Monitoring*, the flow-burst panel shows the recon pod IP → Node-RED :1880, with flow
+* On *Live Security Monitoring*, the behavioural alert timeline shows the recon pod IP → Node-RED :1880, with flow
   count and rate.
 * On *Attack Classification*, the class, confidence, source/destination, and whether a result came from the
   ML classifier or the behavioural detector.
@@ -234,7 +234,7 @@ container runtime and cannot be seen in network flows.
 
 | Demo | How |
 |---|---|
-| Dataset replay | *Traffic Capture* → dataset replay, or `curl -X POST localhost:8000/api/detection/run -H 'Content-Type: application/json' -d '{"file": "reconnaissance_20230319T1704.pcap_Flow.csv"}'` (records are tagged `source=dataset`) |
+| Dataset replay | *Live Security Monitoring* → Historical records and dataset replay, or `curl -X POST localhost:8000/api/detection/run -H 'Content-Type: application/json' -d '{"file": "reconnaissance_20230319T1704.pcap_Flow.csv"}'` (records are tagged `source=dataset`) |
 | Classify a CSV from the CLI | `.venv/bin/python -m src.detection.predict_csv <file.csv>` |
 | Process a stored PCAP | `curl -X POST localhost:8000/api/capture/process -H 'Content-Type: application/json' -d '{"pcap": "<file>.pcap"}'` |
 | Dashboard offline mode | `./start.sh stop`, then start only the dashboard. Pages read SQLite read-only and show an offline banner |
