@@ -1,0 +1,88 @@
+# Dataset generation (python -m src.datagen.run / src.datagen.build).
+# One controlled session at a time: dedicated tcpdump on cni0 -> one generator Job -> stop -> CICFlowMeter.
+
+dataset_version: gen-v1
+output_dir: data/generated          # raw/ pcaps/ flows/ labelled/ manifests/ reports/
+
+kubernetes:
+  namespace: ids-traffic            # generator pods only run here (egress NetworkPolicy applies)
+  configmap: datagen-generator-script
+  script: kubernetes/traffic-generator/datagen_generator.py
+  job_template: kubernetes/traffic-generator/datagen-job.yaml
+  benign_generator_selector: "app=traffic-generator,mode=benign"   # the always-on generator (background)
+
+# Allow-list of target applications (namespace target-apps). Nothing else can be targeted.
+apps:
+  nodered: {namespace: target-apps, service: nodered, port: 1880, pod_selector: app=nodered}
+  grafana: {namespace: target-apps, service: grafana, port: 3000, pod_selector: app=grafana}
+  influxdb: {namespace: target-apps, service: influxdb, port: 8086, pod_selector: app=influxdb}
+
+# Enforced by the launcher before a Job is created (the generator enforces its own caps too).
+limits:
+  max_requests: 1000
+  min_delay_s: 0.02
+  max_session_seconds: 300
+  max_workers: 8
+  gap_seconds: 15                   # idle time between sessions
+  capture_lead_seconds: 3           # capture starts this long before the Job
+  capture_tail_seconds: 8           # and stops this long after the last request
+  max_pcap_mb: 400                  # a larger capture marks the session failed
+  job_start_timeout_s: 90
+
+labelling:
+  # A session flow must start no earlier than first request - slack_before and end no later than
+  # last request + slack_after; otherwise it crosses the session boundary and is ambiguous.
+  slack_before_s: 1.0
+  slack_after_s: 2.0
+  # Flows at the very edge of the capture can be truncated; flagged (not removed) in reports.
+  capture_edge_s: 0.5
+
+# Tier parameters. delay = [min, max] seconds between requests (per worker).
+tiers:
+  benign:
+    browse:           {low: {delay: [5, 12], requests: 25},  normal: {delay: [1, 4], requests: 90},     high: {delay: [0.2, 0.6], requests: 300}}
+    poller:           {low: {delay: [5, 6], requests: 40},   normal: {delay: [1, 1.2], requests: 150},  high: {delay: [0.2, 0.25], requests: 600}}
+    keepalive_client: {low: {delay: [3, 8], requests: 40},   normal: {delay: [0.5, 1.5], requests: 200}, high: {delay: [0.03, 0.1], requests: 900},
+                       extra: {reconnect: [10, 40]}}
+    burst_refresh:    {low: {delay: [10, 15], requests: 60, burst: [2, 4]}, normal: {delay: [4, 6], requests: 200, burst: [3, 6]},
+                       high: {delay: [1, 2], requests: 600, burst: [4, 8]}, extra: {workers: 4}}
+    asset_loader:     {low: {delay: [10, 20], requests: 60}, normal: {delay: [3, 8], requests: 200},    high: {delay: [0.5, 1.5], requests: 450},
+                       extra: {workers: 4}}
+    api_consumer:     {low: {delay: [2, 6], requests: 50},   normal: {delay: [0.3, 1], requests: 250},  high: {delay: [0.03, 0.08], requests: 1000}}
+  recon:
+    seq_wordlist:      {high: {delay: [0.06, 0.06], requests: 300}, medium: {delay: [0.8, 0.8], requests: 150}, slow: {delay: [4, 4], requests: 35}}
+    shuffled_jitter:   {high: {delay: [0.02, 0.15], requests: 300}, medium: {delay: [0.3, 1.5], requests: 150}, slow: {delay: [2, 7], requests: 35}}
+    keepalive_scanner: {high: {delay: [0.02, 0.05], requests: 800}, medium: {delay: [0.2, 0.6], requests: 350}, slow: {delay: [2, 4], requests: 70},
+                        extra: {reconnect: [5, 20]}}
+    threaded_parallel: {high: {delay: [0.1, 0.3], requests: 400, workers: 6}, medium: {delay: [1, 2], requests: 180, workers: 3},
+                        slow: {delay: [5, 8], requests: 45, workers: 2}}
+    head_crawler:      {high: {delay: [0.05, 0.1], requests: 300}, medium: {delay: [0.6, 1.2], requests: 150}, slow: {delay: [3, 6], requests: 35}}
+    multi_app_sweep:   {high: {delay: [0.03, 0.06], requests: 450}, medium: {delay: [0.4, 0.8], requests: 180}, slow: {delay: [3, 5], requests: 45}}
+
+# Session plan. Applications rotate with the session index so every profile/scanner meets
+# several applications; seeds are base_seed + session index.
+plan:
+  base_seed: 1000
+  apps_cycle: [nodered, grafana, influxdb]
+  benign_repeats: 1                 # sessions per (profile, tier)
+  recon_repeats: 2                  # sessions per (scanner, tier)
+  # profiles that always use all three applications (the others get one or two apps)
+  all_apps: [poller, multi_app_sweep]
+  two_apps: [browse, keepalive_client, api_consumer, shuffled_jitter, threaded_parallel]
+
+# Session-level split (never per flow). The held-out scanner is never used for training,
+# validation or tuning. The held-out application is evaluated in Phase 6 with a fold whose
+# training sessions never touch it.
+split:
+  held_out_scanner: threaded_parallel
+  held_out_app: influxdb
+  # benign: per profile one tier -> test (rotating); profiles with an even index give one more tier to validation
+  # recon:  per scanner one second-repeat session -> test, another -> validation (rotating tiers); rest -> train
+  benign_val_profiles_even: true
+
+# Balanced training set (built from training sessions only; never duplicated).
+balance:
+  target_per_class: 1500
+  min_sessions_per_class: 5
+  max_background_share: 0.3         # of the benign target, filled with cluster background flows
+  random_state: 42

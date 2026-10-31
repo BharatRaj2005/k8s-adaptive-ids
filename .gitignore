@@ -14,3 +14,4 @@ logs/
 config/*.kubeconfig
 data/ids.sqlite*
 backups/
+data/generated/
