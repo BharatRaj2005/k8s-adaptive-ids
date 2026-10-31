@@ -1,45 +1,46 @@
 {
   "status": "stopped",
-  "pid": 39836,
+  "pid": 108768,
   "interface": "cni0",
-  "started_at": "2026-10-30T18:37:19.602219+00:00",
+  "started_at": "2026-10-31T06:19:42.358383+00:00",
   "processing": true,
-  "window_limit": 6,
-  "stopped_at": "2026-10-30T18:37:53.569358+00:00",
-  "windows": 4,
-  "processed": 4,
+  "window_limit": null,
+  "stopped_at": "2026-10-31T06:21:08.764189+00:00",
+  "windows": 12,
+  "processed": 12,
   "failed": 0,
   "last_window": {
-    "pcap": "/home/bharat_raj/k8s-adaptive-ids/captures/pcap/win_cni0_20261030T183749_891037.pcap",
+    "pcap": "/home/bharat_raj/k8s-adaptive-ids/captures/pcap/win_cni0_20261031T062103_340192.pcap",
     "interface": "cni0",
-    "started_at": "2026-10-30T18:37:49.891037+00:00",
-    "ended_at": "2026-10-30T18:37:52.637650+00:00",
-    "duration_s": 2.7454793180004344,
-    "packets": 113,
+    "started_at": "2026-10-31T06:21:03.340192+00:00",
+    "ended_at": "2026-10-31T06:21:07.778820+00:00",
+    "duration_s": 4.4379609860006894,
+    "packets": 373,
     "dropped": 0,
-    "bytes": 20564,
+    "bytes": 96069,
     "error": null
   },
   "last_result": {
-    "pcap": "win_cni0_20261030T183749_891037.pcap",
+    "pcap": "win_cni0_20261031T062103_340192.pcap",
     "conversion": {
-      "pcap": "/home/bharat_raj/k8s-adaptive-ids/captures/pcap/win_cni0_20261030T183749_891037.pcap",
-      "csv": "/home/bharat_raj/k8s-adaptive-ids/captures/flows/win_cni0_20261030T183749_891037.pcap_Flow.csv",
+      "pcap": "/home/bharat_raj/k8s-adaptive-ids/captures/pcap/win_cni0_20261031T062103_340192.pcap",
+      "csv": "/home/bharat_raj/k8s-adaptive-ids/captures/flows/win_cni0_20261031T062103_340192.pcap_Flow.csv",
       "status": "converted",
-      "flows": 20,
-      "seconds": 0.8035724429992115,
+      "flows": 45,
+      "seconds": 0.7649119110001266,
       "error": null
     },
-    "capture_id": 121,
+    "capture_id": 399,
     "flow_bursts": 0,
+    "behavior_alerts": 0,
     "status": "classified",
-    "detections": 20,
+    "detections": 45,
     "malicious": 0,
     "classes": {
-      "Benign": 20
+      "Benign": 45
     },
-    "prediction_ms": 34.65553899968654,
-    "pipeline_s": 0.9134704469997814
+    "prediction_ms": 42.07066199978726,
+    "pipeline_s": 0.9442630369994731
   },
-  "updated_at": "2026-10-30T18:37:53.569646+00:00"
+  "updated_at": "2026-10-31T06:21:08.764326+00:00"
 }

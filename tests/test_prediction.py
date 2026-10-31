@@ -60,3 +60,28 @@ def test_active_model_loads_if_trained():
         pytest.skip("active model not trained yet")
     pred = FlowPredictor(model_dir).predict_csv(FIXTURES / "local_cicflowmeter_cni0.csv", source="pcap")
     assert len(pred) == 2
+
+
+def test_unknown_handling_never_reports_unfamiliar_service_attacks(trained_model_dir, cfg, tmp_path):
+    import json
+    import shutil
+
+    from src.detection.unknown import UNKNOWN, UNKNOWN_CLASS
+
+    model = tmp_path / "m"
+    shutil.copytree(trained_model_dir, model)
+    from src.utils.config import get_path
+
+    path = sorted((get_path("dataset_dir", cfg) / "malicious").glob("reconnaissance_*.csv"))[0]
+    plain = FlowPredictor(model).predict_csv(path, source="dataset")
+    assert plain["status"].isin(["benign", "attack"]).all() and plain["unknown_reason"].isna().all()
+    # a profile without :1880 makes every attack verdict on Node-RED unfamiliar
+    (model / "service_profile.json").write_text(json.dumps({"6:6642": 1000}))
+    ucfg = {"enabled": True, "checks": ["unfamiliar_service"], "min_benign_service_flows": 50, "min_confidence": 0.5}
+    pred = FlowPredictor(model, ucfg).predict_csv(path, source="dataset")
+    on_1880 = (pred["dst_port"] == 1880) & plain["is_malicious"]
+    assert on_1880.any()
+    assert (pred.loc[on_1880, "status"] == UNKNOWN).all()
+    assert (pred.loc[on_1880, "predicted_class"] == UNKNOWN_CLASS).all()
+    assert not pred.loc[on_1880, "is_malicious"].any()            # never handed to the controller as an attack
+    assert (pred["predicted_label"] == plain["predicted_label"]).all()  # the model's own label is kept

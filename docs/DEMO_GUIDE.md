@@ -297,9 +297,13 @@ The full reference is in `docs/API.md` and http://127.0.0.1:8000/docs.
   traffic.
 * The dataset's attack captures are whole-node captures, so most flows labelled as attacks are cluster
   background. See `reports/dataset_quality.md`: only 2,247 of 4,128 "attack" flows carry attack evidence.
-* **Work in progress.** The improved models (`v2_*`, evidence labels, branch `improvements`) are still
-  being evaluated in `reports/model_comparison.md`. The live system continues to use
-  `extratrees_dataset_lab` until a replacement passes validation.
+* The active model is `v2_et_none` (`reports/model_comparison.md`). It recognises this lab's scanner
+  at any rate, but a different scanner only partly; behavioural detection covers the rest
+  (`reports/behavioural_detection.md`).
+* Attack verdicts on applications without benign training traffic are shown as *Unknown / Requires
+  Investigation* and never trigger decoys (`reports/unknown_traffic.md`).
+* Learned-threshold behavioural alerts only *show* suspicious behaviour. They trigger a decoy only when
+  the ML classifier also flags the same source, because a benign client that speeds up raises them too.
 
 ## 10. Troubleshooting
 

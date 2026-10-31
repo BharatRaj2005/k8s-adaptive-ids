@@ -59,10 +59,15 @@ def metrics(cfg=None) -> dict[str, Any]:
         one = lambda sql, p=(): c.execute(sql, p).fetchone()[0]
         out = {
             "total_flows": one("SELECT COUNT(*) FROM detections WHERE simulated = 0"),
-            "benign_flows": one("SELECT COUNT(*) FROM detections WHERE simulated = 0 AND is_malicious = 0"),
+            "benign_flows": one("SELECT COUNT(*) FROM detections WHERE simulated = 0 AND is_malicious = 0 "
+                                "AND COALESCE(status, 'benign') != 'unknown'"),
+            # attack verdicts on services without a benign profile: shown, never acted on
+            "unknown_flows": one("SELECT COUNT(*) FROM detections WHERE simulated = 0 AND status = 'unknown'"),
             "malicious_flows": one("SELECT COUNT(*) FROM detections WHERE simulated = 0 AND is_malicious = 1"),
             "flows_by_source": dict(c.execute("SELECT source, COUNT(*) FROM detections WHERE simulated = 0 GROUP BY 1").fetchall()),
             "flow_bursts": one("SELECT COUNT(*) FROM behavior_alerts"),
+            "behavior_alerts_by_type": dict(c.execute(
+                "SELECT COALESCE(alert_type, 'flow_burst'), COUNT(*) FROM behavior_alerts GROUP BY 1").fetchall()),
             # distinct live-traffic sources with confident ML detections or flow bursts in the last 15 minutes
             # (historical dataset replays are not threats to this cluster)
             "active_threats": one(
@@ -154,6 +159,56 @@ def model_metrics(name: str, cfg=None) -> dict[str, Any] | None:
         return None
     path = models_dir / name / "metrics.json"
     return json.loads(path.read_text()) if path.exists() else None
+
+
+def evaluation_reports(cfg=None) -> dict[str, Any]:
+    """Compact view of the evaluation reports (model comparison, behavioural replay, unknown traffic)."""
+    cfg = cfg or load_config()
+    rep = get_path("reports_dir", cfg)
+
+    def load(name):
+        p = rep / name
+        return json.loads(p.read_text()) if p.exists() else None
+
+    def test_summary(e):
+        t, g, pr, lab = e["test"], e.get("grouped", {}), e.get("profile", {}), e.get("lab", {})
+        return {"name": e["name"], "f1_macro": t["f1_macro"], "recall_macro": t["recall_macro"],
+                "precision_macro": t["precision_macro"], "accuracy": t["accuracy"], "f1_weighted": t["f1_weighted"],
+                "benign_fpr": t["binary"]["false_positive_rate"], "attack_recall": t["binary"]["detection_rate"],
+                "per_class": t["per_class"], "labels": t["labels"], "confusion_matrix": t["confusion_matrix"],
+                "lab": lab, "loco_mean_fpr": g.get("benign_loco_mean_fpr"),
+                "loro": g.get("recon_loro"), "model_mb": pr.get("model_bytes", 0) / 1e6,
+                "peak_rss_mb": pr.get("peak_rss_mb"), "single_flow_ms": pr.get("single_flow_median_ms")}
+
+    out: dict[str, Any] = {"selected_model": cfg["experiments"].get("selected_model"),
+                           "active_model": cfg["detection"]["active_model"]}
+    mc = load("model_comparison.json")
+    if mc:
+        out["comparison"] = {"protocol": {k: mc["protocol"][k] for k in ("test_rows", "test_class_counts",
+                                                                         "lab_train_sets", "lab_eval_sets")},
+                             "baseline": test_summary(mc["baseline"]),
+                             "candidates": [test_summary(e) for e in mc["candidates"].values()]}
+    bd = load("behavioural_detection.json")
+    if bd:
+        out["behaviour"] = [{"name": s["name"], "role": s["role"], "windows": s["windows"],
+                             "results": {d: {k: r[k] for k in ("detection_rate", "false_positive_rate", "precision",
+                                                               "alerts_per_window_mean")}
+                                         | {"scenarios": {n: {"windows": v["windows"], "delay_s": v["delay_s"],
+                                                              "rate_per_s": v["rate_per_s"]}
+                                                          for n, v in r["scenarios"].items()}}
+                                         for d, r in s["results"].items()},
+                             "flow_level_ml": s.get("flow_level_ml")} for s in bd["sessions"]]
+    ut = load("unknown_traffic.json")
+    if ut:
+        out["unknown"] = {"config": cfg["detection"]["unknown"],
+                          "folds": [{"application": f["application"],
+                                     "variants": {v: {"held_out_fpr": x["held_out_app_benign"]["false_positive"],
+                                                      "held_out_unknown": x["held_out_app_benign"]["unknown"],
+                                                      "known_unknown": x["known_app_benign"]["unknown"],
+                                                      "attacks_detected": x["attacks"]["detected"],
+                                                      "attacks_unknown": x["attacks"]["unknown"]}
+                                                  for v, x in f["variants"].items()}} for f in ut["folds"]]}
+    return out
 
 
 def model_performance(cfg=None) -> dict[str, Any]:

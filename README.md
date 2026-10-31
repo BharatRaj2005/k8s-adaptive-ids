@@ -34,8 +34,24 @@ records when the backend or the cluster is down.
 | 3 | MAPE-K controller, attack→decoy policy, 6 decoy profiles, RBAC, NetworkPolicies, TTL/cooldown/limits | Done, tested (incl. live cluster) |
 | 3 | Decoy interaction logging and knowledge base | Done, tested (incl. live cluster) |
 | 3 | Kubernetes audit-log monitor | **Not built** (left out by decision, see below) |
-| 4 | FastAPI backend (29 operations), Streamlit dashboard (7 pages, offline fallback) | Done, tested |
+| 4 | FastAPI backend (31 operations), Streamlit dashboard (7 pages, offline fallback) | Done, tested |
 | 5 | Repeatable live demonstration (13 checks), diagrams, API docs, reports | Done |
+
+### Improvements (branch `improvements`, 2026-10-31)
+
+| Area | Change | Evidence |
+|---|---|---|
+| Dataset labels | Evidence-based per-flow labels (attack / background / ambiguous). Host-runtime CVEs (classes 7–10) are documented as not network-observable. | `reports/dataset_quality.md` |
+| Classifier | `v2_et_none` (ExtraTrees on evidence labels + lab data, validation-tuned threshold) replaces `extratrees_dataset_lab`, which is kept as a fallback. Ten candidates (ExtraTrees variants, Random Forest, LightGBM, XGBoost; class weights, SMOTE, undersampling, feature subsets) compared under one protocol, including leave-one-capture-out and leave-one-run-out. | `reports/model_comparison.md` |
+| Unknown traffic | Attack verdicts on a service without a benign training profile are reported as *Unknown / Requires Investigation* and never trigger decoys. Evaluated leave-one-application-out. | `reports/unknown_traffic.md` |
+| Behavioural detection | The fixed flow-burst rule is kept and learned per-service thresholds (`adaptive_rate`, `slow_scan`) are added, never above the fixed level. Evaluated on held-out lab sessions with slow, distributed, changing-benign and unseen-scanner traffic. | `reports/behavioural_detection.md` |
+| Deception | Per-source incident correlation (ML, behaviour, earlier interactions); decoy order by attacked service and engagement; interaction profiling (`/api/deception/interaction-summary`). Learned-threshold alerts act only with ML corroboration at ≥ 0.6 confidence. | tests, `reports/deception_test_report.md` |
+| Dashboard | The Model Performance page separates the dataset test, model comparison, independent lab results, unseen applications and live counts (known attack / unknown / behavioural). | |
+
+Reproduce: `python -m src.preprocessing.dataset_report`, `python -m src.detection.experiments`,
+`python -m src.detection.comparison_report`, `python -m src.detection.behavior_eval` and
+`python -m src.detection.behaviour_report`, `python -m src.detection.loao_eval`. The lab sessions are recorded with
+`scripts/behaviour_scenarios.py`.
 
 Test suite: `.venv/bin/python -m pytest -q`. Unit tests; real tcpdump and CICFlowMeter runs; API tests;
 headless rendering of every dashboard page with and without the backend; and one live-cluster decoy

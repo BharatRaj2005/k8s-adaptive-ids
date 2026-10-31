@@ -27,23 +27,47 @@ def interaction(cfg, src, profile, path, itype="page_request", n=1):
                           interaction_type=itype, collected_at="2026-10-30T18:01:00+00:00")
 
 
-def test_single_learned_threshold_alert_waits_for_evidence(ctl, dcfg):
+def test_learned_threshold_alerts_alone_never_deploy(ctl, dcfg):
+    for _ in range(4):                      # repeated medium alerts from one source
+        alert(dcfg)
+        ctl.run_cycle()
+    d = decisions(dcfg)
+    assert set(d["action"]) == {"await_evidence"} and not ctl.manager.decoys
+    assert "suspicious behaviour only" in d["reason"].iloc[-1]
+
+
+def test_repeated_learned_alerts_deploy_when_ml_corroboration_is_not_required(dcfg):
+    from src.deception.controller import MapeKController
+
+    dcfg["deception"]["thresholds"]["behavior_medium_requires_ml"] = False
+    ctl = MapeKController(dcfg, manager=FakeDecoyManager())
+    ctl.set_enabled(True)
     alert(dcfg)
     ctl.run_cycle()
-    d = decisions(dcfg)
-    assert d["action"].tolist() == ["await_evidence"] and not ctl.manager.decoys
+    assert decisions(dcfg)["action"].tolist() == ["await_evidence"]
     alert(dcfg)  # second alert window from the same source and service
     ctl.run_cycle()
     assert set(decisions(dcfg)["action"].iloc[1:]) == {"deploy"}
 
 
+def test_low_confidence_ml_does_not_corroborate(ctl, dcfg):
+    add_detection(dcfg, "Node-RED Reconnaissance", 0.32)  # just above the decision threshold, below medium
+    alert(dcfg)
+    ctl.run_cycle()
+    beh = decisions(dcfg).query("trigger == 'behavior'")
+    assert set(beh["action"]) == {"await_evidence"} and not ctl.manager.decoys
+
+
 def test_learned_threshold_alert_corroborated_by_ml(ctl, dcfg):
-    add_detection(dcfg, "Node-RED Reconnaissance", 0.5)   # low confidence: not actionable on its own
+    add_detection(dcfg, "Node-RED Reconnaissance", 0.65)  # medium confidence, a single detection: not actionable alone
     alert(dcfg)
     ctl.run_cycle()
     d = decisions(dcfg)
-    beh = d[d["trigger"] == "behavior"]
-    assert set(beh["action"]) == {"deploy"} and "ML detection" in beh["reason"].iloc[0]
+    deploys = d[d["action"] == "deploy"]
+    # one deployment per decoy for this source; whichever assessment comes first carries both kinds of evidence
+    assert sorted(deploys["decoy_profile"]) == ["http-recon", "nodered"]
+    corr = json.loads(deploys["evidence"].iloc[0])["correlation"]
+    assert corr["detectors"] == ["behavior", "ml"]
 
 
 def test_ml_and_behaviour_of_one_source_form_one_incident(ctl, dcfg):
@@ -97,3 +121,18 @@ def test_summary_from_interaction_rows(cfg):
     s = summarize(rows, cfg["deception"]["profiling"])
     assert len(s) == 1 and s[0]["category"] == "enumerating" and s[0]["decision_ids"] == [7]
     assert s[0]["requests"] == 12 and s[0]["duration_s"] == 11.0 and s[0]["statuses"] == {"404": 12}
+
+
+def test_unknown_flows_never_trigger_decoys(ctl, dcfg):
+    from src.detection.unknown import UNKNOWN_CLASS
+
+    pred = pd.DataFrame([{
+        "flow_id": f"u{i}", "timestamp": None, "src_ip": SRC, "src_port": 41000 + i, "dst_ip": "10.42.0.5",
+        "dst_port": 5555, "protocol": 6, "predicted_label": 2, "predicted_class": UNKNOWN_CLASS, "confidence": 0.99,
+        "is_malicious": False, "capture_file": "w.pcap", "source": "pcap", "processing_time_ms": 1.0,
+        "detected_at": datetime.now(timezone.utc).isoformat(), "true_label": None, "model": "test",
+        "status": "unknown", "unknown_reason": "unfamiliar_service"} for i in range(5)])
+    with db.connect(db.db_path(dcfg)) as c:
+        db.insert_detections(c, pred)
+    ctl.run_cycle()
+    assert decisions(dcfg).empty and not ctl.manager.decoys

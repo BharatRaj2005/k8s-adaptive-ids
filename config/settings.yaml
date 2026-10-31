@@ -218,6 +218,14 @@ detection:
   # v2_et_none (2026-10-31): ExtraTrees on evidence labels + lab benign/recon_run1, validation-tuned
   # threshold; selected in reports/model_comparison.md. Previous: extratrees_dataset_lab (kept).
   active_model: v2_et_none
+  # Unknown-traffic handling (src/detection/unknown.py). Flows flagged by an enabled
+  # check are reported as "Unknown / Requires Investigation", never as an attack.
+  unknown:
+    enabled: true            # chosen from reports/unknown_traffic.md (leave-one-application-out)
+    checks: [unfamiliar_service]
+    min_benign_service_flows: 50
+    min_confidence: 0.5
+    novelty_quantile: 0.999
 
 # Per-source flow-burst detector (src/detection/behavior.py). Lab measurement:
 # recon pod 28-57 flows / 10 s window to Node-RED; benign generator 0-3; kubelet 1.
@@ -246,8 +254,22 @@ behavior:
 # Replay evaluation of behavioural detection (python -m src.detection.behavior_eval).
 # Attackers are the lab traffic-generator Job pods of each session (ground truth).
 behavior_eval:
+  # hybrid/ml: a source counts as ML-flagged in a window with at least this many attack flows
+  ml_min_flows: 2
+  # Replays of dataset captures in 10 s windows (cut by flow start time). The dataset's recon
+  # capture comes from a scanner and cluster never used to develop the behavioural detector.
+  # In these captures all external clients appear as the ingress gateway 100.64.0.2.
+  dataset_sessions:
+    - name: dataset_nodered_benign
+      capture: nodered
+    - name: dataset_recon_tool
+      capture: reconnaissance
+      warmup: {capture: nodered, seconds: 1800}
+      attackers: [{name: dataset_recon_tool, ip: 100.64.0.2, kind: recon}]
   sessions:
     - name: session1
+      # used while developing the adaptive detector (and recon_run1 is in the model's training data)
+      role: calibration
       from: "2026-10-30T17:30:00"
       to: "2026-10-30T18:40:00"
       scenarios:
@@ -257,6 +279,12 @@ behavior_eval:
         - {name: demo1_decoy_probe, ip: 10.42.0.191, kind: decoy_probe, rate_per_s: 5}
         - {name: demo2_recon, ip: 10.42.0.194, kind: recon, rate_per_s: 5}
         - {name: demo2_decoy_probe, ip: 10.42.0.199, kind: decoy_probe, rate_per_s: 5}
+
+# Leave-one-application-out evaluation (python -m src.detection.loao_eval).
+unknown_eval:
+  applications: {nodered: [1880], grafana: [3000], influxdb: [8086]}
+  novelty_k: 5
+  novelty_sample: 20000
 
 database:
   path: data/ids.sqlite
@@ -301,6 +329,10 @@ deception:
   act_on_sources: [pcap, live, dataset]
   thresholds:
     behavior_repeat_count: 2        # learned-threshold (medium) behaviour alerts needed before acting
+    # Medium (learned-threshold) behavioural alerts deploy decoys only with an ML detection from the
+    # same source. Decided after the changing-benign-traffic session (reports/behavioural_detection.md):
+    # a benign client that speeds up raises repeated medium alerts; fixed-rule bursts still act alone.
+    behavior_medium_requires_ml: true
     high_confidence: 0.9          # act after policy validation
     medium_confidence: 0.6        # act only with repeated or corroborating evidence
     repeat_count: 3

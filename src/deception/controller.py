@@ -164,15 +164,20 @@ class MapeKController:
             if high:
                 assessment, actionable, why = "high", True, "fixed flow-burst rule"
             else:
-                # learned-threshold alerts need repetition or an ML detection from the same source
+                # learned-threshold alerts need an ML detection of at least medium confidence from the
+                # same source (the controller's own floor for acting on ML evidence)
                 ml = c.execute("SELECT COUNT(*) FROM detections WHERE src_ip = ? AND is_malicious = 1 AND simulated = 0 "
-                               "AND detected_at >= ?", (src, since)).fetchone()[0]
+                               "AND confidence >= ? AND detected_at >= ?",
+                               (src, th["medium_confidence"], since)).fetchone()[0]
                 need = th["behavior_repeat_count"]
-                actionable = count >= need or ml > 0
+                needs_ml = th.get("behavior_medium_requires_ml", False)
+                actionable = ml > 0 or (not needs_ml and count >= need)
                 assessment = "medium"
-                why = (f"{count} alert window(s) >= {need}" if count >= need else
-                       f"corroborated by {ml} ML detection(s)" if ml else
-                       f"{count}/{need} alert windows, awaiting evidence")
+                why = (f"corroborated by {ml} ML detection(s)" if ml else
+                       f"{count} alert window(s) >= {need}" if actionable else
+                       ("suspicious behaviour only: learned-threshold alerts need an ML detection from the same "
+                        "source before a decoy is deployed" if needs_ml else
+                        f"{count}/{need} alert windows, awaiting evidence"))
             measure = (f"{a['flows']} flows in {a['window_s']:.0f}s ({a['rate_per_s']}/s)" if kind != "slow_scan" else
                        f"{json.loads(a.get('details') or '{}').get('horizon_flows', '?')} flows in the last "
                        f"{json.loads(a.get('details') or '{}').get('horizon_s', 0):.0f}s")

@@ -1,0 +1,104 @@
+{
+  "name": "session2",
+  "from": "2026-10-31T05:27:31.827009+00:00",
+  "benign_minutes": 5,
+  "scenarios": [
+    {
+      "name": "high_rate",
+      "group": "high_rate",
+      "ip": "10.42.0.227",
+      "kind": "recon",
+      "job": "traffic-recon-high-rate-c2p85",
+      "rate_per_s": 10.0,
+      "parallel": 1,
+      "requests": 300,
+      "start": "2026-10-31T05:32:43.139595+00:00",
+      "end": "2026-10-31T05:33:16.218490+00:00"
+    },
+    {
+      "name": "medium_rate",
+      "group": "medium_rate",
+      "ip": "10.42.0.228",
+      "kind": "recon",
+      "job": "traffic-recon-medium-rate-2hfdb",
+      "rate_per_s": 1.0,
+      "parallel": 1,
+      "requests": 120,
+      "start": "2026-10-31T05:34:31.952367+00:00",
+      "end": "2026-10-31T05:36:31.614792+00:00"
+    },
+    {
+      "name": "low_rate",
+      "group": "low_rate",
+      "ip": "10.42.0.229",
+      "kind": "recon",
+      "job": "traffic-recon-low-rate-7g7vr",
+      "rate_per_s": 0.333,
+      "parallel": 1,
+      "requests": 50,
+      "start": "2026-10-31T05:37:50.690470+00:00",
+      "end": "2026-10-31T05:40:17.963749+00:00"
+    },
+    {
+      "name": "very_low_rate",
+      "group": "very_low_rate",
+      "ip": "10.42.0.230",
+      "kind": "recon",
+      "job": "traffic-recon-very-low-rate-s9tpb",
+      "rate_per_s": 0.167,
+      "parallel": 1,
+      "requests": 30,
+      "start": "2026-10-31T05:41:36.848505+00:00",
+      "end": "2026-10-31T05:44:31.028591+00:00"
+    },
+    {
+      "name": "distributed_1",
+      "group": "distributed",
+      "ip": "10.42.0.231",
+      "kind": "recon",
+      "job": "traffic-recon-distributed-hvlb6",
+      "rate_per_s": 0.5,
+      "parallel": 4,
+      "requests": 60,
+      "start": "2026-10-31T05:45:53.944177+00:00",
+      "end": "2026-10-31T05:47:52.234437+00:00"
+    },
+    {
+      "name": "distributed_2",
+      "group": "distributed",
+      "ip": "10.42.0.234",
+      "kind": "recon",
+      "job": "traffic-recon-distributed-hvlb6",
+      "rate_per_s": 0.5,
+      "parallel": 4,
+      "requests": 60,
+      "start": "2026-10-31T05:45:54.355518+00:00",
+      "end": "2026-10-31T05:47:52.651874+00:00"
+    },
+    {
+      "name": "distributed_3",
+      "group": "distributed",
+      "ip": "10.42.0.232",
+      "kind": "recon",
+      "job": "traffic-recon-distributed-hvlb6",
+      "rate_per_s": 0.5,
+      "parallel": 4,
+      "requests": 60,
+      "start": "2026-10-31T05:45:53.683609+00:00",
+      "end": "2026-10-31T05:47:51.986013+00:00"
+    },
+    {
+      "name": "distributed_4",
+      "group": "distributed",
+      "ip": "10.42.0.233",
+      "kind": "recon",
+      "job": "traffic-recon-distributed-hvlb6",
+      "rate_per_s": 0.5,
+      "parallel": 4,
+      "requests": 60,
+      "start": "2026-10-31T05:45:53.884379+00:00",
+      "end": "2026-10-31T05:47:52.177880+00:00"
+    }
+  ],
+  "to": "2026-10-31T05:49:01.801162+00:00"
+}

@@ -211,3 +211,8 @@ metrics.json of a registered model.
 
 Parameters:
   - `name` (path, string)
+
+### `GET /api/model/evaluation`
+
+Summaries of reports/model_comparison.json (same-protocol candidate comparison), behavioural_detection.json (fixed vs adaptive vs ML vs hybrid on recorded lab sessions) and unknown_traffic.json (leave-one-application-out).
+

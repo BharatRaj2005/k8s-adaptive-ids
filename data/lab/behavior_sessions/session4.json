@@ -1,0 +1,34 @@
+{
+  "name": "session4",
+  "from": "2026-10-31T05:59:59.462117+00:00",
+  "benign_minutes": 3.0,
+  "scenarios": [
+    {
+      "name": "alt_scanner_medium",
+      "group": "alt_scanner_medium",
+      "ip": "10.42.0.237",
+      "kind": "recon",
+      "job": "traffic-recon-alt-scanner-medium-qbsq8",
+      "target": "grafana",
+      "rate_per_s": 1.0,
+      "parallel": 1,
+      "requests": 120,
+      "start": "2026-10-31T06:03:10.231994+00:00",
+      "end": "2026-10-31T06:05:11.675380+00:00"
+    },
+    {
+      "name": "alt_scanner_low",
+      "group": "alt_scanner_low",
+      "ip": "10.42.0.238",
+      "kind": "recon",
+      "job": "traffic-recon-alt-scanner-low-wjr62",
+      "target": "grafana",
+      "rate_per_s": 0.333,
+      "parallel": 1,
+      "requests": 50,
+      "start": "2026-10-31T06:06:28.567819+00:00",
+      "end": "2026-10-31T06:08:57.375355+00:00"
+    }
+  ],
+  "to": "2026-10-31T06:10:05.078167+00:00"
+}

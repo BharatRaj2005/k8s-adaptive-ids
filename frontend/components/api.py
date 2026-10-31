@@ -117,6 +117,10 @@ def model_performance():
     return read("/api/model/performance", queries.model_performance)
 
 
+def evaluation():
+    return read("/api/model/evaluation", queries.evaluation_reports)
+
+
 def model_metrics(name: str):
     return read(f"/api/model/metrics/{name}", lambda: queries.model_metrics(name))
 

@@ -50,7 +50,9 @@ CREATE TABLE IF NOT EXISTS detections (
     detected_at         TEXT NOT NULL,
     true_label          INTEGER,
     model               TEXT,
-    simulated           INTEGER NOT NULL DEFAULT 0
+    simulated           INTEGER NOT NULL DEFAULT 0,
+    status              TEXT,           -- benign | attack | unknown
+    unknown_reason      TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_det_detected_at ON detections(detected_at);
 CREATE INDEX IF NOT EXISTS idx_det_malicious ON detections(is_malicious);
@@ -163,7 +165,7 @@ CREATE TABLE IF NOT EXISTS kv (
 DETECTION_COLUMNS = [
     "flow_id", "timestamp", "src_ip", "src_port", "dst_ip", "dst_port", "protocol",
     "predicted_label", "predicted_class", "confidence", "is_malicious", "capture_file",
-    "source", "processing_time_ms", "detected_at", "true_label", "model",
+    "source", "processing_time_ms", "detected_at", "true_label", "model", "status", "unknown_reason",
 ]
 
 
@@ -189,7 +191,8 @@ def connect(path: Path | None = None) -> Iterator[sqlite3.Connection]:
 
 
 # Columns added after the first release; added in place to existing databases.
-MIGRATIONS = {"behavior_alerts": {"severity": "TEXT", "threshold": "REAL", "baseline": "REAL", "details": "TEXT"}}
+MIGRATIONS = {"behavior_alerts": {"severity": "TEXT", "threshold": "REAL", "baseline": "REAL", "details": "TEXT"},
+              "detections": {"status": "TEXT", "unknown_reason": "TEXT"}}
 
 
 def _migrate(conn: sqlite3.Connection) -> None:
@@ -230,7 +233,7 @@ def insert_detections(conn: sqlite3.Connection, pred: pd.DataFrame, capture_id: 
         return 0
     rows = [
         (capture_id, *(_clean(r[c]) for c in DETECTION_COLUMNS), int(simulated))
-        for r in pred[DETECTION_COLUMNS].to_dict(orient="records")
+        for r in pred.reindex(columns=DETECTION_COLUMNS).to_dict(orient="records")
     ]
     cols =["capture_id", *DETECTION_COLUMNS, "simulated"]
     conn.executemany(f"INSERT INTO detections ({', '.join(cols)}) VALUES ({', '.join('?' * len(cols))})", rows)

@@ -127,8 +127,9 @@ class Demo:
         ml_mal = [d for d in rdet if d["is_malicious"]]
         self.step("Malicious activity detected",
                   bool(alerts),
-                  f"{len(alerts or [])} flow-burst alerts from {recon_ip} "
-                  f"(max {max([a['flows'] for a in alerts or []] or [0])} flows/window); per-flow ML: "
+                  f"{len(alerts or [])} behavioural alerts from {recon_ip} "
+                  f"({ {t: sum((x.get('alert_type') or 'flow_burst') == t for x in alerts or []) for t in sorted({x.get('alert_type') or 'flow_burst' for x in alerts or []})} }, "
+                  f"max {max([a['flows'] for a in alerts or []] or [0])} flows/window); per-flow ML: "
                   f"{len(ml_mal)}/{len(rdet)} attacker flows predicted malicious "
                   f"(reported as measured, not adjusted)")
         self.facts["recon"] = {"job": job, "attacker_ip": recon_ip, "burst_alerts": len(alerts or []),

@@ -29,6 +29,9 @@ MIN_DELAY = float(os.environ.get("MIN_DELAY", "1.0"))
 MAX_DELAY = float(os.environ.get("MAX_DELAY", "4.0"))
 RECON_REQUESTS = int(os.environ.get("RECON_REQUESTS", "300"))
 RECON_DELAY = float(os.environ.get("RECON_DELAY", "0.2"))
+# RECON_TARGET=grafana runs a second, differently built scan (other paths, other app,
+# HEAD/GET mix of its own) used to test detection of a scanner the model never saw.
+RECON_TARGET = os.environ.get("RECON_TARGET", "nodered")
 TIMEOUT = 5
 
 BENIGN_REQUESTS = [
@@ -80,7 +83,26 @@ def run_benign():
         time.sleep(random.uniform(MIN_DELAY, MAX_DELAY))
 
 
+# Documented Grafana HTTP API and UI paths (read-only requests).
+GRAFANA_PATHS = [
+    "/api/health", "/api/frontend/settings", "/api/search", "/api/dashboards/home", "/api/datasources",
+    "/api/org", "/api/user", "/api/users", "/api/teams/search", "/api/folders", "/api/alerts",
+    "/api/annotations", "/api/playlists", "/api/plugins", "/api/snapshots", "/api/admin/stats",
+    "/api/serviceaccounts/search", "/api/library-elements", "/login", "/explore", "/dashboards",
+    "/alerting/list", "/metrics", "/robots.txt", "/public/build/", "/avatar/0",
+]
+
+
 def run_recon():
+    base, paths = (GRAFANA, GRAFANA_PATHS) if RECON_TARGET == "grafana" else (NODERED, RECON_PATHS)
+    if base == GRAFANA:
+        log(event="recon_start", target=base, requests=RECON_REQUESTS)
+        for i in range(RECON_REQUESTS):
+            path = paths[(i * 7) % len(paths)]
+            request(base, path, method="GET" if i % 3 else "HEAD")
+            time.sleep(RECON_DELAY)
+        log(event="recon_end", target=base)
+        return
     log(event="recon_start", target=NODERED, requests=RECON_REQUESTS)
     for i in range(RECON_REQUESTS):
         path = RECON_PATHS[i % len(RECON_PATHS)]

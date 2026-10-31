@@ -9,14 +9,15 @@ flowchart LR
         tcpdump["tcpdump on cni0<br/>(cap_net_raw via setcap)"]
         cap["Capture service<br/>src/capture/service.py<br/>adaptive windows 5/10/30 s"]
         cfm["CICFlowMeter (existing build)<br/>src/feature_extraction/cicflowmeter.py"]
-        det["Per-flow classifier<br/>ExtraTrees (dataset + lab benign)<br/>src/detection/predictor.py"]
-        beh["Flow-burst detector<br/>src/detection/behavior.py"]
+        det["Per-flow classifier<br/>ExtraTrees v2_et_none (evidence labels + lab)<br/>src/detection/predictor.py"]
+        unk["Unknown-traffic check<br/>attack verdict on a service without<br/>benign profile → Unknown<br/>src/detection/unknown.py"]
+        beh["Behavioural detector<br/>fixed flow-burst rule + learned thresholds<br/>src/detection/adaptive_behavior.py"]
         db[("SQLite knowledge base<br/>data/ids.sqlite")]
         api["FastAPI backend<br/>src/backend/app.py"]
         mapek["MAPE-K controller<br/>src/deception/controller.py"]
         ui["Streamlit SOC dashboard<br/>frontend/app.py"]
-        tcpdump --> cap --> cfm --> det --> db
-        det --> beh --> db
+        tcpdump --> cap --> cfm --> det --> unk --> db
+        cfm --> beh --> db
         db <--> mapek
         api --- mapek
         api <--> db
@@ -72,9 +73,12 @@ flowchart TD
     E -- yes --> F[CICFlowMeter<br/>per-PCAP staging dir]
     F --> G[Validated flow CSV<br/>captures/flows/*.pcap_Flow.csv]
     G --> H[Preprocessing<br/>schema alignment, inf/NaN, fitted selector + imputer]
-    H --> I[ML classification<br/>11 classes + confidence]
-    H --> J[Flow-burst analysis<br/>per source and service]
-    I --> K[(detections)]
+    H --> I[ML classification<br/>trained classes + confidence]
+    I --> U{Attack verdict on a service<br/>without benign profile?}
+    U -- yes --> UK[Unknown / Requires Investigation<br/>stored, never acted on]
+    U -- no --> K[(detections<br/>status benign / attack / unknown)]
+    UK --> K
+    G --> J[Behavioural analysis per source and service<br/>fixed rule, adaptive_rate, slow_scan<br/>learned state in SQLite kv]
     J --> L[(behavior_alerts)]
     S[Simulated test event<br/>dashboard / API] --> M[(simulated_events)]
     K & L & M --> N[MAPE-K controller]
@@ -94,8 +98,8 @@ Processing is window-based: a detection appears one window (5–30 s) plus the m
 ```mermaid
 flowchart LR
     subgraph M["Monitor"]
-        m1["new ML detections<br/>(malicious, act_on_sources)"]
-        m2["new flow bursts"]
+        m1["new ML detections<br/>(is_malicious only; unknown excluded)"]
+        m2["new behavioural alerts<br/>(high: fixed rule, medium: learned)"]
         m3["new simulated events"]
         m4["decoy status (K8s)"]
         m5["decoy interactions (pod logs)"]
@@ -105,10 +109,12 @@ flowchart LR
         a2["confidence ≥ 0.9 → high"]
         a3["≥ 0.6 → medium: needs ≥ 3 detections<br/>in 300 s or a corroborating burst"]
         a4["< 0.6 → low: monitor<br/>benign → never deploy"]
+        a5["medium behavioural alert → needs 2 alert<br/>windows or an ML detection"]
+        a6["correlate per source into one incident<br/>(ML, behaviour, earlier interactions)"]
     end
     subgraph P["Plan"]
         p1["class / burst port → decoy profiles<br/>(config policy)"]
-        p2["order profiles by past engagement"]
+        p2["order profiles: attacked service,<br/>source's own engagement, engaged sources"]
         p3["deploy · scale · refresh TTL<br/>suppress: limit / cooldown"]
     end
     subgraph E["Execute"]
@@ -119,7 +125,7 @@ flowchart LR
     subgraph K["Knowledge (SQLite)"]
         k1["decisions + reasons + evidence"]
         k2["decoy lifecycle + deploy time"]
-        k3["interactions"]
+        k3["interactions + per-source summaries<br/>(enumerating / repeated / exploring)"]
     end
     M --> A --> P --> E --> K
     K -->|"engagement reorders profiles,<br/>extends TTL, drives density"| P
