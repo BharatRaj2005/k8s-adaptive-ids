@@ -104,8 +104,9 @@ def build_report(cfg=None) -> str:
               f"From `{lab_path.name}` (`python -m src.detection.live_eval --lab-set ...`, generated "
               f"{lab['generated_at'][:16]}). Ground truth comes from the controlled traffic generator: attacker-pod "
               "flows to the attacked port are the attack, its other flows (DNS) are excluded, everything else is "
-              "benign. *Models ending in `_lab` were trained with the `benign_train` set, which does not overlap "
-              "any set below.*"]
+              "benign. *Models with `_lab` in their name were trained with lab sets (listed per model under "
+              "`lab_train_sets` in `models/registry.json`); report sets that are held out from the active "
+              "model's training, as a set in a model's training data inflates its score.*"]
         for s, rep in lab["sets"].items():
             m = rep["manifest"]
             L += ["", f"### {s} ({m['kind']}): {rep['ground_truth_counts']}", "", f"{m.get('note', '')}", "",
@@ -133,11 +134,15 @@ def build_report(cfg=None) -> str:
           "Its results describe this implementation only, not the original paper's results.",
           "- No claim is made that any model here outperforms published results; the evaluation protocols differ.",
           "- On lab traffic, dataset-only models flag ~40 % of benign flows (mostly kubelet probes, which "
-          "resemble the control-plane flows that carry attack labels in the dataset). Adding verified lab "
-          "benign flows removes those false positives but the controlled recon flows are then classified as "
-          "benign: individual reconnaissance HTTP flows look like benign HTTP flows to the same service. The "
-          "reconnaissance signal in the lab is per-source volume (tens of flows per window from one pod), "
-          "which per-flow features cannot express.",
+          "resemble the control-plane flows that carry attack labels in the dataset). Adding only slow lab "
+          "benign flows (`extratrees_dataset_lab`) removes those false positives but then classifies the "
+          "controlled recon and attack flows as benign too.",
+          "- Lab recon and attack flows become separable per flow once the training data holds both sides of "
+          "the boundary: recon/attack lab sets *and* benign counterexamples of the same apps at similar rates "
+          "(fast API clients, bursty refreshes, browsing, pollers). Training on recon alone made the model flag "
+          "fast benign clients as recon (`reports/mapek_corroboration.md` section 7). Lab attack classes are "
+          "simulated, marker-only traffic, so lab scores show separability of these shapes, not detection of the "
+          "real exploits; the dataset-split per-class scores above are not improved by lab data.",
           ""]
     return "\n".join(L)
 

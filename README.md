@@ -5,9 +5,10 @@ A working prototype for a single-node K3s lab that:
 1. captures pod traffic on the cluster bridge with tcpdump in adaptive windows,
 2. turns each window into CICFlowMeter flow features,
 3. classifies every flow into benign or one of ten Kubernetes attack scenarios (multi-class ML),
-4. detects per-source flow bursts (reconnaissance behaviour),
+4. detects per-source flow bursts, rate changes and slow scans (reconnaissance behaviour),
 5. feeds both evidence streams into a **MAPE-K deception controller** that deploys, scales and expires
-   isolated decoy services through a least-privilege Kubernetes identity,
+   isolated decoy services through a least-privilege Kubernetes identity (behavioural evidence acts only
+   when the ML model corroborates it),
 6. logs every decoy interaction, and
 7. shows everything on a SOC-style dashboard backed by a FastAPI service.
 
@@ -19,6 +20,8 @@ records when the backend or the cluster is down.
 | [docs/architecture.md](docs/architecture.md) | Architecture, system workflow and MAPE-K diagrams |
 | [docs/API.md](docs/API.md) | API reference (generated from the OpenAPI schema) |
 | [reports/model_evaluation.md](reports/model_evaluation.md) | Model evaluation, label-noise analysis, lab validation |
+| [reports/mapek_corroboration.md](reports/mapek_corroboration.md) | Active model `et_dataset_sqrt_lab_v6b`: lab training data, ML-corroboration policy, held-out and live validation |
+| [reports/multiclass_baseline.md](reports/multiclass_baseline.md) | 11-class published-label baseline and its label-noise limits |
 | [reports/deception_test_report.md](reports/deception_test_report.md) | End-to-end demonstration results (live cluster) |
 | [reports/performance.md](reports/performance.md) | Measured latencies, deployment times, CPU / memory |
 | [reports/simulator_live_validation.md](reports/simulator_live_validation.md) | Live validation of the unified monitoring page and the Attack Simulator (recon, benign, cancel, backend interruption, 13-step demo) |
@@ -35,8 +38,20 @@ records when the backend or the cluster is down.
 | 3 | MAPE-K controller, attack→decoy policy, 6 decoy profiles, RBAC, NetworkPolicies, TTL/cooldown/limits | Done, tested (incl. live cluster) |
 | 3 | Decoy interaction logging and knowledge base | Done, tested (incl. live cluster) |
 | 3 | Kubernetes audit-log monitor | **Not built** (left out by decision, see below) |
-| 4 | FastAPI backend (41 operations), Streamlit dashboard (6 pages, offline fallback) | Done, tested |
+| 4 | FastAPI backend (42 operations), Streamlit dashboard (6 pages, offline fallback) | Done, tested |
 | 5 | Repeatable live demonstration (13 checks), diagrams, API docs, reports | Done |
+
+### Detection and deception update (branch `frontend-monitoring`, 2026-11-01)
+
+Supersedes the classifier and deception rows of the table below.
+
+| Area | Change | Evidence |
+|---|---|---|
+| Classifier | Active model `et_dataset_sqrt_lab_v6b`: 11 published-label classes, trained with lab recon (Node-RED, Grafana, InfluxDB, slow scans), lab attack-characteristic traffic (classes 1, 3, 5, 6) and benign counterexamples of the same apps (fast API, bursty, browsing, pollers). `v2_et_none` is the fallback. | `reports/mapek_corroboration.md` §7–8 |
+| Deception | Behavioural alerts (flow burst, adaptive rate, slow scan) never deploy a decoy alone: they need a high-confidence ML detection (≥ 0.9) or ≥ 3 medium-confidence ones (≥ 0.7) from the same source; otherwise the decision is `await_evidence`. | `reports/mapek_corroboration.md` §2 |
+| Validation | Held-out lab sets, shipped policy: 0 / 8 benign sets trigger a decoy, 8 / 8 scanner sets and 7 / 7 attack sets do; confirmed on fresh live simulator runs with a read-only controller dry run (`scripts/dryrun_mapek_run.py`). | `reports/mapek_corroboration.md`, `reports/model_evaluation.md` |
+| Attack Simulator | Adds non-destructive, marker-only attack scenarios: Node-RED RCE probe (3), Grafana path traversal (5), InfluxDB auth-bypass probe (6), Grafana avatar SSRF (1). Host-level classes stay labelled simulated events. | `reports/simulator_scenarios_audit.md` |
+| Tooling | `scripts/capture_*_labsets.py` (lab sets from simulator runs), `eval_mapek_policy.py <model>` (offline policy evaluation), `lab_class_report.py` (per-class lab metrics), `dryrun_mapek_run.py`. | `scripts/` |
 
 ### Improvements (branch `improvements`, 2026-10-31)
 
@@ -213,20 +228,28 @@ Each run saves to `models/<name>/`:
 
 Results (temporal split, 16 150 test flows; full tables in `reports/model_evaluation.md`):
 
-| Model | Accuracy | Macro F1 | Weighted F1 | Benign-holdout FPR | Lab benign FPR |
-|---|---|---|---|---|---|
-| **extratrees_dataset_lab** (active) | 0.966 | 0.279 | 0.960 | 0.33 % | 0.0 % |
-| extratrees_dataset | 0.966 | 0.314 | 0.961 | 0.34 % | 36–40 % |
-| lightgbm_dataset | 0.924 | 0.292 | 0.939 | 2.3 % | 38–41 % |
-| pca_ae_nb_dataset (reference) | 0.873 | 0.097 | 0.877 | 4.5 % | — |
+| Model | Accuracy | Macro F1 | Weighted F1 | Benign-holdout FPR | Lab benign FPR | Lab recon / attack detected |
+|---|---|---|---|---|---|---|
+| **et_dataset_sqrt_lab_v6b** (active) | 0.967 | 0.316 | 0.962 | 0.33 % | 0.0 % | all held-out sets, correct class |
+| extratrees_dataset_lab (earlier active) | 0.966 | 0.279 | 0.960 | 0.33 % | 0.0–0.1 % | 0 % |
+| extratrees_dataset | 0.966 | 0.314 | 0.961 | 0.34 % | 16–40 % | flagged, mostly wrong class |
+| lightgbm_dataset | 0.924 | 0.292 | 0.939 | 2.3 % | 38–41 % | — |
+| pca_ae_nb_dataset (reference) | 0.873 | 0.097 | 0.877 | 4.5 % | — | — |
+
+Lab columns: 14 held-out lab sets in `reports/model_evaluation.md` ("Validation on traffic captured in this
+lab"); none of them is in the active model's training data.
 
 * Macro F1 is low because most attack classes have no learnable attack traffic (label noise above).
-  Reconnaissance (F1 ≈ 0.88) and CVE-2019-20933 (≈ 0.5) are the classes with real signal.
+  Reconnaissance (F1 ≈ 0.90) and CVE-2019-20933 (≈ 0.56) are the classes with real signal.
 * The dataset was recorded on a different cluster (OVN-Kubernetes). On this cluster, dataset-only models
-  flag ~40 % of ordinary flows (mainly kubelet probes) as attacks.
-* The active model is ExtraTrees trained on the dataset **plus verified benign traffic recorded in this
-  lab** (`benign_train`). Its dataset test metrics are essentially unchanged, and false positives on
-  held-out lab traffic drop to ~0.
+  flag ~16–40 % of ordinary flows (mainly kubelet probes) as attacks.
+* The active model is ExtraTrees trained on the dataset **plus lab sets recorded in this cluster**: recon,
+  attack-characteristic traffic and benign counterexamples of the same applications. Its dataset test
+  metrics are essentially unchanged; on held-out lab traffic it has no benign false positives and detects
+  the recon and attack sets in the correct class (per-flow recall 0.79–1.00 on the 14 reported sets;
+  0.48 on the held-out shuffled-path scanner, which still triggers a decoy).
+* Lab attack classes are simulated, marker-only traffic: lab scores show these shapes are separable, not
+  that the real exploits are detected. Lab data does not improve the dataset-split per-class scores.
 * LightGBM was implemented as the primary candidate. ExtraTrees was chosen because it measured better
   on this data, particularly in false-positive rate.
 * No claim is made that any model outperforms the base paper; the evaluation protocols differ.
@@ -318,9 +341,9 @@ writes nothing, the window is recorded as `empty`.
 ```
 
 Measured on this machine:
-* conversion takes 0.6–0.8 s per 10 s window;
-* prediction takes ~40–60 ms per window;
-* detections are stored < 1 s after a window closes.
+* conversion takes 0.6–0.8 s per 10 s window (median 0.75 s);
+* prediction takes ~40–60 ms per window (median 48 ms with the active model);
+* detections are stored about 1 s after a window closes (median 0.96 s, p95 1.3 s).
 
 Detection therefore lags traffic by about one window. This is window-based processing, not
 packet-by-packet real time (see `reports/performance.md`).
@@ -334,16 +357,16 @@ Fields missing from a CSV stay null.
 
 ## Detection of reconnaissance in the lab
 
-Five lab sets were recorded with known ground truth:
-* three benign sets;
-* two recon runs (300 requests at 0.2 s spacing, and 200 at 0.1 s).
+Lab sets with known ground truth are stored under `data/lab/`: benign traffic (slow and fast, bursty,
+browsing, pollers), recon runs (sequential, shuffled, threaded and slow scanners against all three apps) and
+attack-characteristic runs. They are recorded from simulator runs (`scripts/capture_*_labsets.py`, built on
+`python -m src.preprocessing.lab_data`) and evaluated with `python -m src.detection.live_eval --lab-set ...`.
 
-The sets are stored under `data/lab/`, built with `python -m src.preprocessing.lab_data`, and evaluated
-with `python -m src.detection.live_eval --lab-set ...`.
-
-* **Per flow, recon is not separable from benign requests.** A single `GET /admin → 404` looks like a
-  benign `GET /settings → 200` to the same service. Dataset-only models "detect" recon only because they
-  flag ~40 % of all traffic; once lab benign traffic is in training, recon flows are classified benign.
+* **Per flow, recon becomes separable once training has both sides of the boundary.** With only slow lab
+  benign traffic in training, recon flows were classified benign: a single `GET /admin → 404` looks like a
+  benign `GET /settings → 200`. With lab recon *and* fast/bursty/browsing/polling benign traffic of the same
+  apps in training, the active model detects held-out recon at 48–97 % of flows (lowest: shuffled-path
+  scanner) with no benign false positives, enough for every held-out scanner set to trigger a decoy. Recon training alone made it flag fast benign clients as recon (`reports/mapek_corroboration.md` §7).
 * **Per source and window, recon is unmistakable.**
   * Recon pod: 28–49 TCP flows per 10 s window to Node-RED.
   * Busiest benign TCP source: 7 flows per window (the node polling metrics-server on :10250).
@@ -353,6 +376,8 @@ with `python -m src.detection.live_eval --lab-set ...`.
     the recon was active.
 
 Both evidence streams feed the MAPE-K controller, and every decision records which stream triggered it.
+Behavioural alerts alone never deploy a decoy (benign fast clients and pollers raise them too); they need
+ML corroboration from the same source.
 
 ## Deception mechanism (MAPE-K)
 
@@ -361,8 +386,8 @@ made only while automatic deception is enabled.
 
 | Stage | What it does |
 |---|---|
-| **Monitor** | Collects new malicious ML detections, flow bursts and simulated test events; decoy status from Kubernetes; decoy interactions from decoy pod logs. |
-| **Analyze** | Groups evidence by (source IP, attack class).<br>• confidence ≥ 0.9 → act<br>• ≥ 0.6 → act only with ≥ 3 detections in 300 s or a corroborating flow burst<br>• lower → record and monitor<br>• benign → never deploys |
+| **Monitor** | Collects new malicious ML detections, behavioural alerts (flow burst, adaptive rate, slow scan) and simulated test events; decoy status from Kubernetes; decoy interactions from decoy pod logs. |
+| **Analyze** | Groups ML evidence by (source IP, attack class).<br>• confidence ≥ 0.9 → act<br>• ≥ 0.7 → act only with ≥ 3 detections in 300 s (a single medium detection never acts, even with a flow burst)<br>• lower → record and monitor<br>• benign → never deploys<br>Behavioural alerts act only with ML corroboration from the same source in 300 s (one detection ≥ 0.9, or ≥ 3 at ≥ 0.7); otherwise `await_evidence`. |
 | **Plan** | Maps the class (or the burst's target port) to decoy profiles from config, preferring profiles that attracted more interactions before. Chooses one of deploy, scale (density), refresh TTL (duplicate prevention), or suppress (decoy limit, cooldown). |
 | **Execute** | Creates Deployment + Service from the predefined template, scales replicas, removes expired or manually removed decoys — only resources labelled `managed-by=ids-deception-controller`. |
 | **Knowledge** | SQLite: every decision with its reason and evidence IDs; decoy lifecycle and deployment time; interactions linked to the decoy, decision and triggering detection. |
@@ -370,6 +395,7 @@ made only while automatic deception is enabled.
 Configurable in `config/settings.yaml`:
 * attack→decoy and burst-port→decoy policy;
 * confidence thresholds, repeat window and repeat count;
+* whether behavioural alerts need ML corroboration (`thresholds.behavior_requires_ml`);
 * max 4 active decoys and max 3 replicas;
 * TTL of 600 s, extended by each interaction and capped at 3600 s;
 * 15 s deployment cooldown and 60 s redeploy cooldown;
@@ -468,8 +494,9 @@ feed tagged with the run id. Enable deception on the Adaptive Deception page fir
 | Python 3.14 instead of 3.11 | Only 3.14 is installed; all dependencies have 3.14 wheels. |
 | Capture on `cni0` | Measured: the only interface carrying all pod traffic with Ethernet framing. |
 | Temporal split + benign holdout + lab validation | A split by capture is impossible; a random split mixes neighbouring flows. |
-| Active model: ExtraTrees + lab benign traffic | Measured lowest false-positive rate on lab traffic, with unchanged dataset metrics. |
-| Flow-burst detector alongside the ML model | Lab measurements show recon is only separable per source and window. |
+| Active model: 11-class ExtraTrees + lab recon, attack and benign-counterexample sets | Only model with no benign false decoys and every held-out recon/attack set detected; dataset metrics unchanged (`reports/mapek_corroboration.md`). |
+| Behavioural detectors alongside the ML model, gated on ML corroboration | They catch per-source volume patterns, but benign fast clients and pollers trigger them too, so they deploy decoys only with ML evidence from the same source. |
+| Thresholds not tuned on the evaluation sets | Where a false activation could be removed either by a threshold change or by missing training data, the training data was added and the policy left unchanged. |
 | `frontend/views/` instead of `frontend/pages/` | Any `pages/` directory next to the Streamlit entry point switches Streamlit into legacy multipage mode, which bypasses `app.py` (theme and navigation). |
 | `config/` directory added | Thresholds, mappings and paths must be configurable rather than hard-coded. |
 | Decoy interactions collected from pod logs | Decoys need no egress at all; the backend pulls logs with the least-privilege identity. |
@@ -479,8 +506,13 @@ feed tagged with the run id. Enable deception on the Adaptive Deception page fir
 
 * Network flows cannot reveal host-level attacks (container escapes, runtime CVEs); per-class scores for
   those classes are near zero and are reported as such.
-* Live attack detection in the lab relies on the flow-burst detector for reconnaissance. A slow scan
-  below the threshold (< 15 flows per window) would not be detected.
+* Recon and attack detection relies on lab training data for these three applications and these scanner
+  and attack shapes. A new application or scanner style needs its own recon *and* benign recordings before
+  ML corroboration covers it; until then its behavioural alerts are only recorded (`await_evidence`).
+* Lab attack classes (1, 3, 5, 6) are simulated, marker-only traffic. No benign profile requests Grafana
+  `/avatar/...` (the SSRF endpoint), so legitimate avatar loads are untested against class 1.
+* The per-flow model has less margin on threaded and shuffled scanners (few flows reach ≥ 0.9); these
+  still deploy decoys through repeated medium-confidence detections.
 * Processing is window-based (5–30 s plus < 1 s pipeline time), not real time.
 * The lab has one node; nothing was tested on multi-node clusters or other CNIs.
 * Memory: the active ExtraTrees model is 445 MB on disk (LightGBM: 15 MB). The capture service measured
@@ -521,6 +553,8 @@ src/simulation/               Attack Simulator: scenarios, Job lifecycle manager
 src/datagen/                  dataset generation (generator plan, session capture, labelling, build)
 src/utils/                    config, logging, SQLite, native-library loader
 frontend/                     app.py, views/ (6 pages), components/ (API client with fallback, UI kit, simulator)
-scripts/                      demo_scenario.py, measure_performance.py, gen_api_docs.py
+scripts/                      demo_scenario.py, measure_performance.py, gen_api_docs.py,
+                              capture_{recon,attack,fastbenign}_labsets.py, eval_mapek_policy.py,
+                              lab_class_report.py, dryrun_mapek_run.py, behaviour_scenarios.py
 models/  data/  captures/  reports/  docs/  logs/  tests/
 ```

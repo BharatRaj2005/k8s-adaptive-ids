@@ -159,6 +159,13 @@ Status of one run: lifecycle stage, generator pod and IP, requests, windows, det
 Parameters:
   - `run_id` (path, string)
 
+### `GET /api/simulations/{run_id}/predictions`
+
+Actual ML predicted-class breakdown for the run's generator flows (compare with the expected class).
+
+Parameters:
+  - `run_id` (path, string)
+
 ### `GET /api/simulations/{run_id}/logs`
 
 Generator log lines of a run (JSON lines: connections with local ports, requests); saved before the Job is deleted.
