@@ -1,0 +1,30 @@
+{
+  "name": "attack_grafana_traversal_train_r2",
+  "created_at": "2026-11-01T07:50:22.139968+00:00",
+  "from": "2026-11-01T07:47:54.377298+00:00",
+  "to": "2026-11-01T07:50:24.537631+00:00",
+  "kind": "attack",
+  "attacker_ips": [
+    "10.42.0.191"
+  ],
+  "target_port": 3000,
+  "attack_label": 5,
+  "note": "simulated grafana_traversal",
+  "files": [
+    "win_cni0_20261101T074800_632521.pcap_Flow.csv",
+    "win_cni0_20261101T074810_765542.pcap_Flow.csv",
+    "win_cni0_20261101T074820_855760.pcap_Flow.csv",
+    "win_cni0_20261101T074830_977214.pcap_Flow.csv",
+    "win_cni0_20261101T074841_095952.pcap_Flow.csv",
+    "win_cni0_20261101T074846_179988.pcap_Flow.csv",
+    "win_cni0_20261101T074856_302163.pcap_Flow.csv",
+    "win_cni0_20261101T074906_424352.pcap_Flow.csv",
+    "win_cni0_20261101T074916_550998.pcap_Flow.csv",
+    "win_cni0_20261101T074926_660893.pcap_Flow.csv",
+    "win_cni0_20261101T074936_784050.pcap_Flow.csv",
+    "win_cni0_20261101T074946_882386.pcap_Flow.csv",
+    "win_cni0_20261101T074956_998163.pcap_Flow.csv",
+    "win_cni0_20261101T075007_091522.pcap_Flow.csv",
+    "win_cni0_20261101T075017_203846.pcap_Flow.csv"
+  ]
+}

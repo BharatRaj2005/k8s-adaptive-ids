@@ -1,0 +1,25 @@
+{
+  "name": "attack_nodered_rce_train_r9",
+  "created_at": "2026-11-01T07:45:22.424648+00:00",
+  "from": "2026-11-01T07:44:21.962037+00:00",
+  "to": "2026-11-01T07:45:25.328473+00:00",
+  "kind": "attack",
+  "attacker_ips": [
+    "10.42.0.189"
+  ],
+  "target_port": 1880,
+  "attack_label": 3,
+  "note": "simulated nodered_rce",
+  "files": [
+    "win_cni0_20261101T074427_830014.pcap_Flow.csv",
+    "win_cni0_20261101T074437_889605.pcap_Flow.csv",
+    "win_cni0_20261101T074442_961192.pcap_Flow.csv",
+    "win_cni0_20261101T074448_020889.pcap_Flow.csv",
+    "win_cni0_20261101T074453_074163.pcap_Flow.csv",
+    "win_cni0_20261101T074458_141400.pcap_Flow.csv",
+    "win_cni0_20261101T074503_192938.pcap_Flow.csv",
+    "win_cni0_20261101T074508_242774.pcap_Flow.csv",
+    "win_cni0_20261101T074513_452696.pcap_Flow.csv",
+    "win_cni0_20261101T074518_529928.pcap_Flow.csv"
+  ]
+}

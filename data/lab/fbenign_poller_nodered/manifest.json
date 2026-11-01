@@ -1,0 +1,24 @@
+{
+  "name": "fbenign_poller_nodered",
+  "created_at": "2026-11-01T07:22:18.623348+00:00",
+  "from": "2026-11-01T07:20:27.122302+00:00",
+  "to": "2026-11-01T07:22:19.862952+00:00",
+  "kind": "benign",
+  "attacker_ips": [],
+  "target_port": null,
+  "attack_label": null,
+  "note": "health/metrics poller -> Node-RED (eval)",
+  "files": [
+    "win_cni0_20261101T072032_686234.pcap_Flow.csv",
+    "win_cni0_20261101T072042_754189.pcap_Flow.csv",
+    "win_cni0_20261101T072052_838690.pcap_Flow.csv",
+    "win_cni0_20261101T072102_912097.pcap_Flow.csv",
+    "win_cni0_20261101T072112_987307.pcap_Flow.csv",
+    "win_cni0_20261101T072123_066312.pcap_Flow.csv",
+    "win_cni0_20261101T072133_134614.pcap_Flow.csv",
+    "win_cni0_20261101T072143_220605.pcap_Flow.csv",
+    "win_cni0_20261101T072153_288002.pcap_Flow.csv",
+    "win_cni0_20261101T072203_379388.pcap_Flow.csv",
+    "win_cni0_20261101T072213_474186.pcap_Flow.csv"
+  ]
+}

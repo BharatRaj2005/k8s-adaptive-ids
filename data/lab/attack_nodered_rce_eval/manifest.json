@@ -1,0 +1,19 @@
+{
+  "name": "attack_nodered_rce_eval",
+  "created_at": "2026-10-31T20:13:06.557221+00:00",
+  "from": "2026-10-31T20:12:24.261200+00:00",
+  "to": "2026-10-31T20:13:07.327751+00:00",
+  "kind": "attack",
+  "attacker_ips": [
+    "10.42.0.114"
+  ],
+  "target_port": 1880,
+  "attack_label": 3,
+  "note": "simulated nodered_rce",
+  "files": [
+    "win_cni0_20261031T201229_591854.pcap_Flow.csv",
+    "win_cni0_20261031T201239_720636.pcap_Flow.csv",
+    "win_cni0_20261031T201249_827508.pcap_Flow.csv",
+    "win_cni0_20261031T201259_937475.pcap_Flow.csv"
+  ]
+}

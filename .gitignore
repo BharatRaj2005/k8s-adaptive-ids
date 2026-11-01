@@ -16,3 +16,7 @@ data/ids.sqlite*
 backups/
 data/generated/
 data/simulations/
+
+# local safety copies made before config / metadata edits
+config/*.bak.*
+data/lab/*.bak

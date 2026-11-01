@@ -1,0 +1,24 @@
+{
+  "name": "fbenign_poller_influxdb",
+  "created_at": "2026-11-01T06:42:43.146019+00:00",
+  "from": "2026-11-01T06:40:51.745363+00:00",
+  "to": "2026-11-01T06:42:44.943892+00:00",
+  "kind": "benign",
+  "attacker_ips": [],
+  "target_port": null,
+  "attack_label": null,
+  "note": "health/metrics poller -> InfluxDB (eval)",
+  "files": [
+    "win_cni0_20261101T064058_178793.pcap_Flow.csv",
+    "win_cni0_20261101T064108_267727.pcap_Flow.csv",
+    "win_cni0_20261101T064118_344411.pcap_Flow.csv",
+    "win_cni0_20261101T064128_454622.pcap_Flow.csv",
+    "win_cni0_20261101T064138_526367.pcap_Flow.csv",
+    "win_cni0_20261101T064148_610699.pcap_Flow.csv",
+    "win_cni0_20261101T064158_682491.pcap_Flow.csv",
+    "win_cni0_20261101T064208_749889.pcap_Flow.csv",
+    "win_cni0_20261101T064218_814581.pcap_Flow.csv",
+    "win_cni0_20261101T064228_893547.pcap_Flow.csv",
+    "win_cni0_20261101T064238_965882.pcap_Flow.csv"
+  ]
+}

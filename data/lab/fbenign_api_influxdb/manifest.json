@@ -1,0 +1,24 @@
+{
+  "name": "fbenign_api_influxdb",
+  "created_at": "2026-10-31T20:31:08.065294+00:00",
+  "from": "2026-10-31T20:29:58.735828+00:00",
+  "to": "2026-10-31T20:31:09.840795+00:00",
+  "kind": "benign",
+  "attacker_ips": [],
+  "target_port": null,
+  "attack_label": null,
+  "note": "fast API ~8/s -> InfluxDB",
+  "files": [
+    "win_cni0_20261031T203003_510870.pcap_Flow.csv",
+    "win_cni0_20261031T203013_583747.pcap_Flow.csv",
+    "win_cni0_20261031T203018_649932.pcap_Flow.csv",
+    "win_cni0_20261031T203023_722669.pcap_Flow.csv",
+    "win_cni0_20261031T203028_784655.pcap_Flow.csv",
+    "win_cni0_20261031T203033_851134.pcap_Flow.csv",
+    "win_cni0_20261031T203038_902129.pcap_Flow.csv",
+    "win_cni0_20261031T203043_966229.pcap_Flow.csv",
+    "win_cni0_20261031T203049_025837.pcap_Flow.csv",
+    "win_cni0_20261031T203054_080423.pcap_Flow.csv",
+    "win_cni0_20261031T203059_145780.pcap_Flow.csv"
+  ]
+}

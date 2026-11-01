@@ -1,0 +1,25 @@
+{
+  "name": "fbenign_keepalive_grafana",
+  "created_at": "2026-11-01T06:40:46.716364+00:00",
+  "from": "2026-11-01T06:39:25.351617+00:00",
+  "to": "2026-11-01T06:40:48.100083+00:00",
+  "kind": "benign",
+  "attacker_ips": [],
+  "target_port": null,
+  "attack_label": null,
+  "note": "keep-alive API client -> Grafana (eval)",
+  "files": [
+    "win_cni0_20261101T063931_297800.pcap_Flow.csv",
+    "win_cni0_20261101T063941_370410.pcap_Flow.csv",
+    "win_cni0_20261101T063951_443487.pcap_Flow.csv",
+    "win_cni0_20261101T063956_512592.pcap_Flow.csv",
+    "win_cni0_20261101T064001_580499.pcap_Flow.csv",
+    "win_cni0_20261101T064006_639760.pcap_Flow.csv",
+    "win_cni0_20261101T064011_709023.pcap_Flow.csv",
+    "win_cni0_20261101T064016_778582.pcap_Flow.csv",
+    "win_cni0_20261101T064021_845475.pcap_Flow.csv",
+    "win_cni0_20261101T064026_920208.pcap_Flow.csv",
+    "win_cni0_20261101T064031_998932.pcap_Flow.csv",
+    "win_cni0_20261101T064042_072427.pcap_Flow.csv"
+  ]
+}

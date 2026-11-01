@@ -1,0 +1,21 @@
+{
+  "name": "attack_grafana_traversal_train",
+  "created_at": "2026-10-31T20:14:12.053071+00:00",
+  "from": "2026-10-31T20:13:11.606477+00:00",
+  "to": "2026-10-31T20:14:14.775332+00:00",
+  "kind": "attack",
+  "attacker_ips": [
+    "10.42.0.115"
+  ],
+  "target_port": 3000,
+  "attack_label": 5,
+  "note": "simulated grafana_traversal",
+  "files": [
+    "win_cni0_20261031T201317_022987.pcap_Flow.csv",
+    "win_cni0_20261031T201327_121312.pcap_Flow.csv",
+    "win_cni0_20261031T201337_248394.pcap_Flow.csv",
+    "win_cni0_20261031T201347_365319.pcap_Flow.csv",
+    "win_cni0_20261031T201357_487738.pcap_Flow.csv",
+    "win_cni0_20261031T201407_589479.pcap_Flow.csv"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "name": "recon_threaded_nodered",
+  "created_at": "2026-10-31T20:51:02.481812+00:00",
+  "from": "2026-10-31T20:50:05.169361+00:00",
+  "to": "2026-10-31T20:51:03.885966+00:00",
+  "kind": "attack",
+  "attacker_ips": [
+    "10.42.0.124"
+  ],
+  "target_port": 1880,
+  "attack_label": 2,
+  "note": "unseen scanner (threaded_parallel) -> Node-RED",
+  "files": [
+    "win_cni0_20261031T205011_394736.pcap_Flow.csv",
+    "win_cni0_20261031T205021_467369.pcap_Flow.csv",
+    "win_cni0_20261031T205026_538505.pcap_Flow.csv",
+    "win_cni0_20261031T205031_603526.pcap_Flow.csv",
+    "win_cni0_20261031T205036_662632.pcap_Flow.csv",
+    "win_cni0_20261031T205041_737890.pcap_Flow.csv",
+    "win_cni0_20261031T205046_841211.pcap_Flow.csv",
+    "win_cni0_20261031T205051_900031.pcap_Flow.csv",
+    "win_cni0_20261031T205056_958844.pcap_Flow.csv"
+  ]
+}

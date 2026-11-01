@@ -1,0 +1,25 @@
+{
+  "name": "fbenign_burst_grafana_train",
+  "created_at": "2026-11-01T06:34:47.716884+00:00",
+  "from": "2026-11-01T06:32:56.135237+00:00",
+  "to": "2026-11-01T06:34:50.421513+00:00",
+  "kind": "benign",
+  "attacker_ips": [],
+  "target_port": null,
+  "attack_label": null,
+  "note": "TRAIN: bursty dashboard refresh -> Grafana",
+  "files": [
+    "win_cni0_20261101T063302_410259.pcap_Flow.csv",
+    "win_cni0_20261101T063312_509605.pcap_Flow.csv",
+    "win_cni0_20261101T063317_624846.pcap_Flow.csv",
+    "win_cni0_20261101T063327_750653.pcap_Flow.csv",
+    "win_cni0_20261101T063332_860766.pcap_Flow.csv",
+    "win_cni0_20261101T063342_973714.pcap_Flow.csv",
+    "win_cni0_20261101T063353_072793.pcap_Flow.csv",
+    "win_cni0_20261101T063403_181498.pcap_Flow.csv",
+    "win_cni0_20261101T063413_298929.pcap_Flow.csv",
+    "win_cni0_20261101T063423_401907.pcap_Flow.csv",
+    "win_cni0_20261101T063433_513733.pcap_Flow.csv",
+    "win_cni0_20261101T063443_627820.pcap_Flow.csv"
+  ]
+}

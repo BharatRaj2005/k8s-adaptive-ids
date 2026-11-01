@@ -1,0 +1,22 @@
+{
+  "name": "recon_shuffled_grafana",
+  "created_at": "2026-11-01T06:24:38.528485+00:00",
+  "from": "2026-11-01T06:23:26.131006+00:00",
+  "to": "2026-11-01T06:24:39.907233+00:00",
+  "kind": "attack",
+  "attacker_ips": [
+    "10.42.0.166"
+  ],
+  "target_port": 3000,
+  "attack_label": 2,
+  "note": "shuffled jitter scan -> Grafana (eval)",
+  "files": [
+    "win_cni0_20261101T062332_764234.pcap_Flow.csv",
+    "win_cni0_20261101T062342_869399.pcap_Flow.csv",
+    "win_cni0_20261101T062352_987711.pcap_Flow.csv",
+    "win_cni0_20261101T062403_092950.pcap_Flow.csv",
+    "win_cni0_20261101T062413_193508.pcap_Flow.csv",
+    "win_cni0_20261101T062423_310438.pcap_Flow.csv",
+    "win_cni0_20261101T062433_434005.pcap_Flow.csv"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "recon_grafana_train",
+  "created_at": "2026-11-01T06:21:04.251438+00:00",
+  "from": "2026-11-01T06:20:00.851496+00:00",
+  "to": "2026-11-01T06:21:06.110562+00:00",
+  "kind": "attack",
+  "attacker_ips": [
+    "10.42.0.163"
+  ],
+  "target_port": 3000,
+  "attack_label": 2,
+  "note": "TRAIN: sequential scan -> Grafana",
+  "files": [
+    "win_cni0_20261101T062008_152472.pcap_Flow.csv",
+    "win_cni0_20261101T062018_225882.pcap_Flow.csv",
+    "win_cni0_20261101T062028_298456.pcap_Flow.csv",
+    "win_cni0_20261101T062038_402211.pcap_Flow.csv",
+    "win_cni0_20261101T062048_474349.pcap_Flow.csv",
+    "win_cni0_20261101T062058_573313.pcap_Flow.csv"
+  ]
+}

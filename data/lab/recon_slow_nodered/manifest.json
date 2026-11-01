@@ -1,0 +1,33 @@
+{
+  "name": "recon_slow_nodered",
+  "created_at": "2026-10-31T20:54:11.312586+00:00",
+  "from": "2026-10-31T20:51:07.514887+00:00",
+  "to": "2026-10-31T20:54:13.159088+00:00",
+  "kind": "attack",
+  "attacker_ips": [
+    "10.42.0.125"
+  ],
+  "target_port": 1880,
+  "attack_label": 2,
+  "note": "slow HEAD crawl -> Node-RED",
+  "files": [
+    "win_cni0_20261031T205114_629288.pcap_Flow.csv",
+    "win_cni0_20261031T205124_716057.pcap_Flow.csv",
+    "win_cni0_20261031T205134_802113.pcap_Flow.csv",
+    "win_cni0_20261031T205144_879661.pcap_Flow.csv",
+    "win_cni0_20261031T205154_945582.pcap_Flow.csv",
+    "win_cni0_20261031T205205_019312.pcap_Flow.csv",
+    "win_cni0_20261031T205215_076792.pcap_Flow.csv",
+    "win_cni0_20261031T205225_156811.pcap_Flow.csv",
+    "win_cni0_20261031T205235_238577.pcap_Flow.csv",
+    "win_cni0_20261031T205245_306835.pcap_Flow.csv",
+    "win_cni0_20261031T205255_385880.pcap_Flow.csv",
+    "win_cni0_20261031T205305_459596.pcap_Flow.csv",
+    "win_cni0_20261031T205315_539878.pcap_Flow.csv",
+    "win_cni0_20261031T205325_617842.pcap_Flow.csv",
+    "win_cni0_20261031T205335_696730.pcap_Flow.csv",
+    "win_cni0_20261031T205345_772617.pcap_Flow.csv",
+    "win_cni0_20261031T205355_844744.pcap_Flow.csv",
+    "win_cni0_20261031T205405_924428.pcap_Flow.csv"
+  ]
+}

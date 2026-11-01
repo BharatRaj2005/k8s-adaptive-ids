@@ -746,5 +746,1422 @@
         "attack_correct_conf_ge_0.9": 0.7326732673267327
       }
     }
+  },
+  "et_dataset_baseline": {
+    "model": "extratrees",
+    "label_policy": "dataset",
+    "split": "temporal",
+    "trained_at": "2026-10-31T19:37:57.643822+00:00",
+    "classes": 11,
+    "accuracy": 0.9661300309597524,
+    "f1_macro": 0.3136556012506326,
+    "f1_weighted": 0.9611168571933003,
+    "benign_holdout_fpr": 0.003404641661465131,
+    "recall_macro": 0.2909684671232691,
+    "attack_recall": 0.6395348837209303,
+    "benign_fpr": 0.0078052652467257575,
+    "attack_threshold": null,
+    "imbalance": "config",
+    "lab_train_sets": [],
+    "lab_evaluation": {}
+  },
+  "et_dataset_sqrt": {
+    "model": "extratrees",
+    "label_policy": "dataset",
+    "split": "temporal",
+    "trained_at": "2026-10-31T19:38:45.618601+00:00",
+    "classes": 11,
+    "accuracy": 0.9665634674922601,
+    "f1_macro": 0.3194068170032543,
+    "f1_weighted": 0.9618412787054883,
+    "benign_holdout_fpr": 0.0034613856891562165,
+    "recall_macro": 0.2941505391331339,
+    "attack_recall": 0.6511627906976745,
+    "benign_fpr": 0.008135996824976848,
+    "attack_threshold": null,
+    "imbalance": "sqrt",
+    "lab_train_sets": [],
+    "lab_evaluation": {}
+  },
+  "et_dataset_smote": {
+    "model": "extratrees",
+    "label_policy": "dataset",
+    "split": "temporal",
+    "trained_at": "2026-10-31T19:39:20.877135+00:00",
+    "classes": 11,
+    "accuracy": 0.9661919504643963,
+    "f1_macro": 0.3070573779349224,
+    "f1_weighted": 0.9618461985510559,
+    "benign_holdout_fpr": 0.0032911536060829596,
+    "recall_macro": 0.29261495518148833,
+    "attack_recall": 0.6589147286821705,
+    "benign_fpr": 0.008268289456277285,
+    "attack_threshold": null,
+    "imbalance": "smote",
+    "lab_train_sets": [],
+    "lab_evaluation": {}
+  },
+  "et_dataset_sqrt_lab": {
+    "model": "extratrees",
+    "label_policy": "dataset",
+    "split": "temporal",
+    "trained_at": "2026-10-31T20:19:15.185254+00:00",
+    "classes": 11,
+    "accuracy": 0.9669349845201238,
+    "f1_macro": 0.30834758277184443,
+    "f1_weighted": 0.96186569831445,
+    "benign_holdout_fpr": 0.0035181297168473016,
+    "recall_macro": 0.28537377750873194,
+    "attack_recall": 0.6482558139534884,
+    "benign_fpr": 0.007606826299775103,
+    "attack_threshold": null,
+    "imbalance": "sqrt",
+    "lab_train_sets": [
+      "benign_train",
+      "recon_run1",
+      "attack_nodered_rce_train",
+      "attack_grafana_traversal_train",
+      "attack_influx_authbypass_train"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9702970297029703,
+        "attack_detected_correct_class": 0.9702970297029703,
+        "attack_correct_conf_ge_0.9": 0.6881188118811881
+      },
+      "attack_nodered_rce_eval": {
+        "flows": 337,
+        "benign_flows": 238,
+        "attack_flows": 99,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.98989898989899
+      },
+      "attack_grafana_traversal_eval": {
+        "flows": 402,
+        "benign_flows": 282,
+        "attack_flows": 120,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.95
+      },
+      "attack_influx_authbypass_eval": {
+        "flows": 303,
+        "benign_flows": 204,
+        "attack_flows": 99,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.9797979797979798
+      }
+    }
+  },
+  "et_dataset_sqrt_lab_recon": {
+    "model": "extratrees",
+    "label_policy": "dataset",
+    "split": "temporal",
+    "trained_at": "2026-11-01T06:25:52.129220+00:00",
+    "classes": 11,
+    "accuracy": 0.966625386996904,
+    "f1_macro": 0.3120778715649477,
+    "f1_weighted": 0.9615138473295485,
+    "benign_holdout_fpr": 0.0033478976337740452,
+    "recall_macro": 0.2907183478239652,
+    "attack_recall": 0.6472868217054264,
+    "benign_fpr": 0.008069850509326631,
+    "attack_threshold": null,
+    "imbalance": "sqrt",
+    "lab_train_sets": [
+      "benign_train",
+      "recon_run1",
+      "recon_grafana_train",
+      "recon_influx_train",
+      "attack_nodered_rce_train",
+      "attack_grafana_traversal_train",
+      "attack_influx_authbypass_train"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9752475247524752,
+        "attack_detected_correct_class": 0.9752475247524752,
+        "attack_correct_conf_ge_0.9": 0.7128712871287128
+      },
+      "recon_threaded_nodered": {
+        "flows": 636,
+        "benign_flows": 336,
+        "attack_flows": 300,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.97,
+        "attack_detected_correct_class": 0.97,
+        "attack_correct_conf_ge_0.9": 0.0
+      },
+      "recon_slow_nodered": {
+        "flows": 1229,
+        "benign_flows": 1180,
+        "attack_flows": 49,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.8571428571428571,
+        "attack_detected_correct_class": 0.8571428571428571,
+        "attack_correct_conf_ge_0.9": 0.0
+      },
+      "recon_seq_grafana": {
+        "flows": 604,
+        "benign_flows": 405,
+        "attack_flows": 199,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9899497487437185,
+        "attack_detected_correct_class": 0.9899497487437185,
+        "attack_correct_conf_ge_0.9": 0.7236180904522613
+      },
+      "recon_seq_influx": {
+        "flows": 495,
+        "benign_flows": 297,
+        "attack_flows": 198,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.9141414141414141
+      },
+      "recon_shuffled_grafana": {
+        "flows": 561,
+        "benign_flows": 363,
+        "attack_flows": 198,
+        "benign_fpr": 0.0027548209366391185,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.8181818181818182,
+        "attack_detected_correct_class": 0.8181818181818182,
+        "attack_correct_conf_ge_0.9": 0.21717171717171718
+      },
+      "attack_nodered_rce_eval": {
+        "flows": 337,
+        "benign_flows": 238,
+        "attack_flows": 99,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.98989898989899
+      },
+      "attack_grafana_traversal_eval": {
+        "flows": 402,
+        "benign_flows": 282,
+        "attack_flows": 120,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.95
+      },
+      "attack_influx_authbypass_eval": {
+        "flows": 303,
+        "benign_flows": 204,
+        "attack_flows": 99,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.9595959595959596
+      },
+      "fbenign_api_nodered": {
+        "flows": 2426,
+        "benign_flows": 2426,
+        "attack_flows": 0,
+        "benign_fpr": 0.10634789777411377,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_api_grafana": {
+        "flows": 2433,
+        "benign_flows": 2433,
+        "attack_flows": 0,
+        "benign_fpr": 0.13316892725030827,
+        "benign_fpr_conf_ge_0.9": 0.08220304151253596
+      },
+      "fbenign_api_influxdb": {
+        "flows": 2425,
+        "benign_flows": 2425,
+        "attack_flows": 0,
+        "benign_fpr": 0.11752577319587629,
+        "benign_fpr_conf_ge_0.9": 0.01731958762886598
+      },
+      "fbenign_burst_nodered": {
+        "flows": 1511,
+        "benign_flows": 1511,
+        "attack_flows": 0,
+        "benign_fpr": 0.07743216412971542,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_browse_grafana": {
+        "flows": 808,
+        "benign_flows": 808,
+        "attack_flows": 0,
+        "benign_fpr": 0.05198019801980198,
+        "benign_fpr_conf_ge_0.9": 0.009900990099009901
+      }
+    }
+  },
+  "et_dataset_sqrt_lab_v2": {
+    "model": "extratrees",
+    "label_policy": "dataset",
+    "split": "temporal",
+    "trained_at": "2026-11-01T06:36:01.884112+00:00",
+    "classes": 11,
+    "accuracy": 0.9663157894736842,
+    "f1_macro": 0.31986840755779355,
+    "f1_weighted": 0.9613133410665288,
+    "benign_holdout_fpr": 0.0035181297168473016,
+    "recall_macro": 0.2954541786331944,
+    "attack_recall": 0.6424418604651163,
+    "benign_fpr": 0.008202143140627068,
+    "attack_threshold": null,
+    "imbalance": "sqrt",
+    "lab_train_sets": [
+      "benign_train",
+      "recon_run1",
+      "recon_grafana_train",
+      "recon_influx_train",
+      "fbenign_api_nodered_train",
+      "fbenign_api_grafana_train",
+      "fbenign_api_influxdb_train",
+      "fbenign_burst_grafana_train",
+      "attack_nodered_rce_train",
+      "attack_grafana_traversal_train",
+      "attack_influx_authbypass_train"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9603960396039604,
+        "attack_detected_correct_class": 0.9603960396039604,
+        "attack_correct_conf_ge_0.9": 0.6881188118811881
+      },
+      "recon_threaded_nodered": {
+        "flows": 636,
+        "benign_flows": 336,
+        "attack_flows": 300,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.59,
+        "attack_detected_correct_class": 0.59,
+        "attack_correct_conf_ge_0.9": 0.0
+      },
+      "recon_slow_nodered": {
+        "flows": 1229,
+        "benign_flows": 1180,
+        "attack_flows": 49,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.08163265306122448,
+        "attack_detected_correct_class": 0.08163265306122448,
+        "attack_correct_conf_ge_0.9": 0.0
+      },
+      "recon_seq_grafana": {
+        "flows": 604,
+        "benign_flows": 405,
+        "attack_flows": 199,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9095477386934674,
+        "attack_detected_correct_class": 0.9095477386934674,
+        "attack_correct_conf_ge_0.9": 0.4371859296482412
+      },
+      "recon_seq_influx": {
+        "flows": 495,
+        "benign_flows": 297,
+        "attack_flows": 198,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9595959595959596,
+        "attack_detected_correct_class": 0.9595959595959596,
+        "attack_correct_conf_ge_0.9": 0.8232323232323232
+      },
+      "recon_shuffled_grafana": {
+        "flows": 561,
+        "benign_flows": 363,
+        "attack_flows": 198,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.7121212121212122,
+        "attack_detected_correct_class": 0.7121212121212122,
+        "attack_correct_conf_ge_0.9": 0.06565656565656566
+      },
+      "attack_nodered_rce_eval": {
+        "flows": 337,
+        "benign_flows": 238,
+        "attack_flows": 99,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.98989898989899
+      },
+      "attack_grafana_traversal_eval": {
+        "flows": 402,
+        "benign_flows": 282,
+        "attack_flows": 120,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.95
+      },
+      "attack_influx_authbypass_eval": {
+        "flows": 303,
+        "benign_flows": 204,
+        "attack_flows": 99,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.9797979797979798
+      },
+      "fbenign_api_nodered": {
+        "flows": 2426,
+        "benign_flows": 2426,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_api_grafana": {
+        "flows": 2433,
+        "benign_flows": 2433,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_api_influxdb": {
+        "flows": 2425,
+        "benign_flows": 2425,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_burst_nodered": {
+        "flows": 1511,
+        "benign_flows": 1511,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_browse_grafana": {
+        "flows": 808,
+        "benign_flows": 808,
+        "attack_flows": 0,
+        "benign_fpr": 0.02599009900990099,
+        "benign_fpr_conf_ge_0.9": 0.0
+      }
+    }
+  },
+  "et_dataset_sqrt_lab_v3": {
+    "model": "extratrees",
+    "label_policy": "dataset",
+    "split": "temporal",
+    "trained_at": "2026-11-01T06:43:58.026936+00:00",
+    "classes": 11,
+    "accuracy": 0.966749226006192,
+    "f1_macro": 0.2984888276023443,
+    "f1_weighted": 0.9617149032424566,
+    "benign_holdout_fpr": 0.0036883617999205584,
+    "recall_macro": 0.2725327418778194,
+    "attack_recall": 0.6482558139534884,
+    "benign_fpr": 0.007871411562375976,
+    "attack_threshold": null,
+    "imbalance": "sqrt",
+    "lab_train_sets": [
+      "benign_train",
+      "recon_run1",
+      "recon_grafana_train",
+      "recon_influx_train",
+      "fbenign_api_nodered_train",
+      "fbenign_api_grafana_train",
+      "fbenign_api_influxdb_train",
+      "fbenign_burst_grafana_train",
+      "fbenign_browse_grafana_train",
+      "fbenign_browse_nodered_train",
+      "attack_nodered_rce_train",
+      "attack_grafana_traversal_train",
+      "attack_influx_authbypass_train"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9653465346534653,
+        "attack_detected_correct_class": 0.9653465346534653,
+        "attack_correct_conf_ge_0.9": 0.6732673267326733
+      },
+      "recon_threaded_nodered": {
+        "flows": 636,
+        "benign_flows": 336,
+        "attack_flows": 300,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.5566666666666666,
+        "attack_detected_correct_class": 0.5566666666666666,
+        "attack_correct_conf_ge_0.9": 0.0
+      },
+      "recon_slow_nodered": {
+        "flows": 1229,
+        "benign_flows": 1180,
+        "attack_flows": 49,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.0,
+        "attack_detected_correct_class": 0.0,
+        "attack_correct_conf_ge_0.9": 0.0
+      },
+      "recon_seq_grafana": {
+        "flows": 604,
+        "benign_flows": 405,
+        "attack_flows": 199,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.8743718592964824,
+        "attack_detected_correct_class": 0.8743718592964824,
+        "attack_correct_conf_ge_0.9": 0.4271356783919598
+      },
+      "recon_seq_influx": {
+        "flows": 495,
+        "benign_flows": 297,
+        "attack_flows": 198,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9494949494949495,
+        "attack_detected_correct_class": 0.9494949494949495,
+        "attack_correct_conf_ge_0.9": 0.803030303030303
+      },
+      "recon_shuffled_grafana": {
+        "flows": 561,
+        "benign_flows": 363,
+        "attack_flows": 198,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.5252525252525253,
+        "attack_detected_correct_class": 0.5252525252525253,
+        "attack_correct_conf_ge_0.9": 0.0707070707070707
+      },
+      "attack_nodered_rce_eval": {
+        "flows": 337,
+        "benign_flows": 238,
+        "attack_flows": 99,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.98989898989899
+      },
+      "attack_grafana_traversal_eval": {
+        "flows": 402,
+        "benign_flows": 282,
+        "attack_flows": 120,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.9416666666666667
+      },
+      "attack_influx_authbypass_eval": {
+        "flows": 303,
+        "benign_flows": 204,
+        "attack_flows": 99,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.9595959595959596
+      },
+      "fbenign_api_nodered": {
+        "flows": 2426,
+        "benign_flows": 2426,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_api_grafana": {
+        "flows": 2433,
+        "benign_flows": 2433,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_api_influxdb": {
+        "flows": 2425,
+        "benign_flows": 2425,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_burst_nodered": {
+        "flows": 1511,
+        "benign_flows": 1511,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_browse_grafana": {
+        "flows": 808,
+        "benign_flows": 808,
+        "attack_flows": 0,
+        "benign_fpr": 0.0012376237623762376,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_keepalive_grafana": {
+        "flows": 503,
+        "benign_flows": 503,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_poller_influxdb": {
+        "flows": 1064,
+        "benign_flows": 1064,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      }
+    }
+  },
+  "et_dataset_sqrt_lab_v4": {
+    "model": "extratrees",
+    "label_policy": "dataset",
+    "split": "temporal",
+    "trained_at": "2026-11-01T07:23:37.387373+00:00",
+    "classes": 11,
+    "accuracy": 0.966687306501548,
+    "f1_macro": 0.3097494545447991,
+    "f1_weighted": 0.9617272060373415,
+    "benign_holdout_fpr": 0.0034613856891562165,
+    "recall_macro": 0.28343703207063853,
+    "attack_recall": 0.6492248062015504,
+    "benign_fpr": 0.008069850509326631,
+    "attack_threshold": null,
+    "imbalance": "sqrt",
+    "lab_train_sets": [
+      "benign_train",
+      "recon_run1",
+      "recon_grafana_train",
+      "recon_influx_train",
+      "recon_slow_nodered_train",
+      "fbenign_api_nodered_train",
+      "fbenign_api_grafana_train",
+      "fbenign_api_influxdb_train",
+      "fbenign_burst_grafana_train",
+      "fbenign_browse_grafana_train",
+      "fbenign_browse_nodered_train",
+      "fbenign_poller_nodered_train",
+      "attack_nodered_rce_train",
+      "attack_grafana_traversal_train",
+      "attack_influx_authbypass_train"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9702970297029703,
+        "attack_detected_correct_class": 0.9702970297029703,
+        "attack_correct_conf_ge_0.9": 0.6831683168316832
+      },
+      "recon_threaded_nodered": {
+        "flows": 636,
+        "benign_flows": 336,
+        "attack_flows": 300,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.7866666666666666,
+        "attack_detected_correct_class": 0.7866666666666666,
+        "attack_correct_conf_ge_0.9": 0.006666666666666667
+      },
+      "recon_slow_nodered": {
+        "flows": 1229,
+        "benign_flows": 1180,
+        "attack_flows": 49,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9795918367346939,
+        "attack_detected_correct_class": 0.9795918367346939,
+        "attack_correct_conf_ge_0.9": 0.673469387755102
+      },
+      "recon_slow_influx": {
+        "flows": 1093,
+        "benign_flows": 1043,
+        "attack_flows": 50,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.76,
+        "attack_detected_correct_class": 0.76,
+        "attack_correct_conf_ge_0.9": 0.2
+      },
+      "recon_seq_grafana": {
+        "flows": 604,
+        "benign_flows": 405,
+        "attack_flows": 199,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.8693467336683417,
+        "attack_detected_correct_class": 0.8693467336683417,
+        "attack_correct_conf_ge_0.9": 0.4271356783919598
+      },
+      "recon_seq_influx": {
+        "flows": 495,
+        "benign_flows": 297,
+        "attack_flows": 198,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9494949494949495,
+        "attack_detected_correct_class": 0.9494949494949495,
+        "attack_correct_conf_ge_0.9": 0.8131313131313131
+      },
+      "recon_shuffled_grafana": {
+        "flows": 561,
+        "benign_flows": 363,
+        "attack_flows": 198,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.4292929292929293,
+        "attack_detected_correct_class": 0.4292929292929293,
+        "attack_correct_conf_ge_0.9": 0.06060606060606061
+      },
+      "attack_nodered_rce_eval": {
+        "flows": 337,
+        "benign_flows": 238,
+        "attack_flows": 99,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.98989898989899
+      },
+      "attack_grafana_traversal_eval": {
+        "flows": 402,
+        "benign_flows": 282,
+        "attack_flows": 120,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.9333333333333333
+      },
+      "attack_influx_authbypass_eval": {
+        "flows": 303,
+        "benign_flows": 204,
+        "attack_flows": 99,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.9393939393939394
+      },
+      "fbenign_api_nodered": {
+        "flows": 2426,
+        "benign_flows": 2426,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_api_grafana": {
+        "flows": 2433,
+        "benign_flows": 2433,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_api_influxdb": {
+        "flows": 2425,
+        "benign_flows": 2425,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_burst_nodered": {
+        "flows": 1511,
+        "benign_flows": 1511,
+        "attack_flows": 0,
+        "benign_fpr": 0.004632693580410324,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_browse_grafana": {
+        "flows": 808,
+        "benign_flows": 808,
+        "attack_flows": 0,
+        "benign_fpr": 0.0024752475247524753,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_keepalive_grafana": {
+        "flows": 503,
+        "benign_flows": 503,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_poller_influxdb": {
+        "flows": 1064,
+        "benign_flows": 1064,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_poller_nodered": {
+        "flows": 1068,
+        "benign_flows": 1068,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      }
+    }
+  },
+  "et_dataset_sqrt_lab_v5": {
+    "model": "extratrees",
+    "label_policy": "dataset",
+    "split": "temporal",
+    "trained_at": "2026-11-01T07:27:49.564223+00:00",
+    "classes": 11,
+    "accuracy": 0.9669349845201238,
+    "f1_macro": 0.3028118344112754,
+    "f1_weighted": 0.9618770099900958,
+    "benign_holdout_fpr": 0.0035181297168473016,
+    "recall_macro": 0.2763266339671209,
+    "attack_recall": 0.6482558139534884,
+    "benign_fpr": 0.0078052652467257575,
+    "attack_threshold": null,
+    "imbalance": "sqrt",
+    "lab_train_sets": [
+      "benign_train",
+      "recon_run1",
+      "recon_grafana_train",
+      "recon_influx_train",
+      "recon_slow_nodered_train",
+      "fbenign_api_nodered_train",
+      "fbenign_api_grafana_train",
+      "fbenign_api_influxdb_train",
+      "fbenign_burst_grafana_train",
+      "fbenign_burst_nodered_train",
+      "fbenign_browse_grafana_train",
+      "fbenign_browse_nodered_train",
+      "fbenign_poller_nodered_train",
+      "attack_nodered_rce_train",
+      "attack_grafana_traversal_train",
+      "attack_influx_authbypass_train"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9653465346534653,
+        "attack_detected_correct_class": 0.9653465346534653,
+        "attack_correct_conf_ge_0.9": 0.693069306930693
+      },
+      "recon_threaded_nodered": {
+        "flows": 636,
+        "benign_flows": 336,
+        "attack_flows": 300,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.77,
+        "attack_detected_correct_class": 0.77,
+        "attack_correct_conf_ge_0.9": 0.006666666666666667
+      },
+      "recon_slow_nodered": {
+        "flows": 1229,
+        "benign_flows": 1180,
+        "attack_flows": 49,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.8979591836734694,
+        "attack_detected_correct_class": 0.8979591836734694,
+        "attack_correct_conf_ge_0.9": 0.6530612244897959
+      },
+      "recon_slow_influx": {
+        "flows": 1093,
+        "benign_flows": 1043,
+        "attack_flows": 50,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.82,
+        "attack_detected_correct_class": 0.82,
+        "attack_correct_conf_ge_0.9": 0.18
+      },
+      "recon_seq_grafana": {
+        "flows": 604,
+        "benign_flows": 405,
+        "attack_flows": 199,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.8944723618090452,
+        "attack_detected_correct_class": 0.8944723618090452,
+        "attack_correct_conf_ge_0.9": 0.4321608040201005
+      },
+      "recon_seq_influx": {
+        "flows": 495,
+        "benign_flows": 297,
+        "attack_flows": 198,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9545454545454546,
+        "attack_detected_correct_class": 0.9545454545454546,
+        "attack_correct_conf_ge_0.9": 0.803030303030303
+      },
+      "recon_shuffled_grafana": {
+        "flows": 561,
+        "benign_flows": 363,
+        "attack_flows": 198,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.5404040404040404,
+        "attack_detected_correct_class": 0.5404040404040404,
+        "attack_correct_conf_ge_0.9": 0.06565656565656566
+      },
+      "attack_nodered_rce_eval": {
+        "flows": 337,
+        "benign_flows": 238,
+        "attack_flows": 99,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.98989898989899
+      },
+      "attack_grafana_traversal_eval": {
+        "flows": 402,
+        "benign_flows": 282,
+        "attack_flows": 120,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.95
+      },
+      "attack_influx_authbypass_eval": {
+        "flows": 303,
+        "benign_flows": 204,
+        "attack_flows": 99,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.9696969696969697
+      },
+      "fbenign_api_nodered": {
+        "flows": 2426,
+        "benign_flows": 2426,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_api_grafana": {
+        "flows": 2433,
+        "benign_flows": 2433,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_api_influxdb": {
+        "flows": 2425,
+        "benign_flows": 2425,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_burst_nodered": {
+        "flows": 1511,
+        "benign_flows": 1511,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_browse_grafana": {
+        "flows": 808,
+        "benign_flows": 808,
+        "attack_flows": 0,
+        "benign_fpr": 0.0012376237623762376,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_keepalive_grafana": {
+        "flows": 503,
+        "benign_flows": 503,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_poller_influxdb": {
+        "flows": 1064,
+        "benign_flows": 1064,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "fbenign_poller_nodered": {
+        "flows": 1068,
+        "benign_flows": 1068,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      }
+    }
+  },
+  "et_dataset_sqrt_lab_v6a": {
+    "model": "extratrees",
+    "label_policy": "dataset",
+    "split": "temporal",
+    "trained_at": "2026-11-01T08:07:12.953829+00:00",
+    "classes": 11,
+    "accuracy": 0.966625386996904,
+    "f1_macro": 0.29836923253048914,
+    "f1_weighted": 0.9614501221422548,
+    "benign_holdout_fpr": 0.0033478976337740452,
+    "recall_macro": 0.27208542230984767,
+    "attack_recall": 0.6443798449612403,
+    "benign_fpr": 0.007937557878026195,
+    "attack_threshold": null,
+    "imbalance": "sqrt",
+    "lab_train_sets": [
+      "benign_train",
+      "recon_run1",
+      "recon_grafana_train",
+      "recon_influx_train",
+      "recon_slow_nodered_train",
+      "fbenign_api_nodered_train",
+      "fbenign_api_grafana_train",
+      "fbenign_api_influxdb_train",
+      "fbenign_burst_grafana_train",
+      "fbenign_burst_nodered_train",
+      "fbenign_browse_grafana_train",
+      "fbenign_browse_nodered_train",
+      "fbenign_poller_nodered_train",
+      "attack_nodered_rce_train",
+      "attack_grafana_traversal_train",
+      "attack_influx_authbypass_train",
+      "attack_nodered_rce_train_r2",
+      "attack_nodered_rce_train_r9",
+      "attack_grafana_traversal_train_r2",
+      "attack_grafana_traversal_train_r9",
+      "attack_influx_authbypass_train_r2",
+      "attack_influx_authbypass_train_r9"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9653465346534653,
+        "attack_detected_correct_class": 0.9653465346534653,
+        "attack_correct_conf_ge_0.9": 0.698019801980198
+      },
+      "recon_slow_nodered": {
+        "flows": 1229,
+        "benign_flows": 1180,
+        "attack_flows": 49,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.8979591836734694,
+        "attack_detected_correct_class": 0.8979591836734694,
+        "attack_correct_conf_ge_0.9": 0.673469387755102
+      },
+      "recon_seq_grafana": {
+        "flows": 604,
+        "benign_flows": 405,
+        "attack_flows": 199,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.8793969849246231,
+        "attack_detected_correct_class": 0.8793969849246231,
+        "attack_correct_conf_ge_0.9": 0.41708542713567837
+      },
+      "attack_nodered_rce_eval": {
+        "flows": 337,
+        "benign_flows": 238,
+        "attack_flows": 99,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.98989898989899
+      },
+      "attack_nodered_rce_eval_r1": {
+        "flows": 937,
+        "benign_flows": 818,
+        "attack_flows": 119,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 1.0
+      },
+      "attack_grafana_traversal_eval": {
+        "flows": 402,
+        "benign_flows": 282,
+        "attack_flows": 120,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.9666666666666667
+      },
+      "attack_grafana_traversal_eval_r1": {
+        "flows": 896,
+        "benign_flows": 777,
+        "attack_flows": 119,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.9915966386554622
+      },
+      "attack_influx_authbypass_eval": {
+        "flows": 303,
+        "benign_flows": 204,
+        "attack_flows": 99,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 1.0
+      },
+      "attack_influx_authbypass_eval_r1": {
+        "flows": 990,
+        "benign_flows": 871,
+        "attack_flows": 119,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.9747899159663865
+      },
+      "attack_grafana_ssrf_eval": {
+        "flows": 286,
+        "benign_flows": 188,
+        "attack_flows": 98,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.6530612244897959,
+        "attack_detected_correct_class": 0.0,
+        "attack_correct_conf_ge_0.9": 0.0
+      }
+    }
+  },
+  "et_dataset_sqrt_lab_v6": {
+    "model": "extratrees",
+    "label_policy": "dataset",
+    "split": "temporal",
+    "trained_at": "2026-11-01T08:08:24.481318+00:00",
+    "classes": 11,
+    "accuracy": 0.966625386996904,
+    "f1_macro": 0.3070572582616071,
+    "f1_weighted": 0.9615687092784554,
+    "benign_holdout_fpr": 0.0035748737445383872,
+    "recall_macro": 0.27834338459948743,
+    "attack_recall": 0.6463178294573644,
+    "benign_fpr": 0.008069850509326631,
+    "attack_threshold": null,
+    "imbalance": "sqrt",
+    "lab_train_sets": [
+      "benign_train",
+      "recon_run1",
+      "recon_grafana_train",
+      "recon_influx_train",
+      "recon_slow_nodered_train",
+      "fbenign_api_nodered_train",
+      "fbenign_api_grafana_train",
+      "fbenign_api_influxdb_train",
+      "fbenign_burst_grafana_train",
+      "fbenign_burst_nodered_train",
+      "fbenign_browse_grafana_train",
+      "fbenign_browse_nodered_train",
+      "fbenign_poller_nodered_train",
+      "attack_nodered_rce_train",
+      "attack_grafana_traversal_train",
+      "attack_influx_authbypass_train",
+      "attack_nodered_rce_train_r2",
+      "attack_nodered_rce_train_r9",
+      "attack_grafana_traversal_train_r2",
+      "attack_grafana_traversal_train_r9",
+      "attack_influx_authbypass_train_r2",
+      "attack_influx_authbypass_train_r9",
+      "attack_grafana_ssrf_train",
+      "attack_grafana_ssrf_train_r2"
+    ],
+    "lab_evaluation": {
+      "benign_eval_a": {
+        "flows": 191,
+        "benign_flows": 191,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "benign_eval_b": {
+        "flows": 1450,
+        "benign_flows": 1450,
+        "attack_flows": 0,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0
+      },
+      "recon_run2": {
+        "flows": 768,
+        "benign_flows": 566,
+        "attack_flows": 202,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.9653465346534653,
+        "attack_detected_correct_class": 0.9653465346534653,
+        "attack_correct_conf_ge_0.9": 0.6782178217821783
+      },
+      "recon_slow_nodered": {
+        "flows": 1229,
+        "benign_flows": 1180,
+        "attack_flows": 49,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.8979591836734694,
+        "attack_detected_correct_class": 0.8979591836734694,
+        "attack_correct_conf_ge_0.9": 0.6938775510204082
+      },
+      "recon_seq_grafana": {
+        "flows": 604,
+        "benign_flows": 405,
+        "attack_flows": 199,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 0.8844221105527639,
+        "attack_detected_correct_class": 0.8844221105527639,
+        "attack_correct_conf_ge_0.9": 0.41708542713567837
+      },
+      "attack_nodered_rce_eval": {
+        "flows": 337,
+        "benign_flows": 238,
+        "attack_flows": 99,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.98989898989899
+      },
+      "attack_nodered_rce_eval_r1": {
+        "flows": 937,
+        "benign_flows": 818,
+        "attack_flows": 119,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 1.0
+      },
+      "attack_grafana_traversal_eval": {
+        "flows": 402,
+        "benign_flows": 282,
+        "attack_flows": 120,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.9583333333333334
+      },
+      "attack_grafana_traversal_eval_r1": {
+        "flows": 896,
+        "benign_flows": 777,
+        "attack_flows": 119,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.9915966386554622
+      },
+      "attack_influx_authbypass_eval": {
+        "flows": 303,
+        "benign_flows": 204,
+        "attack_flows": 99,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 1.0
+      },
+      "attack_influx_authbypass_eval_r1": {
+        "flows": 990,
+        "benign_flows": 871,
+        "attack_flows": 119,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.9747899159663865
+      },
+      "attack_grafana_ssrf_eval": {
+        "flows": 286,
+        "benign_flows": 188,
+        "attack_flows": 98,
+        "benign_fpr": 0.0,
+        "benign_fpr_conf_ge_0.9": 0.0,
+        "attack_detected_any_class": 1.0,
+        "attack_detected_correct_class": 1.0,
+        "attack_correct_conf_ge_0.9": 0.9897959183673469
+      }
+    }
+  },
+  "et_dataset_sqrt_lab_v6b": {
+    "model": "extratrees",
+    "label_policy": "dataset",
+    "split": "temporal",
+    "trained_at": "2026-11-01T08:11:50.975480+00:00",
+    "classes": 11,
+    "accuracy": 0.9668730650154799,
+    "f1_macro": 0.31603741154610693,
+    "f1_weighted": 0.9619427455322596,
+    "benign_holdout_fpr": 0.0033478976337740452,
+    "recall_macro": 0.2935009130524253,
+    "attack_recall": 0.6492248062015504,
+    "benign_fpr": 0.008003704193676412,
+    "attack_threshold": null,
+    "imbalance": "sqrt",
+    "lab_train_sets": [
+      "benign_train",
+      "recon_run1",
+      "recon_grafana_train",
+      "recon_influx_train",
+      "recon_slow_nodered_train",
+      "fbenign_api_nodered_train",
+      "fbenign_api_grafana_train",
+      "fbenign_api_influxdb_train",
+      "fbenign_burst_grafana_train",
+      "fbenign_burst_nodered_train",
+      "fbenign_browse_grafana_train",
+      "fbenign_browse_nodered_train",
+      "fbenign_poller_nodered_train",
+      "attack_nodered_rce_train",
+      "attack_grafana_traversal_train",
+      "attack_influx_authbypass_train",
+      "attack_grafana_ssrf_train",
+      "attack_grafana_ssrf_train_r2"
+    ],
+    "lab_evaluation": {}
   }
 }

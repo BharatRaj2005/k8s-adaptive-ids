@@ -1,0 +1,26 @@
+{
+  "name": "fbenign_api_grafana",
+  "created_at": "2026-10-31T20:29:53.705557+00:00",
+  "from": "2026-10-31T20:28:38.334343+00:00",
+  "to": "2026-10-31T20:29:55.158359+00:00",
+  "kind": "benign",
+  "attacker_ips": [],
+  "target_port": null,
+  "attack_label": null,
+  "note": "fast API ~8/s -> Grafana",
+  "files": [
+    "win_cni0_20261031T202843_221693.pcap_Flow.csv",
+    "win_cni0_20261031T202853_298014.pcap_Flow.csv",
+    "win_cni0_20261031T202858_351301.pcap_Flow.csv",
+    "win_cni0_20261031T202903_422477.pcap_Flow.csv",
+    "win_cni0_20261031T202908_514190.pcap_Flow.csv",
+    "win_cni0_20261031T202913_577110.pcap_Flow.csv",
+    "win_cni0_20261031T202918_645351.pcap_Flow.csv",
+    "win_cni0_20261031T202923_725796.pcap_Flow.csv",
+    "win_cni0_20261031T202928_789213.pcap_Flow.csv",
+    "win_cni0_20261031T202933_876619.pcap_Flow.csv",
+    "win_cni0_20261031T202938_929298.pcap_Flow.csv",
+    "win_cni0_20261031T202943_989066.pcap_Flow.csv",
+    "win_cni0_20261031T202949_065136.pcap_Flow.csv"
+  ]
+}

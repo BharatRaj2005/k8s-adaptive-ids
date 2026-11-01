@@ -1,0 +1,33 @@
+{
+  "name": "recon_slow_influx",
+  "created_at": "2026-11-01T07:18:22.325155+00:00",
+  "from": "2026-11-01T07:15:18.562596+00:00",
+  "to": "2026-11-01T07:18:22.409430+00:00",
+  "kind": "attack",
+  "attacker_ips": [
+    "10.42.0.180"
+  ],
+  "target_port": 8086,
+  "attack_label": 2,
+  "note": "slow HEAD crawl -> InfluxDB (eval)",
+  "files": [
+    "win_cni0_20261101T071524_756187.pcap_Flow.csv",
+    "win_cni0_20261101T071534_824515.pcap_Flow.csv",
+    "win_cni0_20261101T071544_913265.pcap_Flow.csv",
+    "win_cni0_20261101T071554_976818.pcap_Flow.csv",
+    "win_cni0_20261101T071605_053249.pcap_Flow.csv",
+    "win_cni0_20261101T071615_126990.pcap_Flow.csv",
+    "win_cni0_20261101T071625_210714.pcap_Flow.csv",
+    "win_cni0_20261101T071635_282882.pcap_Flow.csv",
+    "win_cni0_20261101T071645_369041.pcap_Flow.csv",
+    "win_cni0_20261101T071655_438776.pcap_Flow.csv",
+    "win_cni0_20261101T071705_520926.pcap_Flow.csv",
+    "win_cni0_20261101T071715_589723.pcap_Flow.csv",
+    "win_cni0_20261101T071725_677538.pcap_Flow.csv",
+    "win_cni0_20261101T071735_756766.pcap_Flow.csv",
+    "win_cni0_20261101T071745_827600.pcap_Flow.csv",
+    "win_cni0_20261101T071755_905802.pcap_Flow.csv",
+    "win_cni0_20261101T071805_989238.pcap_Flow.csv",
+    "win_cni0_20261101T071816_057042.pcap_Flow.csv"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "attack_influx_authbypass_eval",
+  "created_at": "2026-10-31T20:16:49.070670+00:00",
+  "from": "2026-10-31T20:16:09.842750+00:00",
+  "to": "2026-10-31T20:16:52.016130+00:00",
+  "kind": "attack",
+  "attacker_ips": [
+    "10.42.0.118"
+  ],
+  "target_port": 8086,
+  "attack_label": 6,
+  "note": "simulated influx_authbypass",
+  "files": [
+    "win_cni0_20261031T201615_141698.pcap_Flow.csv",
+    "win_cni0_20261031T201625_227906.pcap_Flow.csv",
+    "win_cni0_20261031T201635_319579.pcap_Flow.csv",
+    "win_cni0_20261031T201645_440849.pcap_Flow.csv"
+  ]
+}

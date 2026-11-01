@@ -1,0 +1,20 @@
+{
+  "name": "fbenign_browse_grafana_train",
+  "created_at": "2026-11-01T06:37:59.924316+00:00",
+  "from": "2026-11-01T06:36:50.605779+00:00",
+  "to": "2026-11-01T06:38:02.662997+00:00",
+  "kind": "benign",
+  "attacker_ips": [],
+  "target_port": null,
+  "attack_label": null,
+  "note": "TRAIN: normal browsing -> Grafana",
+  "files": [
+    "win_cni0_20261101T063656_289154.pcap_Flow.csv",
+    "win_cni0_20261101T063706_358344.pcap_Flow.csv",
+    "win_cni0_20261101T063716_438179.pcap_Flow.csv",
+    "win_cni0_20261101T063726_524130.pcap_Flow.csv",
+    "win_cni0_20261101T063736_604862.pcap_Flow.csv",
+    "win_cni0_20261101T063746_675941.pcap_Flow.csv",
+    "win_cni0_20261101T063756_750001.pcap_Flow.csv"
+  ]
+}

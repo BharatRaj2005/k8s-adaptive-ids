@@ -1,0 +1,24 @@
+{
+  "name": "fbenign_burst_nodered_train",
+  "created_at": "2026-11-01T07:27:02.961962+00:00",
+  "from": "2026-11-01T07:25:11.430075+00:00",
+  "to": "2026-11-01T07:27:04.380701+00:00",
+  "kind": "benign",
+  "attacker_ips": [],
+  "target_port": null,
+  "attack_label": null,
+  "note": "TRAIN: bursty dashboard refresh -> Node-RED",
+  "files": [
+    "win_cni0_20261101T072517_478927.pcap_Flow.csv",
+    "win_cni0_20261101T072527_560946.pcap_Flow.csv",
+    "win_cni0_20261101T072537_626442.pcap_Flow.csv",
+    "win_cni0_20261101T072547_727623.pcap_Flow.csv",
+    "win_cni0_20261101T072557_800087.pcap_Flow.csv",
+    "win_cni0_20261101T072607_868831.pcap_Flow.csv",
+    "win_cni0_20261101T072617_943750.pcap_Flow.csv",
+    "win_cni0_20261101T072628_031930.pcap_Flow.csv",
+    "win_cni0_20261101T072638_116093.pcap_Flow.csv",
+    "win_cni0_20261101T072648_203616.pcap_Flow.csv",
+    "win_cni0_20261101T072658_307351.pcap_Flow.csv"
+  ]
+}

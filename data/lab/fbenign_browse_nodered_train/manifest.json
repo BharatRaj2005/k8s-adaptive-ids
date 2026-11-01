@@ -1,0 +1,21 @@
+{
+  "name": "fbenign_browse_nodered_train",
+  "created_at": "2026-11-01T06:39:20.321029+00:00",
+  "from": "2026-11-01T06:38:04.954918+00:00",
+  "to": "2026-11-01T06:39:22.464401+00:00",
+  "kind": "benign",
+  "attacker_ips": [],
+  "target_port": null,
+  "attack_label": null,
+  "note": "TRAIN: normal browsing -> Node-RED",
+  "files": [
+    "win_cni0_20261101T063810_829269.pcap_Flow.csv",
+    "win_cni0_20261101T063820_937456.pcap_Flow.csv",
+    "win_cni0_20261101T063831_037574.pcap_Flow.csv",
+    "win_cni0_20261101T063841_124241.pcap_Flow.csv",
+    "win_cni0_20261101T063846_176574.pcap_Flow.csv",
+    "win_cni0_20261101T063856_251374.pcap_Flow.csv",
+    "win_cni0_20261101T063906_322194.pcap_Flow.csv",
+    "win_cni0_20261101T063916_440706.pcap_Flow.csv"
+  ]
+}

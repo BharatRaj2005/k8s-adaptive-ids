@@ -1,0 +1,29 @@
+{
+  "name": "attack_influx_authbypass_train_r2",
+  "created_at": "2026-11-01T07:56:27.177132+00:00",
+  "from": "2026-11-01T07:54:05.375867+00:00",
+  "to": "2026-11-01T07:56:29.957085+00:00",
+  "kind": "attack",
+  "attacker_ips": [
+    "10.42.0.194"
+  ],
+  "target_port": 8086,
+  "attack_label": 6,
+  "note": "simulated influx_authbypass",
+  "files": [
+    "win_cni0_20261101T075411_784587.pcap_Flow.csv",
+    "win_cni0_20261101T075421_904772.pcap_Flow.csv",
+    "win_cni0_20261101T075432_018006.pcap_Flow.csv",
+    "win_cni0_20261101T075442_134600.pcap_Flow.csv",
+    "win_cni0_20261101T075452_240523.pcap_Flow.csv",
+    "win_cni0_20261101T075502_343106.pcap_Flow.csv",
+    "win_cni0_20261101T075512_415893.pcap_Flow.csv",
+    "win_cni0_20261101T075522_536828.pcap_Flow.csv",
+    "win_cni0_20261101T075532_618812.pcap_Flow.csv",
+    "win_cni0_20261101T075542_741229.pcap_Flow.csv",
+    "win_cni0_20261101T075552_844816.pcap_Flow.csv",
+    "win_cni0_20261101T075602_933890.pcap_Flow.csv",
+    "win_cni0_20261101T075613_026956.pcap_Flow.csv",
+    "win_cni0_20261101T075623_118511.pcap_Flow.csv"
+  ]
+}

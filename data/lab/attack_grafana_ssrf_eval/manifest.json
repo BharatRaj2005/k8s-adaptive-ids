@@ -1,0 +1,19 @@
+{
+  "name": "attack_grafana_ssrf_eval",
+  "created_at": "2026-11-01T08:04:22.164485+00:00",
+  "from": "2026-11-01T08:03:39.853457+00:00",
+  "to": "2026-11-01T08:04:24.880453+00:00",
+  "kind": "attack",
+  "attacker_ips": [
+    "10.42.0.199"
+  ],
+  "target_port": 3000,
+  "attack_label": 1,
+  "note": "simulated grafana_ssrf",
+  "files": [
+    "win_cni0_20261101T080347_145356.pcap_Flow.csv",
+    "win_cni0_20261101T080357_230812.pcap_Flow.csv",
+    "win_cni0_20261101T080407_341605.pcap_Flow.csv",
+    "win_cni0_20261101T080417_475250.pcap_Flow.csv"
+  ]
+}

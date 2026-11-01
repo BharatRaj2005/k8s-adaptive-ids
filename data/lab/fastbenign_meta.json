@@ -1,0 +1,146 @@
+{
+  "fbenign_api_nodered": {
+    "run_id": "sim-20261031-202726-9d26",
+    "pod_ip": "10.42.0.119",
+    "scenario": "api_client",
+    "target": "nodered",
+    "from": "2026-10-31T20:27:23.973988+00:00",
+    "to": "2026-10-31T20:28:35.525832+00:00",
+    "note": "fast API ~8/s -> Node-RED"
+  },
+  "fbenign_api_grafana": {
+    "run_id": "sim-20261031-202841-c33b",
+    "pod_ip": "10.42.0.120",
+    "scenario": "api_client",
+    "target": "grafana",
+    "from": "2026-10-31T20:28:38.334343+00:00",
+    "to": "2026-10-31T20:29:55.158359+00:00",
+    "note": "fast API ~8/s -> Grafana"
+  },
+  "fbenign_api_influxdb": {
+    "run_id": "sim-20261031-203001-4e14",
+    "pod_ip": "10.42.0.121",
+    "scenario": "api_client",
+    "target": "influxdb",
+    "from": "2026-10-31T20:29:58.735828+00:00",
+    "to": "2026-10-31T20:31:09.840795+00:00",
+    "note": "fast API ~8/s -> InfluxDB"
+  },
+  "fbenign_burst_nodered": {
+    "run_id": "sim-20261031-203116-fe58",
+    "pod_ip": "10.42.0.122",
+    "scenario": "burst",
+    "target": "nodered",
+    "from": "2026-10-31T20:31:13.094018+00:00",
+    "to": "2026-10-31T20:33:04.633332+00:00",
+    "note": "bursty dashboard refresh -> Node-RED"
+  },
+  "fbenign_browse_grafana": {
+    "run_id": "sim-20261031-203312-56cb",
+    "pod_ip": "10.42.0.123",
+    "scenario": "browse",
+    "target": "grafana",
+    "from": "2026-10-31T20:33:09.622032+00:00",
+    "to": "2026-10-31T20:34:20.583025+00:00",
+    "note": "normal browsing -> Grafana"
+  },
+  "fbenign_api_nodered_train": {
+    "run_id": "sim-20261101-062854-d4ad",
+    "pod_ip": "10.42.0.167",
+    "scenario": "api_client",
+    "target": "nodered",
+    "from": "2026-11-01T06:28:51.831993+00:00",
+    "to": "2026-11-01T06:30:05.692072+00:00",
+    "note": "TRAIN: fast API ~8/s -> Node-RED"
+  },
+  "fbenign_api_grafana_train": {
+    "run_id": "sim-20261101-063012-ef43",
+    "pod_ip": "10.42.0.168",
+    "scenario": "api_client",
+    "target": "grafana",
+    "from": "2026-11-01T06:30:09.250199+00:00",
+    "to": "2026-11-01T06:31:34.382810+00:00",
+    "note": "TRAIN: fast API ~8/s -> Grafana"
+  },
+  "fbenign_api_influxdb_train": {
+    "run_id": "sim-20261101-063141-266a",
+    "pod_ip": "10.42.0.169",
+    "scenario": "api_client",
+    "target": "influxdb",
+    "from": "2026-11-01T06:31:38.760980+00:00",
+    "to": "2026-11-01T06:32:52.394229+00:00",
+    "note": "TRAIN: fast API ~8/s -> InfluxDB"
+  },
+  "fbenign_burst_grafana_train": {
+    "run_id": "sim-20261101-063259-5b53",
+    "pod_ip": "10.42.0.170",
+    "scenario": "burst",
+    "target": "grafana",
+    "from": "2026-11-01T06:32:56.135237+00:00",
+    "to": "2026-11-01T06:34:50.421513+00:00",
+    "note": "TRAIN: bursty dashboard refresh -> Grafana"
+  },
+  "fbenign_browse_grafana_train": {
+    "run_id": "sim-20261101-063653-34d4",
+    "pod_ip": "10.42.0.171",
+    "scenario": "browse",
+    "target": "grafana",
+    "from": "2026-11-01T06:36:50.605779+00:00",
+    "to": "2026-11-01T06:38:02.662997+00:00",
+    "note": "TRAIN: normal browsing -> Grafana"
+  },
+  "fbenign_browse_nodered_train": {
+    "run_id": "sim-20261101-063807-5a29",
+    "pod_ip": "10.42.0.172",
+    "scenario": "browse",
+    "target": "nodered",
+    "from": "2026-11-01T06:38:04.954918+00:00",
+    "to": "2026-11-01T06:39:22.464401+00:00",
+    "note": "TRAIN: normal browsing -> Node-RED"
+  },
+  "fbenign_keepalive_grafana": {
+    "run_id": "sim-20261101-063928-866b",
+    "pod_ip": "10.42.0.173",
+    "scenario": "keepalive",
+    "target": "grafana",
+    "from": "2026-11-01T06:39:25.351617+00:00",
+    "to": "2026-11-01T06:40:48.100083+00:00",
+    "note": "keep-alive API client -> Grafana (eval)"
+  },
+  "fbenign_poller_influxdb": {
+    "run_id": "sim-20261101-064054-1868",
+    "pod_ip": "10.42.0.174",
+    "scenario": "poller",
+    "target": "influxdb",
+    "from": "2026-11-01T06:40:51.745363+00:00",
+    "to": "2026-11-01T06:42:44.943892+00:00",
+    "note": "health/metrics poller -> InfluxDB (eval)"
+  },
+  "fbenign_poller_nodered_train": {
+    "run_id": "sim-20261101-071833-6732",
+    "pod_ip": "10.42.0.181",
+    "scenario": "poller",
+    "target": "nodered",
+    "from": "2026-11-01T07:18:30.605148+00:00",
+    "to": "2026-11-01T07:20:23.472486+00:00",
+    "note": "TRAIN: health/metrics poller -> Node-RED"
+  },
+  "fbenign_poller_nodered": {
+    "run_id": "sim-20261101-072030-3836",
+    "pod_ip": "10.42.0.182",
+    "scenario": "poller",
+    "target": "nodered",
+    "from": "2026-11-01T07:20:27.122302+00:00",
+    "to": "2026-11-01T07:22:19.862952+00:00",
+    "note": "health/metrics poller -> Node-RED (eval)"
+  },
+  "fbenign_burst_nodered_train": {
+    "run_id": "sim-20261101-072514-e52d",
+    "pod_ip": "10.42.0.183",
+    "scenario": "burst",
+    "target": "nodered",
+    "from": "2026-11-01T07:25:11.430075+00:00",
+    "to": "2026-11-01T07:27:04.380701+00:00",
+    "note": "TRAIN: bursty dashboard refresh -> Node-RED"
+  }
+}

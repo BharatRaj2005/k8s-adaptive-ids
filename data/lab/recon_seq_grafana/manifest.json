@@ -1,0 +1,22 @@
+{
+  "name": "recon_seq_grafana",
+  "created_at": "2026-10-31T20:55:25.662778+00:00",
+  "from": "2026-10-31T20:54:16.341052+00:00",
+  "to": "2026-10-31T20:55:25.779024+00:00",
+  "kind": "attack",
+  "attacker_ips": [
+    "10.42.0.126"
+  ],
+  "target_port": 3000,
+  "attack_label": 2,
+  "note": "sequential scan -> Grafana (unseen app)",
+  "files": [
+    "win_cni0_20261031T205423_474276.pcap_Flow.csv",
+    "win_cni0_20261031T205433_546348.pcap_Flow.csv",
+    "win_cni0_20261031T205443_627739.pcap_Flow.csv",
+    "win_cni0_20261031T205448_673917.pcap_Flow.csv",
+    "win_cni0_20261031T205458_754898.pcap_Flow.csv",
+    "win_cni0_20261031T205508_833909.pcap_Flow.csv",
+    "win_cni0_20261031T205518_906010.pcap_Flow.csv"
+  ]
+}
