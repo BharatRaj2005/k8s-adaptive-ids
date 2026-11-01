@@ -1,7 +1,7 @@
 # Published-label 11-class baseline
 
 Trained 2026-11-01 on the yigitsever/kubernetes-dataset published labels (every row in a
-capture carries that capture\x27s attack label), all 11 classes preserved. ExtraTrees (300 trees),
+capture carries that capture's attack label), all 11 classes preserved. ExtraTrees (300 trees),
 temporal split, config class weighting. Reproduced as `models/et_dataset_baseline`
 (identical to the existing `models/extratrees_dataset`). Two imbalance variants trained for
 comparison: `et_dataset_sqrt`, `et_dataset_smote`.
@@ -41,7 +41,7 @@ not a row-count problem (CVE-2021-25741 has 824 training rows and still reaches 
 - Not observable from flow statistics: RCE, Container Escape, CVE-2020-13379,
   CVE-2022-23648, CVE-2019-5736 - their captures are mostly ordinary cluster background,
   so the model cannot tell them from benign or from each other regardless of row count.
-- Benign holdout FPR on the dataset\x27s own Grafana capture is 0.34 %. The ~40-100 % false
+- Benign holdout FPR on the dataset's own Grafana capture is 0.34 %. The ~40-100 % false
   positives seen in `reports/simulator_live_validation.md` are on live lab traffic, a
   distribution shift from the dataset - that is what lab-captured training data is for.
 
