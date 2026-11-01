@@ -39,10 +39,32 @@ class SimulationSpec:
 def catalog(cfg: dict[str, Any] | None = None, dcfg: dict[str, Any] | None = None) -> dict[str, Any]:
     cfg, dcfg = cfg or load_config(), dcfg or load_datagen_config()
     s = cfg["simulator"]
+    names = {int(k): v for k, v in cfg["classes"].items()}
+    benign = cfg["benign_label"]
+
+    def expected(cat: str, v: dict[str, Any]) -> int | None:
+        if v.get("class_label") is not None:   # attack scenarios carry their class
+            return int(v["class_label"])
+        if cat == "recon":
+            return 2                            # Node-RED Reconnaissance (dataset class)
+        if cat == "benign":
+            return benign
+        return None
+
+    def scen(cat: str, v: dict[str, Any]) -> dict[str, Any]:
+        ec = expected(cat, v)
+        return {"label": v["label"], "description": v["description"], "profile": v["profile"],
+                "all_apps": bool(v.get("all_apps")), "app": v.get("app"), "class_label": v.get("class_label"),
+                "expected_class": ec, "expected_class_name": names.get(ec) if ec is not None else None,
+                "defaults": v["defaults"]}
+
+    host = {k: {"label": v["label"], "attack_class": v["class"], "description": v.get("description", ""),
+                "confidence": float(v.get("confidence", 0.9)),
+                "class_id": next((i for i, n in names.items() if n == v["class"]), None)}
+            for k, v in (s.get("host_events") or {}).items()}
     return {
-        "categories": {cat: {k: {"label": v["label"], "description": v["description"], "profile": v["profile"],
-                                 "all_apps": bool(v.get("all_apps")), "defaults": v["defaults"]}
-                             for k, v in sc.items()} for cat, sc in s["scenarios"].items()},
+        "categories": {cat: {k: scen(cat, v) for k, v in sc.items()} for cat, sc in s["scenarios"].items()},
+        "host_events": host,
         "targets": {a: {"port": c["port"], "namespace": c["namespace"], "service": c["service"]}
                     for a, c in dcfg["apps"].items()},
         "limits": s["limits"], "max_active": s["max_active"], "namespace": s["namespace"],
@@ -68,7 +90,14 @@ def build_spec(category: str, scenario: str, target: str, duration_s: Any = None
     if scen is None:
         raise ScenarioError(f"unknown scenario {category}/{scenario}")
     apps = dcfg["apps"]
-    if scen.get("all_apps"):
+    pinned = scen.get("app")
+    if pinned:                                   # attack scenarios only ever hit their one target app
+        if pinned not in apps:
+            raise ScenarioError(f"scenario {scenario} pins unknown application {pinned!r}")
+        if target not in (ALL_APPS, pinned):
+            raise ScenarioError(f"scenario {scenario} can only target {pinned!r}")
+        targets = [pinned]
+    elif scen.get("all_apps"):
         if target not in (ALL_APPS, *apps):
             raise ScenarioError(f"target {target!r} is not an allowed application")
         targets = list(apps)

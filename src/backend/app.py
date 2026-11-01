@@ -105,7 +105,7 @@ class DecoyRequest(BaseModel):
 
 
 class SimulationRequest(BaseModel):
-    category: Literal["recon", "benign"]
+    category: Literal["recon", "benign", "attack"]
     scenario: str = Field(..., max_length=32, description="scenario key from /api/simulations/scenarios")
     target: str = Field(..., max_length=32, description="application name from the scenario catalogue ('all' for the sweep)")
     duration_s: int | None = Field(None, description="within simulator.limits.duration_s")
@@ -304,6 +304,14 @@ def simulation_status(run_id: str):
     if run is None:
         raise HTTPException(404, f"unknown run {run_id}")
     return run
+
+
+@app.get("/api/simulations/{run_id}/predictions")
+def simulation_predictions(run_id: str):
+    """Actual ML predicted-class breakdown for the run's generator flows (compare with the expected class)."""
+    if simulator().get(run_id) is None:
+        raise HTTPException(404, f"unknown run {run_id}")
+    return {"run_id": run_id, "predictions": queries.simulation_predictions(run_id, CFG)}
 
 
 @app.get("/api/simulations/{run_id}/logs")

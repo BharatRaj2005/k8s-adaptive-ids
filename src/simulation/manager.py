@@ -166,10 +166,17 @@ class SimulationManager:
                                       f"{str(e)[:150]}", 503)
             self._check_targets(core, spec)
             run_id = f"sim-{_now():%Y%m%d-%H%M%S}-{secrets.token_hex(2)}"
+            scen = self.s["scenarios"].get(spec.category, {}).get(spec.scenario, {})
+            expected = scen.get("class_label")
+            if expected is None:
+                expected = 2 if spec.category == "recon" else self.cfg["benign_label"] if spec.category == "benign" else None
+            params = spec.to_dict()
+            params["expected_class"] = expected
+            params["expected_class_name"] = self.cfg["classes"].get(expected) if expected is not None else None
             with db.connect(db.db_path(self.cfg)) as c:
                 db.insert_row(c, "simulation_runs", run_id=run_id, created_at=_iso(), updated_at=_iso(),
                               category=spec.category, profile=spec.profile, target=",".join(spec.apps),
-                              params=json.dumps(spec.to_dict()), status="requested", stage="requested",
+                              params=json.dumps(params), status="requested", stage="requested",
                               stages=json.dumps({"requested": _iso()}))
             self._cancel[run_id] = threading.Event()
             t = threading.Thread(target=self._run, args=(run_id, spec), name=f"sim-{run_id}", daemon=True)

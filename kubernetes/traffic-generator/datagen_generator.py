@@ -4,9 +4,14 @@ PROFILE selects one benign profile or one scanner implementation:
 
   benign  browse, poller, keepalive_client, burst_refresh, asset_loader, api_consumer
   recon   seq_wordlist, shuffled_jitter, keepalive_scanner, threaded_parallel, head_crawler, multi_app_sweep
+  attack  nodered_inject, grafana_traversal, influx_authprobe
 
-Scanners only send GET/HEAD/OPTIONS requests for paths (path enumeration). No request
-carries a payload, credentials or a query against an application.
+Scanners only send GET/HEAD/OPTIONS requests for paths (path enumeration). The attack profiles
+reproduce the request *shape* of three application CVEs without performing them: every request
+carries the header X-IDS-Simulation: 1, write-API bodies are non-deployable marker objects (the
+server rejects them, nothing is deployed and no code runs), path-traversal targets are marker
+filenames (never a real file or secret) and auth headers carry a marker token (never a real or
+forged credential). No request carries a real payload, credential or query against an application.
 
 Only the applications in APP_URLS (name=url, comma separated) can be contacted, and
 the namespace NetworkPolicy blocks all other egress. Limits are enforced here as well
@@ -24,7 +29,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
-from urllib.parse import urlsplit
+from urllib.parse import quote, urlsplit
 
 # hard limits, independent of the launcher
 DELAY_FLOOR = 0.02
@@ -91,6 +96,34 @@ CRAWL_CHILDREN = ["/index.html", "/config", "/admin", "/api", "/login", "/static
 USER_AGENTS = ["Mozilla/5.0 (X11; Linux x86_64)", "curl/8.5.0", "python-requests/2.32", "Go-http-client/1.1",
                "Wget/1.21", "dirscan/0.9"]
 
+# --- attack-characteristic request sets (non-destructive; marker requests only) ----------------
+# Each attack profile reproduces the request SHAPE of an application CVE. Paths, bodies and tokens
+# are fixed constants here (never built from input), every request carries SIM_HEADER, and none can
+# change application state, run code or read a secret - see the per-profile guarantees below.
+SIM_HEADER = {"X-IDS-Simulation": "1"}
+SIM_MARKER = json.dumps({"ids_marker": "simulation", "note": "non-destructive lab traffic"}).encode()
+SIM_TOKEN = {"Authorization": "Bearer ids-sim-marker"}
+# class 3 Node-RED RCE: POST/PUT to the admin write-API. SIM_MARKER is not a Node-RED flow or
+# settings object, so every request is rejected (400/404/405); nothing is deployed and no function
+# node runs. (/nodes is deliberately excluded - a POST there would install an npm module.)
+INJECT_ENDPOINTS = [("POST", "/flows"), ("POST", "/flow"), ("PUT", "/settings"), ("POST", "/flows")]
+# class 5 CVE-2021-43798: Grafana plugin path traversal. The traversal target is a marker filename,
+# never a real path such as /etc/passwd or a key file, so it resolves to nothing (400/404).
+TRAVERSAL_PLUGINS = ["alertlist", "graph", "table", "text", "piechart"]
+TRAVERSAL_MARKER = "ids-sim-marker.txt"
+TRAVERSAL_PATHS = [f"/public/plugins/{p}/{'..%2f' * d}{TRAVERSAL_MARKER}"
+                   for p in TRAVERSAL_PLUGINS for d in (3, 5, 7, 9, 11)]
+# class 6 CVE-2019-20933: InfluxDB auth-bypass probes. SIM_TOKEN is a marker, not a real or forged
+# credential, and the endpoints read and write nothing with it (401).
+AUTHPROBE_ENDPOINTS = [("POST", "/query"), ("GET", "/api/v2"), ("GET", "/api/v2/buckets"),
+                       ("GET", "/debug/vars"), ("GET", "/api/v2/me")]
+# class 1 CVE-2020-13379: Grafana unauthenticated avatar SSRF. The SSRF target is a guaranteed
+# non-resolvable marker host (RFC 6761 .invalid) and a loopback marker, so no internal service is
+# ever reached - the request shape is attack-characteristic but it cannot pull any real resource.
+SSRF_TARGETS = ["http://ids-sim-marker.invalid/", "http://ids-sim-marker.invalid:80/latest/meta-data",
+                "http://127.0.0.1:1/ids-sim-marker"]
+SSRF_PATHS = [f"/avatar/{quote(t, safe='')}" for t in SSRF_TARGETS] + ["/avatar/ids-sim-marker"]
+
 _lock = threading.Lock()
 _conn_ids = itertools.count(1)
 _count = 0
@@ -148,7 +181,7 @@ class Conn:
             log(ev="conn_close", cid=self.cid, app=self.app, requests=self.served)
         self.http = None
 
-    def request(self, method, path, headers=None, retry=True):
+    def request(self, method, path, headers=None, body=None, retry=True):
         global _errors
         try:
             if self.http is None:
@@ -164,29 +197,29 @@ class Conn:
             hdrs["Connection"] = "close"
         t0 = time.monotonic()
         try:
-            self.http.request(method, path, headers=hdrs)
+            self.http.request(method, path, body=body, headers=hdrs)
             resp = self.http.getresponse()
-            body = resp.read()
+            rbody = resp.read()
             status, will_close = resp.status, resp.will_close
         except (http.client.HTTPException, OSError) as e:
             stale = self.keepalive and self.served > 0
             self.close()
             if stale and retry:           # server closed an idle keep-alive connection
-                return self.request(method, path, headers, retry=False)
+                return self.request(method, path, headers, body, retry=False)
             with _lock:
                 _errors += 1
             log(ev="req", cid=self.cid, app=self.app, method=method, path=path, error=str(e))
             return None
         self.served += 1
-        log(ev="req", cid=self.cid, app=self.app, method=method, path=path, status=status, bytes=len(body),
-            ms=round((time.monotonic() - t0) * 1000, 1))
+        log(ev="req", cid=self.cid, app=self.app, method=method, path=path, status=status,
+            bytes=len(rbody), sent=len(body or b""), ms=round((time.monotonic() - t0) * 1000, 1))
         if will_close or not self.keepalive:
             self.close()
         return status
 
 
-def once(app, method, path, headers=None, user_agent=None):
-    return Conn(app, keepalive=False, user_agent=user_agent).request(method, path, headers)
+def once(app, method, path, headers=None, body=None, user_agent=None):
+    return Conn(app, keepalive=False, user_agent=user_agent).request(method, path, headers, body)
 
 
 # --- benign profiles ---------------------------------------------------------------------------
@@ -374,14 +407,67 @@ def multi_app_sweep(rng):
             pause(rng, DELAY_MIN, DELAY_MAX)
 
 
+# --- attack-characteristic profiles (see the request sets above for the safety guarantees) -----
+def nodered_inject(rng):
+    """Node-RED RCE shape (class 3): marker writes to the admin flow API, rejected, nothing deployed."""
+    app = TARGET_APPS[0]
+    i = 0
+    while take():
+        method, path = INJECT_ENDPOINTS[i % len(INJECT_ENDPOINTS)]
+        body = None if path == "/settings" else SIM_MARKER
+        hdrs = {**SIM_HEADER, "Content-Type": "application/json"} if body else dict(SIM_HEADER)
+        once(app, method, path, headers=hdrs, body=body)
+        i += 1
+        pause(rng, DELAY_MIN, DELAY_MAX)
+
+
+def grafana_traversal(rng):
+    """CVE-2021-43798 shape (class 5): plugin path traversal to a marker filename (resolves to nothing)."""
+    app = TARGET_APPS[0]
+    paths = TRAVERSAL_PATHS[:]
+    rng.shuffle(paths)
+    for path in itertools.cycle(paths):
+        if not take():
+            return
+        once(app, "GET", path, headers=SIM_HEADER)
+        pause(rng, DELAY_MIN, DELAY_MAX)
+
+
+def influx_authprobe(rng):
+    """CVE-2019-20933 shape (class 6): auth-bypass probes with a marker token (reads/writes nothing)."""
+    app = TARGET_APPS[0]
+    i = 0
+    while take():
+        method, path = AUTHPROBE_ENDPOINTS[i % len(AUTHPROBE_ENDPOINTS)]
+        body = SIM_MARKER if method == "POST" else None
+        hdrs = {**SIM_HEADER, **SIM_TOKEN}
+        if body:
+            hdrs["Content-Type"] = "application/json"
+        once(app, method, path, headers=hdrs, body=body)
+        i += 1
+        pause(rng, DELAY_MIN, DELAY_MAX)
+
+
+def grafana_ssrf(rng):
+    """CVE-2020-13379 shape (class 1): Grafana avatar SSRF requests to a non-resolvable marker target.
+    Non-destructive: the SSRF target is .invalid / loopback:1, so Grafana reaches no internal service."""
+    app = TARGET_APPS[0]
+    i = 0
+    while take():
+        once(app, "GET", SSRF_PATHS[i % len(SSRF_PATHS)], headers=SIM_HEADER)
+        i += 1
+        pause(rng, DELAY_MIN, DELAY_MAX)
+
+
 BENIGN = {f.__name__: f for f in (browse, poller, keepalive_client, burst_refresh, asset_loader, api_consumer)}
 RECON = {f.__name__: f for f in (seq_wordlist, shuffled_jitter, keepalive_scanner, threaded_parallel, head_crawler,
                                  multi_app_sweep)}
+ATTACK = {f.__name__: f for f in (nodered_inject, grafana_traversal, influx_authprobe, grafana_ssrf)}
 
 
 def validate():
     errors = []
-    if PROFILE not in BENIGN and PROFILE not in RECON:
+    if PROFILE not in BENIGN and PROFILE not in RECON and PROFILE not in ATTACK:
         errors.append(f"unknown PROFILE {PROFILE!r}")
     if not TARGET_APPS or any(a not in APPS or a not in PAGES for a in TARGET_APPS):
         errors.append(f"TARGET_APPS {TARGET_APPS} must be known apps listed in APP_URLS")
@@ -401,10 +487,10 @@ def main():
     if errors:
         sys.exit("; ".join(errors))
     rng = random.Random(SEED)
-    kind = "benign" if PROFILE in BENIGN else "recon"
+    kind = "benign" if PROFILE in BENIGN else "recon" if PROFILE in RECON else "attack"
     log(ev="start", session=SESSION, profile=PROFILE, kind=kind, seed=SEED, apps=TARGET_APPS, requests=REQUESTS,
         delay=[DELAY_MIN, DELAY_MAX], workers=WORKERS)
-    (BENIGN.get(PROFILE) or RECON[PROFILE])(rng)
+    (BENIGN.get(PROFILE) or RECON.get(PROFILE) or ATTACK[PROFILE])(rng)
     log(ev="end", session=SESSION, requests=_count, errors=_errors)
 
 

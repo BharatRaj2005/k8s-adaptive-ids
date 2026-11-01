@@ -16,8 +16,13 @@ import yaml
 from src.utils.config import PROJECT_ROOT, project_path
 
 DEFAULT_DATAGEN_CONFIG = PROJECT_ROOT / "config" / "datagen.yaml"
-BENIGN, RECON = "benign", "recon"
+BENIGN, RECON, ATTACK = "benign", "recon", "attack"
 LABELS = {BENIGN: 0, RECON: 2}   # class ids of config/settings.yaml
+# Attack profiles each carry one class label and target one fixed application. They reproduce the
+# request shape of an application CVE without performing it (see datagen_generator.py).
+ATTACK_LABELS = {"nodered_inject": 3, "grafana_traversal": 5, "influx_authprobe": 6, "grafana_ssrf": 1}
+ATTACK_APPS = {"nodered_inject": "nodered", "grafana_traversal": "grafana", "influx_authprobe": "influxdb",
+               "grafana_ssrf": "grafana"}
 ROLES = ("train", "val", "test", "heldout_scanner")
 
 
@@ -57,6 +62,8 @@ class Session:
 
 def _apps_for(profile: str, index: int, dcfg: dict[str, Any]) -> list[str]:
     cyc, p = dcfg["plan"]["apps_cycle"], dcfg["plan"]
+    if profile in ATTACK_APPS:
+        return [ATTACK_APPS[profile]]
     if profile in p["all_apps"]:
         return list(cyc)
     if profile in p["two_apps"]:
@@ -104,8 +111,9 @@ def build_plan(dcfg: dict[str, Any]) -> list[Session]:
     p = dcfg["plan"]
     sessions: list[Session] = []
     idx = 0
-    for category, repeats in ((BENIGN, p["benign_repeats"]), (RECON, p["recon_repeats"])):
-        for profile, tiers in dcfg["tiers"][category].items():
+    for category, repeats in ((BENIGN, p["benign_repeats"]), (RECON, p["recon_repeats"]),
+                              (ATTACK, p.get("attack_repeats", 0))):
+        for profile, tiers in dcfg["tiers"].get(category, {}).items():
             extra = tiers.get("extra", {})
             for tier, tparams in tiers.items():
                 if tier == "extra":
@@ -113,8 +121,9 @@ def build_plan(dcfg: dict[str, Any]) -> list[Session]:
                 for rep in range(1, repeats + 1):
                     params = {**extra, **tparams}
                     sid = f"{category}-{profile}-{tier}-r{rep}"
+                    label = ATTACK_LABELS[profile] if category == ATTACK else LABELS[category]
                     s = Session(sid, category, profile, tier, rep, idx, _apps_for(profile, idx, dcfg),
-                                p["base_seed"] + idx, params, LABELS[category])
+                                p["base_seed"] + idx, params, label)
                     validate_session(s, dcfg)
                     s.env = generator_env(s, dcfg)
                     sessions.append(s)
@@ -149,3 +158,11 @@ def assign_roles(sessions: list[Session], dcfg: dict[str, Any]) -> None:
                 s.role = "test"
             elif s.repeat == last and s.tier == val_tier:
                 s.role = "val"
+    # attack profiles: one held-out test session per profile (last repeat, rotating tier), rest train
+    for i, prof in enumerate(dict.fromkeys(s.profile for s in sessions if s.category == ATTACK)):
+        group = [s for s in sessions if s.profile == prof]
+        tiers = list(dict.fromkeys(s.tier for s in group))
+        last = max(s.repeat for s in group)
+        test_tier = tiers[i % len(tiers)]
+        for s in group:
+            s.role = "test" if (s.repeat == last and s.tier == test_tier) else "train"

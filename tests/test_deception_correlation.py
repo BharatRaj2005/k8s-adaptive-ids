@@ -33,12 +33,14 @@ def test_learned_threshold_alerts_alone_never_deploy(ctl, dcfg):
         ctl.run_cycle()
     d = decisions(dcfg)
     assert set(d["action"]) == {"await_evidence"} and not ctl.manager.decoys
-    assert "suspicious behaviour only" in d["reason"].iloc[-1]
+    assert "awaiting ML corroboration" in d["reason"].iloc[-1]
 
 
 def test_repeated_learned_alerts_deploy_when_ml_corroboration_is_not_required(dcfg):
     from src.deception.controller import MapeKController
 
+    # legacy policy: behaviour may act on repeats without ML (both gates off)
+    dcfg["deception"]["thresholds"]["behavior_requires_ml"] = False
     dcfg["deception"]["thresholds"]["behavior_medium_requires_ml"] = False
     ctl = MapeKController(dcfg, manager=FakeDecoyManager())
     ctl.set_enabled(True)
@@ -58,8 +60,16 @@ def test_low_confidence_ml_does_not_corroborate(ctl, dcfg):
     assert set(beh["action"]) == {"await_evidence"} and not ctl.manager.decoys
 
 
-def test_learned_threshold_alert_corroborated_by_ml(ctl, dcfg):
-    add_detection(dcfg, "Node-RED Reconnaissance", 0.65)  # medium confidence, a single detection: not actionable alone
+def test_single_medium_ml_does_not_corroborate(ctl, dcfg):
+    # one medium detection is not enough: corroboration needs high confidence or repeated medium
+    add_detection(dcfg, "Node-RED Reconnaissance", 0.75)
+    alert(dcfg)
+    ctl.run_cycle()
+    assert set(decisions(dcfg)["action"]) == {"await_evidence"} and not ctl.manager.decoys
+
+
+def test_behaviour_corroborated_by_repeated_medium_ml(ctl, dcfg):
+    add_detection(dcfg, "Node-RED Reconnaissance", 0.75, n=3)  # repeated medium confidence (>= 0.7) corroborates
     alert(dcfg)
     ctl.run_cycle()
     d = decisions(dcfg)

@@ -131,6 +131,10 @@ def simulation_logs(run_id: str, tail: int = 60):
     return read(f"/api/simulations/{run_id}/logs", tail=tail)
 
 
+def simulation_predictions(run_id: str):
+    return read(f"/api/simulations/{run_id}/predictions")
+
+
 def simulation_cleanup(run_id: str):
     return read(f"/api/simulations/{run_id}/cleanup")
 

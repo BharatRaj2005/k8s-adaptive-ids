@@ -9,7 +9,9 @@ import streamlit as st
 from components import api, ui
 
 ACTIVE = ("requested", "running", "processing")
-CATEGORY_LABELS = {"recon": "Reconnaissance", "benign": "Benign traffic testing"}
+CATEGORY_LABELS = {"recon": "Reconnaissance", "attack": "Network attack (simulated)", "benign": "Benign traffic"}
+GROUP_LABELS = {"network": "Network attack simulations", "benign": "Benign traffic",
+                "host": "Host-level simulated events"}
 APP_LABELS = {"nodered": "Node-RED", "grafana": "Grafana", "influxdb": "InfluxDB", "all": "All three applications"}
 STATUS_STATE = {"completed": "good", "cancelled": "neutral", "requested": "neutral", "running": "neutral",
                 "processing": "neutral", "failed": "critical", "timeout": "critical", "interrupted": "warning"}
@@ -22,28 +24,65 @@ STAGE_LABELS = [("requested", "Simulation requested"), ("job_created", "Kubernet
 
 @st.dialog("Attack Simulator", width="large")
 def dialog() -> None:
-    cat, _ = api.simulation_scenarios()
-    if not cat:
+    catalog, _ = api.simulation_scenarios()
+    if not catalog:
         st.error("The simulator needs the backend (and the cluster); it is unreachable.")
         return
-    st.caption("Launches **one** controlled traffic-generation Job in the `ids-traffic` namespace against a lab "
-               "application. Scanners only request paths (GET / HEAD / OPTIONS); nothing is exploited. Capture is "
-               "attached to (or started for the run), and the Job and its Pod are deleted automatically once the "
-               "traffic has been captured and classified.")
-    category = st.radio("Attack category", list(cat["categories"]), format_func=CATEGORY_LABELS.get, horizontal=True,
-                        key="sim_category")
-    scenarios = cat["categories"][category]
-    key = st.selectbox("Scanner profile" if category == "recon" else "Traffic profile", list(scenarios),
-                       format_func=lambda k: scenarios[k]["label"], key=f"sim_scenario_{category}")
-    sc = scenarios[key]
+    cats = catalog["categories"]
+    group = st.radio("Simulation type", list(GROUP_LABELS), format_func=GROUP_LABELS.get, horizontal=True,
+                     key="sim_group")
+    if group == "host":
+        _host_form(catalog)
+        return
+    _traffic_form(catalog, group)
+
+
+def _expected_badge(sc: dict) -> str:
+    if sc.get("expected_class") is None:
+        return ""
+    state = "warning" if sc.get("class_label") is not None else "neutral"
+    return ui.badge(f"expected class {sc['expected_class']} · {sc['expected_class_name']}", state)
+
+
+def _traffic_form(catalog: dict, group: str) -> None:
+    cats = catalog["categories"]
+    if group == "network":
+        options = [("recon", k) for k in cats.get("recon", {})] + [("attack", k) for k in cats.get("attack", {})]
+        st.caption("Launches **one** controlled traffic-generation Job in `ids-traffic` against a lab application. "
+                   "Scanners request paths only; the three attack profiles reproduce a CVE's request *shape* with "
+                   "marker requests (no payload, no credential, nothing executed). The Job and its Pod are deleted "
+                   "automatically once the traffic is captured and classified.")
+        icon = lambda cat: "🔎 " if cat == "recon" else "⚠️ "
+    else:
+        options = [("benign", k) for k in cats.get("benign", {})]
+        st.caption("Launches one benign traffic-generation Job (legitimate requests only) to exercise the detectors "
+                   "and check for false positives. Same automatic capture and cleanup.")
+        icon = lambda cat: "🟢 "
+    if not options:
+        st.info("No scenarios available.")
+        return
+    choice = st.selectbox("Scenario", options, format_func=lambda ck: icon(ck[0]) + cats[ck[0]][ck[1]]["label"],
+                          key=f"sim_choice_{group}")
+    category, key = choice
+    sc = cats[category][key]
     st.caption(f"{sc['description']} · generator profile `{sc['profile']}`")
-    if sc["all_apps"]:
+    badges = _expected_badge(sc)
+    if category == "attack":
+        badges += ui.badge("SIMULATED — non-executing", "warning")
+    if badges:
+        st.markdown(badges, unsafe_allow_html=True)
+    if sc.get("app"):                                   # attack scenario pinned to one application
+        target = sc["app"]
+        st.selectbox("Target application", [target], format_func=APP_LABELS.get, disabled=True,
+                     key=f"sim_tgt_pin_{key}", help="This simulation targets its one application.")
+    elif sc["all_apps"]:
         st.selectbox("Target application", ["all"], format_func=APP_LABELS.get, disabled=True, key="sim_target_all",
                      help="This scanner always sweeps every lab application.")
         target = "all"
     else:
-        target = st.selectbox("Target application", list(cat["targets"]), format_func=APP_LABELS.get, key="sim_target")
-    lim, d = cat["limits"], sc["defaults"]
+        target = st.selectbox("Target application", list(catalog["targets"]), format_func=APP_LABELS.get,
+                              key=f"sim_target_{group}")
+    lim, d = catalog["limits"], sc["defaults"]
     c1, c2, c3 = st.columns(3)
     duration = c1.slider("Duration (s)", int(lim["duration_s"][0]), int(lim["duration_s"][1]), int(d["duration_s"]),
                          step=5, key=f"sim_dur_{category}_{key}", help="Hard limit; the generator stops at this time.")
@@ -52,11 +91,11 @@ def dialog() -> None:
                      help="Approximate total rate across all workers.")
     max_req = c3.number_input("Max requests", int(lim["max_requests"][0]), int(lim["max_requests"][1]),
                               int(d["max_requests"]), step=10, key=f"sim_req_{category}_{key}")
-    expected = min(int(max_req), int(rate * duration))
-    st.markdown(ui.badge(f"≈ {expected:,} requests over ≤ {duration} s", "neutral")
+    approx = min(int(max_req), int(rate * duration))
+    st.markdown(ui.badge(f"≈ {approx:,} requests over ≤ {duration} s", "neutral")
                 + ui.badge(f"target: {APP_LABELS[target]}", "neutral")
                 + ui.badge("ground truth: generator pod IP + connection log", "neutral"), unsafe_allow_html=True)
-    confirm = st.checkbox("I confirm starting this controlled lab simulation", key="sim_confirm")
+    confirm = st.checkbox("I confirm starting this controlled lab simulation", key=f"sim_confirm_{group}")
     b1, b2 = st.columns(2)
     if b1.button("START SIMULATION", type="primary", width="stretch", disabled=not confirm,
                  icon=":material/play_circle:"):
@@ -69,6 +108,38 @@ def dialog() -> None:
             st.rerun()
         else:
             st.error(f"Not started: {res}")
+    if b2.button("Close", width="stretch"):
+        st.rerun()
+
+
+def _host_form(catalog: dict) -> None:
+    host = catalog.get("host_events") or {}
+    st.caption("Host- and runtime-level classes (container escape, runtime CVEs) cannot be produced as network "
+               "traffic. The simulator submits them as a clearly-labelled **SIMULATED** event: no traffic is sent, "
+               "nothing is executed and **no network detection is created**. With deception enabled the event drives "
+               "the controller, tagged `simulated`, so decoy behaviour can be demonstrated without any real exploit.")
+    if not host:
+        st.info("No host-level events configured.")
+        return
+    key = st.selectbox("Host-level event", list(host), format_func=lambda k: host[k]["label"], key="sim_host_key")
+    ev = host[key]
+    st.markdown(ui.badge(f"class {ev['class_id']} · {ev['attack_class']}", "neutral")
+                + ui.badge("SIMULATED event — no exploit, no traffic", "warning"), unsafe_allow_html=True)
+    if ev.get("description"):
+        st.caption(ev["description"])
+    confirm = st.checkbox("I confirm submitting this clearly-simulated host-level event", key="sim_host_confirm")
+    b1, b2 = st.columns(2)
+    if b1.button("SUBMIT SIMULATED EVENT", type="primary", width="stretch", disabled=not confirm,
+                 icon=":material/science:"):
+        ok, res = api.write("POST", "/api/deception/test-event",
+                            {"attack_class": ev["attack_class"], "confidence": ev["confidence"], "count": 1,
+                             "note": f"Attack Simulator host-level event: {ev['label']}"})
+        if ok:
+            st.session_state["mon_msg"] = ("success",
+                                           f"Simulated event {res.get('simulated_event_id')} submitted · {ev['attack_class']} (SIMULATED)")
+            st.rerun()
+        else:
+            st.error(f"Not submitted: {res}")
     if b2.button("Close", width="stretch"):
         st.rerun()
 
@@ -128,6 +199,21 @@ def panel(runs: list[dict], online: bool) -> None:
             ui.card("Cleanup", "done" if cleanup.get("ok") else ("check" if cleanup else "pending"), cleanup_txt,
                     state="good" if cleanup.get("ok") else ("critical" if cleanup else None)),
         ])
+        expected_name = params.get("expected_class_name")
+        if expected_name:
+            st.write("")
+            e1, e2 = st.columns([1.1, 2.9], vertical_alignment="center")
+            e1.markdown("**Expected class**<br>" + ui.badge(
+                f"{params.get('expected_class')} · {expected_name}",
+                "warning" if run["category"] == "attack" else "neutral"), unsafe_allow_html=True)
+            actual = "—"
+            if online:
+                preds, _ = api.simulation_predictions(run["run_id"])
+                prows = (preds or {}).get("predictions") or []
+                if prows:
+                    actual = " ".join(ui.badge(f"{p['predicted_class']}: {ui.fmt_int(p['flows'])}",
+                                               "critical" if p.get("malicious") else "good") for p in prows)
+            e2.markdown("**Actual ML prediction** (generator flows)<br>" + actual, unsafe_allow_html=True)
         if run.get("error"):
             (st.info if run["status"] == "cancelled" else st.warning)(run["error"])
         st.caption("Simulated lab traffic: predictions on it show what the detectors flag. They never indicate that an "

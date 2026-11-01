@@ -215,9 +215,14 @@ detection:
   # ExtraTrees on the dataset plus verified benign traffic from this lab
   # (benign_train); same dataset test metrics as extratrees_dataset, ~0 % false
   # positives on held-out lab traffic (reports/model_evaluation.md).
-  # v2_et_none (2026-10-31): ExtraTrees on evidence labels + lab benign/recon_run1, validation-tuned
-  # threshold; selected in reports/model_comparison.md. Previous: extratrees_dataset_lab (kept).
-  active_model: v2_et_none
+  # et_dataset_sqrt_lab (2026-11-01): ExtraTrees on the published 11-class dataset (sqrt imbalance)
+  # plus verified lab benign + lab recon + three non-destructive attack classes. 11-class output;
+  # on fast-benign lab traffic 0.76 % FP and 0 % at confidence >= 0.9 (reports/fastbenign_validation.md);
+  # 95-100 % detection on held-out lab recon/attack (reports/multiclass_baseline.md).
+  active_model: et_dataset_sqrt_lab_v6b
+  # Kept as a fallback (used only if the active model cannot be loaded): evidence 5-class model,
+  # validation-tuned threshold, selected in reports/model_comparison.md.
+  fallback_model: v2_et_none
   # Unknown-traffic handling (src/detection/unknown.py). Flows flagged by an enabled
   # check are reported as "Unknown / Requires Investigation", never as an attack.
   unknown:
@@ -333,8 +338,14 @@ deception:
     # same source. Decided after the changing-benign-traffic session (reports/behavioural_detection.md):
     # a benign client that speeds up raises repeated medium alerts; fixed-rule bursts still act alone.
     behavior_medium_requires_ml: true
+    # Behavioural alerts alone (incl. the fixed flow-burst rule) never deploy a decoy: they require ML
+    # corroboration from the same source - a high-confidence detection, or repeated medium-confidence
+    # detections. Validated against fast/bursty benign and original/unseen/slow scanners with the
+    # 11-class lab model (reports/fastbenign_validation.md, reports/mapek_corroboration.md).
+    behavior_requires_ml: true
     high_confidence: 0.9          # act after policy validation
-    medium_confidence: 0.6        # act only with repeated or corroborating evidence
+    medium_confidence: 0.7        # 0.7 (was 0.6): the fast-benign sweep showed 0.7 removes all benign
+                                  # false activations with no loss of detected scanners (reports/mapek_corroboration.md)
     repeat_count: 3
     repeat_window_seconds: 300
   # Interaction categories per (source, decoy) (src/deception/profiling.py)
@@ -443,3 +454,33 @@ simulator:
       keepalive:   {label: Keep-alive API client, profile: keepalive_client, jitter: 0.5, reconnect: [10, 40],
                     description: "Persistent connections, reconnecting after a number of requests",
                     defaults: {rate_per_s: 3, duration_s: 60, max_requests: 180}}
+    # Attack-characteristic but non-destructive scenarios. Each is pinned to one target application
+    # and carries one class label (ATTACK_LABELS in src/datagen/plan.py); marker requests only, no
+    # exploit is performed (see kubernetes/traffic-generator/datagen_generator.py).
+    attack:
+      nodered_rce: {label: "Node-RED RCE probe (simulated)", profile: nodered_inject, app: nodered, class_label: 3,
+                    description: "Marker writes to the Node-RED admin flow API (rejected; nothing deployed)",
+                    defaults: {rate_per_s: 5, duration_s: 60, max_requests: 150}}
+      grafana_traversal: {label: "Grafana path traversal (simulated)", profile: grafana_traversal, app: grafana, class_label: 5,
+                    description: "CVE-2021-43798-shaped plugin path traversal to a marker file (resolves to nothing)",
+                    defaults: {rate_per_s: 5, duration_s: 60, max_requests: 200}}
+      influx_authbypass: {label: "InfluxDB auth-bypass probe (simulated)", profile: influx_authprobe, app: influxdb, class_label: 6,
+                    description: "CVE-2019-20933-shaped auth probes with a marker token (reads/writes nothing)",
+                    defaults: {rate_per_s: 5, duration_s: 60, max_requests: 150}}
+      grafana_ssrf: {label: "Grafana avatar SSRF (simulated)", profile: grafana_ssrf, app: grafana, class_label: 1,
+                    description: "CVE-2020-13379-shaped avatar SSRF to a non-resolvable .invalid marker (no internal service reached)",
+                    defaults: {rate_per_s: 5, duration_s: 60, max_requests: 120}}
+  # Host-/runtime-level classes that cannot be produced as network traffic. The simulator submits them
+  # as clearly-labelled SIMULATED events (controller.submit_simulated_event -> /api/deception/test-event):
+  # no traffic, no exploit, no detection row; they drive the deception pipeline tagged simulated=1.
+  host_events:
+    container_escape: {label: "Container escape (Node-RED)", class: "Node-RED Container Escape", confidence: 0.9,
+                       description: "Simulated container-escape event; no runtime action is performed"}
+    cve_2021_30465:   {label: "CVE-2021-30465 (runc symlink)", class: "CVE-2021-30465", confidence: 0.9,
+                       description: "Simulated runc mount/symlink escape event"}
+    cve_2022_23648:   {label: "CVE-2022-23648 (containerd)", class: "CVE-2022-23648", confidence: 0.9,
+                       description: "Simulated containerd CRI host-path exposure event"}
+    cve_2019_5736:    {label: "CVE-2019-5736 (runc /proc/self/exe)", class: "CVE-2019-5736", confidence: 0.9,
+                       description: "Simulated runc binary-overwrite escape event"}
+    cve_2021_25741:   {label: "CVE-2021-25741 (kubelet subPath)", class: "CVE-2021-25741", confidence: 0.9,
+                       description: "Simulated kubelet subPath symlink traversal event"}

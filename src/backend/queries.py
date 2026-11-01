@@ -253,6 +253,14 @@ def simulation_run(run_id: str, cfg=None) -> dict[str, Any] | None:
     return rows[0] if rows else None
 
 
+def simulation_predictions(run_id: str, cfg=None) -> list[dict[str, Any]]:
+    """Actual ML predicted-class breakdown for a run's generator flows (genuine detections only)."""
+    return _q("SELECT predicted_class, COUNT(*) AS flows, SUM(is_malicious) AS malicious, "
+              "AVG(confidence) AS mean_confidence FROM detections "
+              "WHERE sim_run_id = ? AND simulated = 0 GROUP BY predicted_class ORDER BY flows DESC",
+              (run_id,), cfg)
+
+
 def controller_snapshot(cfg=None) -> dict[str, Any]:
     """Stored controller state (used when the backend, and thus the live controller, is down)."""
     with db.connect(db.db_path(cfg)) as c:

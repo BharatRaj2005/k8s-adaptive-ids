@@ -126,7 +126,7 @@ def build(dcfg: dict[str, Any] | None = None, cfg: dict[str, Any] | None = None)
         sessions.append({
             "session_id": m["session_id"], "role": m["role"], "category": m["category"], "profile": m["profile"],
             "tier": m["tier"], "seed": m["seed"], "applications": m["apps"], "label": int(m["label"]),
-            "attack_or_benign": "attack" if m["category"] == RECON else "benign",
+            "attack_or_benign": "benign" if m["category"] == BENIGN else "attack",
             "source_pod": m["pod"]["name"], "source_ip": m["pod"]["ip"],
             "destination_ips": sorted({ip for a in m["apps"] for ip in m["targets"][a]["pod_ips"]}),
             "destination_ports": sorted({m["targets"][a]["port"] for a in m["apps"]}),

@@ -49,6 +49,29 @@ def parse(s: str | None) -> datetime | None:
     return datetime.fromisoformat(s) if s else None
 
 
+def behaviour_actionable(high: bool, ml_high: int, ml_med: int, count: int,
+                         th: dict[str, Any]) -> tuple[str, bool, str]:
+    """Decide whether a behavioural flow-burst may deploy a decoy, requiring ML corroboration.
+
+    A flow burst never acts on its own: a benign client that merely sends fast or bursty traffic
+    produces one (fast API clients and dashboard refreshes reach the rule's flow count). It becomes
+    actionable only when the same source also has ML evidence - a high-confidence detection
+    (>= high_confidence), or repeated medium-confidence detections (>= repeat_count at
+    >= medium_confidence). Returns (assessment, actionable, reason).
+    """
+    assessment = "high" if high else "medium"
+    kind = "fixed flow-burst rule" if high else "learned-threshold behaviour"
+    if ml_high > 0:
+        return assessment, True, f"{kind} corroborated by {ml_high} high-confidence ML detection(s)"
+    if ml_med >= th["repeat_count"]:
+        return assessment, True, (f"{kind} corroborated by {ml_med} medium-confidence ML detection(s) "
+                                  f">= {th['repeat_count']}")
+    detail = (f"; {ml_med}/{th['repeat_count']} medium-confidence ML detection(s)" if ml_med else "")
+    return assessment, False, (f"{kind} ({count} window(s)): behavioural evidence only, awaiting ML "
+                               f"corroboration (high-confidence, or {th['repeat_count']} medium-confidence "
+                               f"detections from the same source){detail}")
+
+
 class MapeKController:
     def __init__(self, cfg: dict[str, Any] | None = None, manager=None, manager_factory=None):
         self.cfg = cfg or load_config()
@@ -161,19 +184,26 @@ class MapeKController:
             windows = c.execute("SELECT COUNT(*) FROM behavior_alerts WHERE src_ip = ? AND dst_port = ? AND detected_at >= ?",
                                 (src, port, since)).fetchone()[0]
             count = max(windows, len(rows))
-            if high:
+            # ML corroboration from the same source within the window: a high-confidence detection,
+            # or repeated medium-confidence detections (src/deception/controller.py behaviour_actionable).
+            ml_high = c.execute("SELECT COUNT(*) FROM detections WHERE src_ip = ? AND is_malicious = 1 AND simulated = 0 "
+                                "AND confidence >= ? AND detected_at >= ?",
+                                (src, th["high_confidence"], since)).fetchone()[0] if src is not None else 0
+            ml_med = c.execute("SELECT COUNT(*) FROM detections WHERE src_ip = ? AND is_malicious = 1 AND simulated = 0 "
+                               "AND confidence >= ? AND detected_at >= ?",
+                               (src, th["medium_confidence"], since)).fetchone()[0] if src is not None else 0
+            if th.get("behavior_requires_ml", False):
+                # Behavioural evidence never acts alone: it must be corroborated by ML from the same source.
+                assessment, actionable, why = behaviour_actionable(high, ml_high, ml_med, count, th)
+            elif high:
                 assessment, actionable, why = "high", True, "fixed flow-burst rule"
             else:
-                # learned-threshold alerts need an ML detection of at least medium confidence from the
-                # same source (the controller's own floor for acting on ML evidence)
-                ml = c.execute("SELECT COUNT(*) FROM detections WHERE src_ip = ? AND is_malicious = 1 AND simulated = 0 "
-                               "AND confidence >= ? AND detected_at >= ?",
-                               (src, th["medium_confidence"], since)).fetchone()[0]
+                # legacy: learned-threshold alerts need a medium-confidence ML detection (or repeats)
                 need = th["behavior_repeat_count"]
                 needs_ml = th.get("behavior_medium_requires_ml", False)
-                actionable = ml > 0 or (not needs_ml and count >= need)
+                actionable = ml_med > 0 or (not needs_ml and count >= need)
                 assessment = "medium"
-                why = (f"corroborated by {ml} ML detection(s)" if ml else
+                why = (f"corroborated by {ml_med} ML detection(s)" if ml_med else
                        f"{count} alert window(s) >= {need}" if actionable else
                        ("suspicious behaviour only: learned-threshold alerts need an ML detection from the same "
                         "source before a decoy is deployed" if needs_ml else
@@ -239,11 +269,13 @@ class MapeKController:
             return {**base, "assessment": "high", "actionable": True,
                     "reason": tag + f"confidence {conf:.2f} >= high threshold {th['high_confidence']}"}
         if conf >= th["medium_confidence"]:
-            if count >= th["repeat_count"] or corroborated:
-                why = (f"{count} detections in {th['repeat_window_seconds']}s >= {th['repeat_count']}"
-                       if count >= th["repeat_count"] else "corroborated by a flow burst from the same source")
+            # A single medium-confidence detection never acts, even with a flow burst from the same
+            # source (fast/bursty benign produces exactly that): medium confidence must be repeated.
+            if count >= th["repeat_count"]:
+                extra = "; with a corroborating flow burst" if corroborated else ""
                 return {**base, "assessment": "medium", "actionable": True,
-                        "reason": tag + f"medium confidence {conf:.2f} confirmed: {why}"}
+                        "reason": tag + f"medium confidence {conf:.2f} confirmed: {count} detections in "
+                                        f"{th['repeat_window_seconds']}s >= {th['repeat_count']}{extra}"}
             return {**base, "assessment": "medium", "actionable": False,
                     "reason": tag + f"medium confidence {conf:.2f}; {count}/{th['repeat_count']} repeated detections, awaiting evidence"}
         return {**base, "assessment": "low", "actionable": False,
@@ -287,8 +319,10 @@ class MapeKController:
         planned: set[str] = set()
         for a in assessments:
             if not a["actionable"]:
-                actions.append({**a, "action": "await_evidence" if a["assessment"] == "medium" else "monitor",
-                                "profile": None})
+                # behavioural evidence awaiting ML corroboration, and medium ML awaiting repeats, are
+                # recorded as await_evidence (shown in the UI); only low-confidence ML is "monitor".
+                waiting = a["assessment"] == "medium" or a.get("trigger") == "behavior"
+                actions.append({**a, "action": "await_evidence" if waiting else "monitor", "profile": None})
                 continue
             profiles, why = self._profiles_for(c, a)
             for profile in profiles:

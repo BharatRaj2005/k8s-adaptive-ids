@@ -44,6 +44,20 @@ def test_plan_roles_keep_sessions_whole(dcfg):
     assert len({s.seed for s in plan}) == len(plan)
 
 
+def test_plan_includes_attack_classes(dcfg):
+    from src.datagen.plan import ATTACK_APPS, ATTACK_LABELS
+    plan = build_plan(dcfg)
+    attack = [s for s in plan if s.category == "attack"]
+    assert {s.profile for s in attack} == set(ATTACK_LABELS)
+    for prof, label in ATTACK_LABELS.items():
+        g = [s for s in attack if s.profile == prof]
+        assert g and all(s.label == label for s in g)
+        assert all(s.apps == [ATTACK_APPS[prof]] for s in g)              # one fixed target app
+        roles = [s.role for s in g]
+        assert "test" in roles and "train" in roles                      # held-out eval + training data
+    assert len({s.seed for s in plan}) == len(plan)                      # seeds unique across all sessions
+
+
 def test_plan_covers_every_scanner_and_app(dcfg):
     plan = build_plan(dcfg)
     assert {s.profile for s in plan if s.category == "recon"} == set(dcfg["tiers"]["recon"])
@@ -101,6 +115,16 @@ class _H(BaseHTTPRequestHandler):
     def do_HEAD(self):
         self._reply(False)
 
+    def do_POST(self):                      # marker write-API bodies are rejected, as the real apps do
+        n = int(self.headers.get("Content-Length", 0) or 0)
+        if n:
+            self.rfile.read(n)
+        self.send_response(400)
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
+    do_PUT = do_POST
+
     def log_message(self, *a):
         pass
 
@@ -153,6 +177,34 @@ def test_generator_scanners_differ(local_apps):
                    len({r["cid"] for r in reqs}))
     assert len({v[0] for v in seen.values()}) == len(seen)        # different endpoint orders
     assert len({(v[1], v[2]) for v in seen.values()}) >= 3        # different methods / connection behaviour
+
+
+ATTACK_PROFILES = {"nodered_inject": "nodered", "grafana_traversal": "grafana", "influx_authprobe": "influxdb",
+                   "grafana_ssrf": "grafana"}
+
+
+@pytest.mark.parametrize("profile, app", list(ATTACK_PROFILES.items()))
+def test_attack_profiles_are_marked_and_nondestructive(local_apps, profile, app):
+    proc = _run_generator({"PROFILE": profile, "APP_URLS": local_apps, "TARGET_APPS": app, "REQUESTS": "20",
+                           "DELAY_MIN": "0.02", "DELAY_MAX": "0.03", "MAX_SECONDS": "30", "SEED": "5"})
+    assert proc.returncode == 0, proc.stderr
+    events = [json.loads(x) for x in proc.stdout.splitlines()]
+    assert next(e for e in events if e["ev"] == "start")["kind"] == "attack"
+    reqs = [e for e in events if e["ev"] == "req"]
+    opened = {e["cid"] for e in events if e["ev"] == "conn_open"}
+    assert reqs and all(r["app"] == app for r in reqs)                    # only the one fixed target app
+    assert all(r["cid"] in opened for r in reqs)                          # every request is logged ground truth
+    assert not any(bad in r["path"] for r in reqs                         # never a real sensitive target
+                   for bad in ("/etc/", "passwd", ".pem", "id_rsa", "/nodes"))
+    if profile == "nodered_inject":
+        assert any(r["method"] in ("POST", "PUT") and r.get("sent", 0) > 0 for r in reqs)
+    if profile == "grafana_traversal":
+        assert all(r["method"] == "GET" and "..%2f" in r["path"] for r in reqs)
+    if profile == "influx_authprobe":
+        assert any(r["method"] == "POST" for r in reqs)
+    if profile == "grafana_ssrf":
+        assert all(r["method"] == "GET" and "/avatar/" in r["path"] for r in reqs)
+        assert all("invalid" in r["path"] or "marker" in r["path"] for r in reqs)   # non-resolvable marker target only
 
 
 @pytest.mark.parametrize("env, msg", [

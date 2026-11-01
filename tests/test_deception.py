@@ -153,21 +153,33 @@ def test_deployment_cooldown(dcfg):
     assert decisions(dcfg)["action"].tolist() == ["deploy", "suppress_cooldown"]
 
 
+def _burst(dcfg, src="10.42.0.181"):
+    with db.connect(db.db_path(dcfg)) as c:
+        db.insert_row(c, "behavior_alerts", src_ip=src, dst_ip="10.42.0.177", dst_port=1880, protocol=6,
+                      flows=40, rate_per_s=4.0, window_s=10.0, ml_malicious_flows=0, ml_classes="{}",
+                      detected_at=datetime.now(timezone.utc).isoformat())
+
+
+def test_flow_burst_alone_never_deploys(ctl, dcfg):
+    # A fixed-rule flow burst with no ML evidence (fast/bursty benign looks like this) must not act.
+    for _ in range(3):
+        _burst(dcfg)
+        ctl.run_cycle()
+    d = decisions(dcfg)
+    assert set(d["action"]) == {"await_evidence"} and not ctl.manager.decoys
+    assert "awaiting ML corroboration" in d["reason"].iloc[-1]
+
+
 def test_flow_burst_deploys_service_specific_decoys_and_scales(ctl, dcfg):
-    def burst():
-        with db.connect(db.db_path(dcfg)) as c:
-            db.insert_row(c, "behavior_alerts", src_ip="10.42.0.181", dst_ip="10.42.0.177", dst_port=1880, protocol=6,
-                          flows=40, rate_per_s=4.0, window_s=10.0, ml_malicious_flows=0, ml_classes="{}",
-                          detected_at=datetime.now(timezone.utc).isoformat())
-    burst()
+    # With ML corroboration from the same source, the flow burst deploys service-specific decoys and scales.
+    add_detection(dcfg, "Node-RED Reconnaissance", 0.95, src="10.42.0.181", n=3)
+    _burst(dcfg)
     ctl.run_cycle()
-    first = decisions(dcfg)
-    assert set(first["decoy_profile"]) == {"http-recon", "nodered"} and set(first["action"]) == {"deploy"}
-    assert first["trigger"].eq("behavior").all() and "flow burst" in first["reason"][0]
-    burst(); burst()  # three burst windows from the same source
+    assert set(ctl.manager.decoys) == {"decoy-http-recon", "decoy-nodered"}
+    deploys = decisions(dcfg).query("action == 'deploy'")
+    assert deploys["reason"].str.contains("ML and behavioural evidence").any()   # corroboration recorded
+    _burst(dcfg); _burst(dcfg)  # three burst windows from the same source
     ctl.run_cycle()
-    last = decisions(dcfg).tail(2)
-    assert dict(zip(last["decoy_profile"], last["action"])) == {"http-recon": "scale", "nodered": "refresh"}
     assert ctl.manager.decoys["decoy-http-recon"]["replicas"] == 2
 
 

@@ -28,7 +28,10 @@ from src.preprocessing.schema import (
     read_flow_csv,
 )
 from src.utils.config import get_path, load_config
+from src.utils.logging_setup import get_logger
 from src.utils.native import ensure_libgomp
+
+log = get_logger(__name__)
 
 PREDICTION_COLUMNS = [
     "flow_id", "timestamp", "src_ip", "src_port", "dst_ip", "dst_port", "protocol",
@@ -78,8 +81,17 @@ class FlowPredictor:
     @classmethod
     def from_config(cls, name: str | None = None, cfg: dict[str, Any] | None = None) -> "FlowPredictor":
         cfg = cfg or load_config()
-        return cls(get_path("models_dir", cfg) / (name or cfg["detection"]["active_model"]),
-                   cfg["detection"].get("unknown"))
+        models_dir = get_path("models_dir", cfg)
+        unknown = cfg["detection"].get("unknown")
+        wanted = name or cfg["detection"]["active_model"]
+        try:
+            return cls(models_dir / wanted, unknown)
+        except (FileNotFoundError, OSError) as e:
+            fallback = cfg["detection"].get("fallback_model")
+            if name is not None or not fallback or fallback == wanted:
+                raise
+            log.error("active model %r unavailable (%s); falling back to %r", wanted, e, fallback)
+            return cls(models_dir / fallback, unknown)
 
     def predict_frame(self, df: pd.DataFrame, capture_file: str | None = None, source: str = "unknown") -> pd.DataFrame:
         if source not in VALID_SOURCES:
