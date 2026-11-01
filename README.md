@@ -145,6 +145,42 @@ Findings from inspecting the files (they shaped the design):
   (commit 60a7573), so it is excluded rather than aliased.
 * **CSV quirk.** The CICFlowMeter fork writes the header row twice; repeated headers are dropped on read.
 
+## Pre-trained models
+
+`models/*/` is not tracked in git (the active model is 445 MB). The trained models are attached to the
+GitHub Release [`model-v6b`](https://github.com/BharatRaj2005/k8s-adaptive-ids/releases/tag/model-v6b):
+
+| Archive | Model | Role in `config/settings.yaml` |
+|---|---|---|
+| `et_dataset_sqrt_lab_v6b.tar.xz` (48 MB, 445 MB unpacked) | 11-class ExtraTrees, published labels + lab sets | `active_model` |
+| `v2_et_none.tar.xz` (4.6 MB) | earlier evidence-label ExtraTrees | `fallback_model` |
+
+```bash
+cd models
+for m in et_dataset_sqrt_lab_v6b v2_et_none; do
+  curl -LO https://github.com/BharatRaj2005/k8s-adaptive-ids/releases/download/model-v6b/$m.tar.xz
+done
+curl -LO https://github.com/BharatRaj2005/k8s-adaptive-ids/releases/download/model-v6b/SHA256SUMS
+sha256sum -c SHA256SUMS && for m in *.tar.xz; do tar -xJf "$m"; done
+```
+
+`model.joblib` is a pickle: loading it runs code, so only load archives whose checksum matches the
+release. Built with Python 3.14 / scikit-learn 1.9.1; other versions may not load it - retrain instead:
+
+```bash
+.venv/bin/python -m src.detection.train --model extratrees --label-policy dataset --split temporal \
+    --imbalance sqrt --name et_dataset_sqrt_lab_v6b \
+    $(for s in benign_train recon_run1 recon_grafana_train recon_influx_train recon_slow_nodered_train \
+        fbenign_api_nodered_train fbenign_api_grafana_train fbenign_api_influxdb_train \
+        fbenign_burst_grafana_train fbenign_burst_nodered_train fbenign_browse_grafana_train \
+        fbenign_browse_nodered_train fbenign_poller_nodered_train attack_nodered_rce_train \
+        attack_grafana_traversal_train attack_influx_authbypass_train attack_grafana_ssrf_train \
+        attack_grafana_ssrf_train_r2; do printf -- '--lab-train %s ' $s; done)
+.venv/bin/python -m src.detection.unknown --build et_dataset_sqrt_lab_v6b   # service profile
+```
+
+Training data, validation and the model's limits: `reports/mapek_corroboration.md` (sections 7-8).
+
 ## Model training
 
 Preprocessing, all fitted on training data only:
@@ -160,7 +196,7 @@ default **temporal** split instead puts the last 25 % of every capture in the te
 
 ```bash
 .venv/bin/python -m src.detection.train --model extratrees --lab-train benign_train \
-    --lab-eval benign_eval_a --lab-eval benign_eval_b --lab-eval recon_run1 --lab-eval recon_run2   # active model
+    --lab-eval benign_eval_a --lab-eval benign_eval_b --lab-eval recon_run1 --lab-eval recon_run2   # earlier binary-focused model (current active one: see Pre-trained models)
 .venv/bin/python -m src.detection.train --model lightgbm            # primary candidate
 .venv/bin/python -m src.detection.train --model extratrees          # fallback
 .venv/bin/python -m src.detection.train --model pca_ae_nb           # base-paper-style reference
